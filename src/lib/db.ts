@@ -9,22 +9,33 @@ import {
   ProjectCoordinatorPoint,
 } from "lib/types";
 
-if (
-  !process.env.POSTGRES_USER ||
-  !process.env.POSTGRES_HOST ||
-  !process.env.POSTGRES_DATABASE ||
-  !process.env.POSTGRES_PORT
-) {
-  throw new Error("Missing database configuration");
+function getPool() {
+  if (
+    !process.env.POSTGRES_USER ||
+    !process.env.POSTGRES_HOST ||
+    !process.env.POSTGRES_DATABASE ||
+    !process.env.POSTGRES_PORT
+  ) {
+    throw new Error("Missing database configuration");
+  }
+
+  return new Pool({
+    user: process.env.POSTGRES_USER,
+    host: process.env.POSTGRES_HOST,
+    database: process.env.POSTGRES_DATABASE,
+    password: process.env.POSTGRES_PASSWORD || "",
+    port: parseInt(process.env.POSTGRES_PORT),
+  });
 }
 
-export const pool = new Pool({
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
-  database: process.env.POSTGRES_DATABASE,
-  password: process.env.POSTGRES_PASSWORD || "",
-  port: parseInt(process.env.POSTGRES_PORT),
-});
+let pool: Pool;
+
+function getConnection() {
+  if (!pool) {
+    pool = getPool();
+  }
+  return pool;
+}
 
 /* SCENARIO | Institutions SME Map */
 
@@ -35,6 +46,7 @@ const SELECT_INSTITUTION_SME_POINTS = `
   WHERE address_geolocation IS NOT NULL;`;
 
 export async function getInstitutionPoints(): Promise<InstitutionSmePoint[]> {
+  const pool = getConnection();
   const result = await pool.query<InstitutionSmePoint>(
     SELECT_INSTITUTION_SME_POINTS
   );
@@ -48,6 +60,7 @@ const SELECT_INSTITUTION = `
   address_geolocation IS NOT NULL;`;
 
 export async function getInstitutionById(id: number): Promise<Institution> {
+  const pool = getConnection();
   const result = await pool.query<Institution>(SELECT_INSTITUTION, [id]);
   return result.rows[0];
 }
@@ -72,6 +85,7 @@ const SELECT_PROJECT_COORDINATORS_BY_YEAR = `
 export async function getProjectCoordinatorsByYear(
   year: number
 ): Promise<ProjectCoordinatorPoint[]> {
+  const pool = getConnection();
   const date = `${year}`;
   const result = await pool.query<ProjectCoordinatorPoint>(
     SELECT_PROJECT_COORDINATORS_BY_YEAR,
@@ -87,6 +101,7 @@ const SELECT_PROJECT_BY_ID = `
 `;
 
 export async function getProjectById(id: number): Promise<Project> {
+  const pool = getConnection();
   const result = await pool.query<Project>(SELECT_PROJECT_BY_ID, [id]);
   return result.rows[0];
 }
@@ -101,6 +116,7 @@ const SELECT_INSTITUTION_ECNET_FUNDING = `
 export async function getInstitutionECNetFunding(): Promise<
   InstitutionECNetFunding[]
 > {
+  const pool = getConnection();
   const result = await pool.query<InstitutionECNetFunding>(
     SELECT_INSTITUTION_ECNET_FUNDING
   );
@@ -116,6 +132,7 @@ const SELECT_INSTITUTION_COLLABORATION_WEIGHTS = `
 export async function getInstitutionCollaborationWeights(): Promise<
   InstitutionCollaborationWeights[]
 > {
+  const pool = getConnection();
   const result = await pool.query<InstitutionCollaborationWeights>(
     SELECT_INSTITUTION_COLLABORATION_WEIGHTS
   );
@@ -126,7 +143,10 @@ const SELECT_INSTITUTION_COLLABORATORS = `
   SELECT * FROM get_institution_collaborators($1);
 `;
 
-export async function getInstititutionCollaborators(id: number): Promise<InstitutionCollaborators[]> {
+export async function getInstititutionCollaborators(
+  id: number
+): Promise<InstitutionCollaborators[]> {
+  const pool = getConnection();
   const result = await pool.query<InstitutionCollaborators>(
     SELECT_INSTITUTION_COLLABORATORS,
     [id]
