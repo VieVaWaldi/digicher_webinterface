@@ -18,7 +18,7 @@ import {
 import { useInstitutionCollaborationWeights } from "hooks/queries/useInstitutionCollaborationWeights";
 import { useInstitutionCollaboratorsById } from "hooks/queries/useInstitutionCollaboratorsById";
 
-export default function InstitutionCollaborationWeights() {
+export default function InstitutionCollaborationWeightsMap() {
   const [selectedInstitutionId, setSelectedInstitutionId] =
     useState<number>(-1);
   const [selectedInstitutionLocation, setSelectedInstitutionLocation] =

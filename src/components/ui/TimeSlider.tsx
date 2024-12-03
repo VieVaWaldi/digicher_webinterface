@@ -5,11 +5,16 @@ import { useEffect } from "react";
 const MIN_YEAR = 1990;
 const MAX_YEAR = 2027;
 
-export default function TimeSlider({ year, onChange }) {
+interface TimeSliderProps {
+  year: number;
+  onChange: (value: number | ((prev: number) => number)) => void;
+}
+
+export default function TimeSlider({ year, onChange }: TimeSliderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout;
     if (isPlaying) {
       interval = setInterval(() => {
         onChange((prev) => (prev < MAX_YEAR ? prev + 1 : MIN_YEAR));
