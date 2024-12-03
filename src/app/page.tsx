@@ -1,8 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import DeckGlLinkList from "components/DeckGlLinkList";
 import Header from "components/Header";
+import { useEffect } from "react";
 
-export default async function Home() {
+export default function Home() {
+  useEffect(() => {
+    fetch("/api/ping");
+  }, []);
+
   return (
     <div>
       <Header showBackButton={false} />
@@ -39,6 +46,3 @@ export default async function Home() {
     </div>
   );
 }
-
-;
-

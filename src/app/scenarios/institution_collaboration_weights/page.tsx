@@ -10,7 +10,7 @@ import { ColumnLayer, ArcLayer } from "@deck.gl/layers";
 import { FullscreenWidget } from "@deck.gl/widgets";
 
 import Header from "components/Header";
-import { INITIAL_VIEW_STATE_EU } from "components/deckgl/viewports";
+import { INITIAL_VIEW_STATE_TILTED_EU } from "components/deckgl/viewports";
 import {
   InstitutionCollaborationWeights,
   InstitutionCollaborators,
@@ -146,7 +146,7 @@ export default function InstitutionCollaborationWeightsMap() {
       </div>
       <main className="flex-1 relative">
         <DeckGL
-          initialViewState={INITIAL_VIEW_STATE_EU}
+          initialViewState={INITIAL_VIEW_STATE_TILTED_EU}
           layers={[columnLayer, arcLayer]}
           controller={true}
           getTooltip={({ object }) => {

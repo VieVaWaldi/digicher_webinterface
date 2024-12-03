@@ -11,7 +11,7 @@ import { FullscreenWidget } from "@deck.gl/widgets";
 
 import Header from "components/Header";
 
-import { INITIAL_VIEW_STATE_EU } from "components/deckgl/viewports";
+import { INITIAL_VIEW_STATE_TILTED_EU } from "components/deckgl/viewports";
 import { useInstitutionECNetFundings } from "hooks/queries/useInstitutionECNetFunding";
 import { InstitutionECNetFunding } from "lib/types";
 
@@ -78,7 +78,7 @@ export default function InstitutionECNetFundingMap() {
       </div>
       <main className="flex-1 relative">
         <DeckGL
-          initialViewState={INITIAL_VIEW_STATE_EU}
+          initialViewState={INITIAL_VIEW_STATE_TILTED_EU}
           layers={[layer]}
           controller={true}
           getTooltip={({ object }) =>

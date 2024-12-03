@@ -25,9 +25,9 @@ function getPool() {
     database: process.env.POSTGRES_DATABASE,
     password: process.env.POSTGRES_PASSWORD || "",
     port: parseInt(process.env.POSTGRES_PORT),
-    ssl: {
-      rejectUnauthorized: true,
-    },
+    // ssl: {
+    //   rejectUnauthorized: true,
+    // },
   });
 }
 
@@ -38,6 +38,13 @@ function getConnection() {
     pool = getPool();
   }
   return pool;
+}
+
+export async function pingNeon(): Promise<boolean> {
+  const pool = getConnection();
+  // Remove double await
+  await pool.query("SELECT 1");
+  return true;
 }
 
 /* SCENARIO | Institutions SME Map */
