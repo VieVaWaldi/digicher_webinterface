@@ -46,9 +46,9 @@ export default function InstitutionECNetFundingMap() {
       const normalizedFunding = funding / MAX_FUNDING;
 
       return [
-        255, // Red stays at 255
-        255 * (1 - normalizedFunding), // Green decreases with funding
-        255 * (1 - normalizedFunding), // Blue decreases with funding
+        255 * normalizedFunding, // Red increases with funding
+        0, // Green stays at 0
+        0, // Blue stays at 0
         200, // Alpha
       ];
     },
@@ -102,7 +102,7 @@ export default function InstitutionECNetFundingMap() {
           ]}
         >
           <Map
-            mapStyle="mapbox://styles/mapbox/dark-v11"
+            mapStyle="mapbox://styles/mapbox/light-v11" // mapbox://styles/mapbox/dark-v11
             mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
             projection={{ name: "mercator" }}
           />
