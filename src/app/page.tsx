@@ -40,6 +40,12 @@ export default function Home() {
           >
             S4: Institutions Collaboration Weights
           </Link>
+          <Link
+            href="/scenarios/institution_topics_filter"
+            className="p-4 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            S5: Institutions Topics Filter
+          </Link>
         </div>
         <DeckGlLinkList />
       </main>

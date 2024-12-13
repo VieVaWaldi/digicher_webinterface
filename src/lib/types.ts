@@ -62,9 +62,17 @@ export interface InstitutionCollaborationWeights {
   collaboration_weight: number;
 }
 
-
 export interface InstitutionCollaborators {
   collaborator_id: number;
   collaborator_name: string;
   collaborator_geolocation: number[];
+}
+
+/* Institution Topics Filter */
+
+export interface InstitutionTopics {
+  institution_id: number;
+  institution_name: string;
+  address_geolocation: number[]; // assuming this is Point/geometry type
+  topic: string[]; // array of strings since we used array_agg
 }

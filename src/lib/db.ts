@@ -7,6 +7,7 @@ import {
   InstitutionSmePoint,
   Project,
   ProjectCoordinatorPoint,
+  InstitutionTopics,
 } from "lib/types";
 
 function getPool() {
@@ -161,5 +162,23 @@ export async function getInstititutionCollaborators(
     SELECT_INSTITUTION_COLLABORATORS,
     [id]
   );
+  return result.rows;
+}
+
+/* Institution Topics */
+
+const SELECT_INSTITUTION_TOPICS = `
+  SELECT 
+    id as institution_id,
+    name as institution_name,
+    address_geolocation,
+    topic_codes as topic
+  FROM institution_topics
+  WHERE address_geolocation IS NOT NULL;
+`;
+
+export async function getInstitutionTopics(): Promise<InstitutionTopics[]> {
+  const pool = getConnection();
+  const result = await pool.query<InstitutionTopics>(SELECT_INSTITUTION_TOPICS);
   return result.rows;
 }
