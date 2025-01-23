@@ -1,4 +1,4 @@
-import { getInstitutionECNetFunding } from "lib/db";
+import { getInstitutionECNetFunding } from "datamodel/institution/queries";
 import { NextResponse } from "next/server";
 
 export async function GET() {

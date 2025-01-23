@@ -1,4 +1,4 @@
-import { getInstititutionCollaborators } from "lib/db";
+import { getInstititutionCollaborators } from "datamodel/institution/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

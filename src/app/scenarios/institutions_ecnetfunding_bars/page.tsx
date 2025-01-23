@@ -9,14 +9,14 @@ import Map from "react-map-gl";
 import { ColumnLayer } from "@deck.gl/layers";
 import { FullscreenWidget } from "@deck.gl/widgets";
 
-import Header from "components/Header";
+import Header from "core/components/navigation/Header";
 
-import { INITIAL_VIEW_STATE_TILTED_EU } from "components/deckgl/viewports";
-import { useInstitutionECNetFundings } from "hooks/queries/useInstitutionECNetFunding";
+import { INITIAL_VIEW_STATE_TILTED_EU } from "core/components/deckgl/viewports";
+import { useInstitutionECNetFundings } from "core/hooks/queries/useInstitutionECNetFunding";
 import { InstitutionECNetFunding } from "lib/types";
 
 export default function InstitutionECNetFundingMap() {
-  const { institutionECNetFundings, error: institutionECNetFundingsError } =
+  const { data: institutionECNetFundings, error: institutionECNetFundingsError } =
     useInstitutionECNetFundings();
 
   const layer = new ColumnLayer<InstitutionECNetFunding>({

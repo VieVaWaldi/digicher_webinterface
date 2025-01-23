@@ -1,52 +1,12 @@
-import { Pool } from "pg";
+import { getConnection } from "core/database/connection";
 import {
-  InstitutionCollaborators,
   Institution,
+  InstitutionSmePoint,
+  InstitutionCollaborators,
   InstitutionCollaborationWeights,
   InstitutionECNetFunding,
-  InstitutionSmePoint,
-  Project,
-  ProjectCoordinatorPoint,
   InstitutionTopics,
-} from "lib/types";
-
-function getPool() {
-  if (
-    !process.env.POSTGRES_USER ||
-    !process.env.POSTGRES_HOST ||
-    !process.env.POSTGRES_DATABASE ||
-    !process.env.POSTGRES_PORT
-  ) {
-    throw new Error("Missing database configuration");
-  }
-
-  return new Pool({
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DATABASE,
-    password: process.env.POSTGRES_PASSWORD || "",
-    port: parseInt(process.env.POSTGRES_PORT),
-    ssl: {
-      rejectUnauthorized: true,
-    },
-  });
-}
-
-let pool: Pool;
-
-function getConnection() {
-  if (!pool) {
-    pool = getPool();
-  }
-  return pool;
-}
-
-export async function pingNeon(): Promise<boolean> {
-  const pool = getConnection();
-  // Remove double await
-  await pool.query("SELECT 1");
-  return true;
-}
+} from "datamodel/institution/types";
 
 /* SCENARIO | Institutions SME Map */
 
@@ -73,47 +33,6 @@ const SELECT_INSTITUTION = `
 export async function getInstitutionById(id: number): Promise<Institution> {
   const pool = getConnection();
   const result = await pool.query<Institution>(SELECT_INSTITUTION, [id]);
-  return result.rows[0];
-}
-
-/* SCENARIO | Project Coordinators Globe */
-
-const SELECT_PROJECT_COORDINATORS_BY_YEAR = `
-  SELECT 
-      p.id AS project_id,
-      i.id AS coordinator_id,
-      i.address_geolocation AS coordinator_location
-  FROM 
-      Projects p
-      INNER JOIN Projects_Institutions pi ON p.id = pi.project_id
-      INNER JOIN Institutions i ON pi.institution_id = i.id
-  WHERE 
-      pi.type = 'coordinator'
-      AND $1 BETWEEN EXTRACT(YEAR FROM p.start_date) 
-                  AND EXTRACT(YEAR FROM p.end_date)
-      AND i.address_geolocation IS NOT NULL;`;
-
-export async function getProjectCoordinatorsByYear(
-  year: number
-): Promise<ProjectCoordinatorPoint[]> {
-  const pool = getConnection();
-  const date = `${year}`;
-  const result = await pool.query<ProjectCoordinatorPoint>(
-    SELECT_PROJECT_COORDINATORS_BY_YEAR,
-    [date]
-  );
-  return result.rows;
-}
-
-const SELECT_PROJECT_BY_ID = `
-  SELECT *
-  FROM Projects
-  WHERE id = $1;
-`;
-
-export async function getProjectById(id: number): Promise<Project> {
-  const pool = getConnection();
-  const result = await pool.query<Project>(SELECT_PROJECT_BY_ID, [id]);
   return result.rows[0];
 }
 

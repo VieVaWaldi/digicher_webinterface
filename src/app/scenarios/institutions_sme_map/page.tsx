@@ -6,12 +6,12 @@ import React, { useState } from "react";
 import DeckGL from "@deck.gl/react";
 import Map from "react-map-gl";
 import { ScatterplotLayer } from "deck.gl";
-import { INITIAL_VIEW_STATE_EU } from "components/deckgl/viewports";
+import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
 
-import Header from "components/Header";
-import InstitutionCard from "components/ui/cards/InstitutionCard";
-import { useInstitutionSmePoints } from "hooks/queries/useInstitutionSmePoints";
-import { useInstitutionById } from "hooks/queries/useInstitutionById";
+import Header from "core/components/navigation/Header";
+import InstitutionCard from "core/components/shadcn/cards/InstitutionCard";
+import { useInstitutionSmePoints } from "core/hooks/queries/useInstitutionSmePoints";
+import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
 
 export default function InstitutionSmePointsMap() {
   const [popupInfo, setPopupInfo] = useState<{
@@ -19,9 +19,9 @@ export default function InstitutionSmePointsMap() {
     x: number;
     y: number;
   } | null>(null);
-  const { institutionSmePoints, error: institutionSmePointsError } =
+  const { data: institutionSmePoints, error: institutionSmePointsError } =
     useInstitutionSmePoints();
-  const { institution, error: institutionError } = useInstitutionById(
+  const { data: institution, error: institutionError } = useInstitutionById(
     popupInfo?.institutionId ?? -1
   );
 

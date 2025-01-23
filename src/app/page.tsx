@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import DeckGlLinkList from "components/DeckGlLinkList";
-import Header from "components/Header";
+import Header from "core/components/navigation/Header";
 import { useEffect } from "react";
+import DeckGlLinkList from "core/components/DeckGlLinkList";
 
 export default function Home() {
   useEffect(() => {

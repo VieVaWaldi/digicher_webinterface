@@ -1,4 +1,4 @@
-import { getInstitutionCollaborationWeights } from "lib/db";
+import { getInstitutionCollaborationWeights } from "datamodel/institution/queries";
 import { NextResponse } from "next/server";
 
 export async function GET() {

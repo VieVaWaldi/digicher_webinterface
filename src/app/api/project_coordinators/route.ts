@@ -1,4 +1,4 @@
-import { getProjectCoordinatorsByYear } from "lib/db";
+import { getProjectCoordinatorsByYear } from "datamodel/project/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

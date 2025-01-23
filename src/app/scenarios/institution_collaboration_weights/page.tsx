@@ -9,14 +9,11 @@ import Map from "react-map-gl";
 import { ColumnLayer, ArcLayer } from "@deck.gl/layers";
 import { FullscreenWidget } from "@deck.gl/widgets";
 
-import Header from "components/Header";
-import { INITIAL_VIEW_STATE_TILTED_EU } from "components/deckgl/viewports";
-import {
-  InstitutionCollaborationWeights,
-  InstitutionCollaborators,
-} from "lib/types";
-import { useInstitutionCollaborationWeights } from "hooks/queries/useInstitutionCollaborationWeights";
-import { useInstitutionCollaboratorsById } from "hooks/queries/useInstitutionCollaboratorsById";
+import Header from "core/components/navigation/Header";
+import { INITIAL_VIEW_STATE_TILTED_EU } from "core/components/deckgl/viewports";
+import { useInstitutionCollaborationWeights } from "core/hooks/queries/useInstitutionCollaborationWeights";
+import { useInstitutionCollaboratorsById } from "core/hooks/queries/useInstitutionCollaboratorsById";
+import { InstitutionCollaborationWeights } from "datamodel/institution/types";
 
 export default function InstitutionCollaborationWeightsMap() {
   const [selectedInstitutionId, setSelectedInstitutionId] =
@@ -25,11 +22,11 @@ export default function InstitutionCollaborationWeightsMap() {
     useState<number[] | null>(null);
 
   const {
-    institutionCollaborationWeights,
+    data: institutionCollaborationWeights,
     error: institutionCollaborationWeightsError,
   } = useInstitutionCollaborationWeights();
 
-  const { institutionCollaborators, error: collaboratorsError } =
+  const { data: institutionCollaborators, error: collaboratorsError } =
     useInstitutionCollaboratorsById(selectedInstitutionId);
 
   // Get the maximum collaboration weight for scaling

@@ -1,4 +1,4 @@
-import { pingNeon } from "lib/db";
+import { pingNeon } from "core/database/connection";
 
 export async function GET() {
   try {

@@ -1,4 +1,4 @@
-import { getInstitutionById } from "lib/db";
+import { getInstitutionById } from "datamodel/institution/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

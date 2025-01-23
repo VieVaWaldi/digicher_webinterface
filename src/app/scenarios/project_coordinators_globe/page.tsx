@@ -6,13 +6,13 @@ import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react";
 import { _GlobeView as GlobeView } from "@deck.gl/core";
 import { ScatterplotLayer } from "deck.gl";
-import { INITIAL_VIEW_STATE_EU_GLOBE } from "components/deckgl/viewports";
+import { INITIAL_VIEW_STATE_EU_GLOBE } from "core/components/deckgl/viewports";
 
-import Header from "components/Header";
-import TimeSlider from "components/ui/TimeSlider";
-import { useProjectCoordinators } from "hooks/queries/useProjectCoordinators";
-import { useProjectById } from "hooks/queries/useProjectById";
-import ProjectCard from "components/ui/cards/ProjectCard";
+import Header from "core/components/navigation/Header";
+import TimeSlider from "core/components/shadcn/TimeSlider";
+import { useProjectCoordinators } from "core/hooks/queries/useProjectCoordinators";
+import { useProjectById } from "core/hooks/queries/useProjectById";
+import ProjectCard from "core/components/shadcn/cards/ProjectCard";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -23,9 +23,9 @@ export default function ScenarioMap() {
     x: number;
     y: number;
   } | null>(null);
-  const { projectCoordinators, error: coordinatorsError } =
+  const { data: projectCoordinators, error: coordinatorsError } =
     useProjectCoordinators(selectedYear);
-  const { project, error: projectError } = useProjectById(
+  const { data: project, error: projectError } = useProjectById(
     popupInfo?.projectId ?? -1
   );
 

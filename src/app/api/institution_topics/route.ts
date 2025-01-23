@@ -1,4 +1,4 @@
-import { getInstitutionTopics } from "lib/db";
+import { getInstitutionTopics } from "datamodel/institution/queries";
 import { NextResponse } from "next/server";
 
 export async function GET() {

@@ -5,12 +5,12 @@ import React, { useState, useEffect } from "react";
 import DeckGL from "@deck.gl/react";
 import Map from "react-map-gl";
 import { ScatterplotLayer } from "deck.gl";
-import { INITIAL_VIEW_STATE_EU } from "components/deckgl/viewports";
-import Header from "components/Header";
-import { useInstitutionTopics } from "hooks/queries/useInstitutionTopics";
-import FilterMenu, { CATEGORY_COLORS } from "components/ui/FilterMenu";
-import InstitutionCard from "components/ui/cards/InstitutionCard";
-import { useInstitutionById } from "hooks/queries/useInstitutionById";
+import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
+import Header from "core/components/navigation/Header";
+import { useInstitutionTopics } from "core/hooks/queries/useInstitutionTopics";
+import FilterMenu, { CATEGORY_COLORS } from "core/components/shadcn/FilterMenu";
+import InstitutionCard from "core/components/shadcn/cards/InstitutionCard";
+import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
 
 interface InstitutionTopics {
   institution_id: number;
@@ -20,7 +20,7 @@ interface InstitutionTopics {
 }
 
 export default function InstitutionTopicsFilterMap() {
-  const { institutionTopics, error: institutionTopicsError } =
+  const { data: institutionTopics, error: institutionTopicsError } =
     useInstitutionTopics();
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [eurosciVocLookup, setEurosciVocLookup] = useState<
@@ -40,7 +40,7 @@ export default function InstitutionTopicsFilterMap() {
     x: number;
     y: number;
   } | null>(null);
-  const { institution, error: institutionError } = useInstitutionById(
+  const { data: institution, error: institutionError } = useInstitutionById(
     popupInfo?.institutionId ?? -1
   );
 
