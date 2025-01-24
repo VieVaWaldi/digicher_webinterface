@@ -6,11 +6,10 @@ import DeckGL from "@deck.gl/react";
 import Map from "react-map-gl";
 import { ScatterplotLayer } from "deck.gl";
 import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
-import Header from "core/components/navigation/Header";
 import { useInstitutionTopics } from "core/hooks/queries/useInstitutionTopics";
-import FilterMenu, { CATEGORY_COLORS } from "core/components/shadcn/FilterMenu";
-import InstitutionCard from "core/components/shadcn/cards/InstitutionCard";
+import FilterMenu, { CATEGORY_COLORS } from "core/components/menus/FilterMenu";
 import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
+import InstitutionCard from "core/components/cards/InstitutionCard";
 
 interface InstitutionTopics {
   institution_id: number;
@@ -41,7 +40,7 @@ export default function InstitutionTopicsFilterMap() {
     y: number;
   } | null>(null);
   const { data: institution, error: institutionError } = useInstitutionById(
-    popupInfo?.institutionId ?? -1
+    popupInfo?.institutionId ?? -1,
   );
 
   useEffect(() => {
@@ -72,12 +71,12 @@ export default function InstitutionTopicsFilterMap() {
 
   // Helper function to get the main category color for an institution
   const getInstitutionColor = (
-    institution: InstitutionTopics
+    institution: InstitutionTopics,
   ): [number, number, number] => {
     const relevantPaths =
       selectedCodes.length > 0
         ? institution.topic.filter((path) =>
-            selectedCodes.includes(getPrimaryCode(path))
+            selectedCodes.includes(getPrimaryCode(path)),
           )
         : institution.topic;
 
@@ -140,7 +139,7 @@ export default function InstitutionTopicsFilterMap() {
       institution.topic.some((topicPath) => {
         const secondaryCodes = getSecondaryCodes(topicPath);
         return secondaryCodes.some((code) =>
-          selectedSecondaryCodes.includes(code)
+          selectedSecondaryCodes.includes(code),
         );
       });
 
@@ -176,10 +175,9 @@ export default function InstitutionTopicsFilterMap() {
   });
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header showBackButton={true} />
-      <div className="p-4 bg-white">
-        <h1 className="text-2xl font-bold mb-2">
+    <div className="flex h-screen flex-col">
+      <div className="bg-white p-4">
+        <h1 className="mb-2 text-2xl font-bold">
           Scenario | Institutions Topics Filter
         </h1>
         <p className="mb-4">
@@ -200,7 +198,7 @@ export default function InstitutionTopicsFilterMap() {
           visibleInstitutionsCount={filteredInstitutions?.length || 0}
           totalInstitutionsCount={institutionTopics?.length || 0}
         />
-        <div className="flex-1 relative">
+        <div className="relative flex-1">
           <DeckGL
             initialViewState={INITIAL_VIEW_STATE_EU}
             layers={[layer]}

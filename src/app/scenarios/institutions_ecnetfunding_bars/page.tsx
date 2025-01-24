@@ -9,8 +9,6 @@ import Map from "react-map-gl";
 import { ColumnLayer } from "@deck.gl/layers";
 import { FullscreenWidget } from "@deck.gl/widgets";
 
-import Header from "core/components/navigation/Header";
-
 import { INITIAL_VIEW_STATE_TILTED_EU } from "core/components/deckgl/viewports";
 import { useInstitutionECNetFundings } from "core/hooks/queries/useInstitutionECNetFunding";
 import { InstitutionECNetFunding } from "datamodel/institution/types";
@@ -68,7 +66,6 @@ export default function InstitutionECNetFundingMap() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header showBackButton={true} />
       <div className="p-4 bg-white">
         <h1 className="text-2xl font-bold mb-2">
           Scenario | Institutions EC net fungding Bars

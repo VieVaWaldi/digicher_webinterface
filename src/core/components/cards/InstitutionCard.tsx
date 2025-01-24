@@ -1,5 +1,5 @@
 import { Institution } from "datamodel/institution/types";
-import { Card, CardContent } from "../card";
+import { Card, CardContent } from "../shadcn/card";
 
 interface InstitutionCardProps {
   institution: Institution;
@@ -12,14 +12,14 @@ const InstitutionCard = ({
 }: InstitutionCardProps) => {
   return (
     <Card
-      className={`p-0 max-w-xs bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-200 ${className}`}
+      className={`max-w-xs border border-gray-100 bg-white p-0 shadow-lg transition-shadow duration-200 hover:shadow-xl ${className}`}
     >
       <CardContent className="p-4">
-        <h3 className="font-bold text-lg mb-1 text-gray-900">
+        <h3 className="mb-1 text-lg font-bold text-gray-900">
           {institution.name}
         </h3>
         {institution.short_name && (
-          <p className="text-sm text-blue-600 mb-3">{institution.short_name}</p>
+          <p className="mb-3 text-sm text-blue-600">{institution.short_name}</p>
         )}
         <div className="space-y-2 text-sm">
           {(institution.address_street ||
@@ -27,7 +27,7 @@ const InstitutionCard = ({
             institution.address_country) && (
             <div className="flex items-start space-x-2 text-gray-600">
               <svg
-                className="w-4 h-4 mt-0.5"
+                className="mt-0.5 h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -59,7 +59,7 @@ const InstitutionCard = ({
           {institution.sme && (
             <div className="flex items-center space-x-2 text-green-600">
               <svg
-                className="w-4 h-4"
+                className="h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -79,10 +79,10 @@ const InstitutionCard = ({
               href={institution.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors"
+              className="flex items-center space-x-2 text-blue-600 transition-colors hover:text-blue-800"
             >
               <svg
-                className="w-4 h-4"
+                className="h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardTitle,
   CardDescription,
-} from "../card";
+} from "core/components/shadcn/card";
 import { Calendar, Banknote, Award } from "lucide-react";
 import { Project } from "datamodel/project/types";
 
@@ -50,24 +50,24 @@ const ProjectCard = ({ project, className = "" }: ProjectCardProps) => {
 
   return (
     <Card
-      className={`overflow-hidden hover:shadow-lg transition-all duration-300 ${className}`}
+      className={`overflow-hidden transition-all duration-300 hover:shadow-lg ${className}`}
     >
       <CardHeader className="pb-4">
-        <div className="flex justify-between items-start gap-2">
+        <div className="flex items-start justify-between gap-2">
           <div>
             {project.acronym && (
-              <span className="text-sm font-medium text-gray-500 mb-1 block">
+              <span className="mb-1 block text-sm font-medium text-gray-500">
                 {project.acronym}
               </span>
             )}
-            <CardTitle className="text-xl font-bold text-gray-900 line-clamp-2">
+            <CardTitle className="line-clamp-2 text-xl font-bold text-gray-900">
               {project.title}
             </CardTitle>
           </div>
           {project.status && (
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                project.status
+              className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(
+                project.status,
               )}`}
             >
               {project.status}
@@ -85,7 +85,7 @@ const ProjectCard = ({ project, className = "" }: ProjectCardProps) => {
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-400" />
+            <Calendar className="h-4 w-4 text-gray-400" />
             <div>
               <p className="text-gray-500">Duration</p>
               <p className="font-medium">
@@ -96,7 +96,7 @@ const ProjectCard = ({ project, className = "" }: ProjectCardProps) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Banknote className="w-4 h-4 text-gray-400" />
+            <Banknote className="h-4 w-4 text-gray-400" />
             <div>
               <p className="text-gray-500">Budget</p>
               <p className="font-medium">
@@ -108,8 +108,8 @@ const ProjectCard = ({ project, className = "" }: ProjectCardProps) => {
       </CardContent>
 
       {(project.call_title || project.call_identifier) && (
-        <CardFooter className="bg-gray-50 mt-4 text-sm text-gray-600">
-          <Award className="w-4 h-4 mr-2" />
+        <CardFooter className="mt-4 bg-gray-50 text-sm text-gray-600">
+          <Award className="mr-2 h-4 w-4" />
           <span className="line-clamp-1">
             {project.call_title || project.call_identifier}
           </span>

@@ -8,10 +8,9 @@ import Map from "react-map-gl";
 import { ScatterplotLayer } from "deck.gl";
 import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
 
-import Header from "core/components/navigation/Header";
-import InstitutionCard from "core/components/shadcn/cards/InstitutionCard";
 import { useInstitutionSmePoints } from "core/hooks/queries/useInstitutionSmePoints";
 import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
+import InstitutionCard from "core/components/cards/InstitutionCard";
 
 export default function InstitutionSmePointsMap() {
   const [popupInfo, setPopupInfo] = useState<{
@@ -22,7 +21,7 @@ export default function InstitutionSmePointsMap() {
   const { data: institutionSmePoints, error: institutionSmePointsError } =
     useInstitutionSmePoints();
   const { data: institution, error: institutionError } = useInstitutionById(
-    popupInfo?.institutionId ?? -1
+    popupInfo?.institutionId ?? -1,
   );
 
   const layer = new ScatterplotLayer({
@@ -54,10 +53,9 @@ export default function InstitutionSmePointsMap() {
   });
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header showBackButton={true} />
-      <div className="p-4 bg-white">
-        <h1 className="text-2xl font-bold mb-2">
+    <div className="flex h-screen flex-col">
+      <div className="bg-white p-4">
+        <h1 className="mb-2 text-2xl font-bold">
           Scenario | Institutions SME Map
         </h1>
         <p className="mb-4">
@@ -65,7 +63,7 @@ export default function InstitutionSmePointsMap() {
           institution to get more information.
         </p>
       </div>
-      <main className="flex-1 relative">
+      <main className="relative flex-1">
         <DeckGL
           initialViewState={INITIAL_VIEW_STATE_EU}
           layers={[layer]}

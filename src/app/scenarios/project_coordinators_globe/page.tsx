@@ -8,11 +8,10 @@ import { _GlobeView as GlobeView } from "@deck.gl/core";
 import { ScatterplotLayer } from "deck.gl";
 import { INITIAL_VIEW_STATE_EU_GLOBE } from "core/components/deckgl/viewports";
 
-import Header from "core/components/navigation/Header";
-import TimeSlider from "core/components/shadcn/TimeSlider";
+import TimeSlider from "core/components/menus/TimeSlider";
 import { useProjectCoordinators } from "core/hooks/queries/useProjectCoordinators";
 import { useProjectById } from "core/hooks/queries/useProjectById";
-import ProjectCard from "core/components/shadcn/cards/ProjectCard";
+import ProjectCard from "core/components/cards/ProjectCard";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -26,7 +25,7 @@ export default function ScenarioMap() {
   const { data: projectCoordinators, error: coordinatorsError } =
     useProjectCoordinators(selectedYear);
   const { data: project, error: projectError } = useProjectById(
-    popupInfo?.projectId ?? -1
+    popupInfo?.projectId ?? -1,
   );
 
   const layer = new ScatterplotLayer({
@@ -62,10 +61,9 @@ export default function ScenarioMap() {
   });
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header showBackButton={true} />
-      <div className="p-4 bg-white">
-        <h1 className="text-2xl font-bold mb-2">
+    <div className="flex h-screen flex-col">
+      <div className="bg-white p-4">
+        <h1 className="mb-2 text-2xl font-bold">
           Scenario | Projects Coordinator Globe
         </h1>
         <p className="mb-4">
@@ -74,7 +72,7 @@ export default function ScenarioMap() {
           ISS should be, hope i ll fix that soon.
         </p>
       </div>
-      <main className="flex-1 relative">
+      <main className="relative flex-1">
         <DeckGL
           views={new GlobeView()}
           initialViewState={INITIAL_VIEW_STATE_EU_GLOBE}
