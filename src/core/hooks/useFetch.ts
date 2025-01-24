@@ -56,6 +56,8 @@ export function useFetch<T>(
     }
 
     fetchData();
+    // Using [route, options.enabled, options.params] directly leads to infinite reloading
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route, JSON.stringify(options)]);
 
   return state;

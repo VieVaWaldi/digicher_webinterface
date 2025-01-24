@@ -7,7 +7,7 @@ import DeckGlLinkList from "core/components/content/DeckGlLinkList";
 
 export default function Home() {
   useEffect(() => {
-    fetch("/api/ping");
+    fetch("/api/wakeup_neon");
   }, []);
 
   return (

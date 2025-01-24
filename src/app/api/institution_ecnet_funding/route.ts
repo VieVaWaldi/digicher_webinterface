@@ -1,15 +1,8 @@
 import { getInstitutionECNetFunding } from "datamodel/institution/queries";
-import { NextResponse } from "next/server";
+import { createApiHandler } from "core/api/response";
 
-export async function GET() {
-  try {
-    const institutions = await getInstitutionECNetFunding();
-    return NextResponse.json(institutions);
-  } catch (error) {
-    console.error("Error fetching institutions:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch institutions" },
-      { status: 500 }
-    );
-  }
-}
+export const GET = createApiHandler({
+  handler: async () => {
+    return await getInstitutionECNetFunding();
+  },
+});

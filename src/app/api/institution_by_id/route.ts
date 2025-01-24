@@ -1,25 +1,9 @@
 import { getInstitutionById } from "datamodel/institution/queries";
-import { NextRequest, NextResponse } from "next/server";
+import { createApiHandler } from "core/api/response";
 
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const institution_id = searchParams.get("institution_id");
-
-    if (!institution_id || isNaN(Number(institution_id))) {
-      return NextResponse.json(
-        { error: "Invalid or missing id parameter" },
-        { status: 400 }
-      );
-    }
-
-    const institutions = await getInstitutionById(parseInt(institution_id));
-    return NextResponse.json(institutions);
-  } catch (error) {
-    console.error("Error fetching institutions:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch institutions" },
-      { status: 500 }
-    );
-  }
-}
+export const GET = createApiHandler({
+  requireParams: ["institution_id"],
+  handler: async (params) => {
+    return await getInstitutionById(parseInt(params.institution_id));
+  },
+});
