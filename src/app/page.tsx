@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Header from "core/components/navigation/Header";
 import { useEffect } from "react";
-import DeckGlLinkList from "core/components/DeckGlLinkList";
+import DeckGlLinkList from "core/components/content/DeckGlLinkList";
 
 export default function Home() {
   useEffect(() => {

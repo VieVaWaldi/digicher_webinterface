@@ -13,11 +13,13 @@ import Header from "core/components/navigation/Header";
 
 import { INITIAL_VIEW_STATE_TILTED_EU } from "core/components/deckgl/viewports";
 import { useInstitutionECNetFundings } from "core/hooks/queries/useInstitutionECNetFunding";
-import { InstitutionECNetFunding } from "lib/types";
+import { InstitutionECNetFunding } from "datamodel/institution/types";
 
 export default function InstitutionECNetFundingMap() {
-  const { data: institutionECNetFundings, error: institutionECNetFundingsError } =
-    useInstitutionECNetFundings();
+  const {
+    data: institutionECNetFundings,
+    error: institutionECNetFundingsError,
+  } = useInstitutionECNetFundings();
 
   const layer = new ColumnLayer<InstitutionECNetFunding>({
     id: "institutions-ecnet-funding",

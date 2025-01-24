@@ -1,5 +1,5 @@
+import { Institution } from "datamodel/institution/types";
 import { Card, CardContent } from "../card";
-import { Institution } from "lib/types";
 
 interface InstitutionCardProps {
   institution: Institution;

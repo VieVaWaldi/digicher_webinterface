@@ -7,8 +7,8 @@ import {
   CardTitle,
   CardDescription,
 } from "../card";
-import { Project } from "lib/types";
-import { Calendar, Target, Banknote, Award } from "lucide-react";
+import { Calendar, Banknote, Award } from "lucide-react";
+import { Project } from "datamodel/project/types";
 
 interface ProjectCardProps {
   project: Project;
