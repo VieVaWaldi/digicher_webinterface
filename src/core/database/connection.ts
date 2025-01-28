@@ -16,10 +16,11 @@ function getPool() {
     database: process.env.POSTGRES_DATABASE,
     password: process.env.POSTGRES_PASSWORD || "",
     port: parseInt(process.env.POSTGRES_PORT),
+
     // ToDo IF env.PROD use ssl
-    ssl: {
-      rejectUnauthorized: true,
-    },
+    // ssl: {
+    //   rejectUnauthorized: true,
+    // },
   });
 }
 

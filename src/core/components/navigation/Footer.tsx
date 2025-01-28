@@ -36,6 +36,7 @@ export function Footer() {
           <div className="flex flex-col gap-4">
             <h3 className="text-xl font-semibold text-orange-400">Contact</h3>
             <p className="text-slate-300">Led by J.Prof. Dr. Sander Münster</p>
+            <p className="text-slate-300">Developed by Walter Ehrenberger</p>
             <div className="flex items-center gap-4">
               <Link
                 href="https://github.com/vievawaldi"

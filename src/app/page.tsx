@@ -10,7 +10,7 @@ import { MapPin, Building2, Coins, UsersRound } from "lucide-react";
 const scenarios = [
   {
     title: "Institutions",
-    href: "/scenarios/institutions_sme_map",
+    href: "/scenarios/institutions",
     icon: Building2,
     description: "Explore cultural heritage institutions across Europe",
   },
@@ -69,9 +69,7 @@ export default function Home() {
                       className="text-orange-500"
                     />
                     <div className="text-center">
-                      <Lead className="text-foreground">
-                        {scenario.title}
-                      </Lead>
+                      <Lead className="text-foreground">{scenario.title}</Lead>
                       <p className="text-sm text-muted-foreground">
                         {scenario.description}
                       </p>

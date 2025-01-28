@@ -12,17 +12,22 @@ import { useInstitutionSmePoints } from "core/hooks/queries/useInstitutionSmePoi
 import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
 import InstitutionCard from "core/components/cards/InstitutionCard";
 
-export default function InstitutionSmePointsMap() {
+export default function Institution() {
   const [popupInfo, setPopupInfo] = useState<{
     institutionId: number;
     x: number;
     y: number;
   } | null>(null);
-  const { data: institutionSmePoints, error: institutionSmePointsError } =
-    useInstitutionSmePoints();
-  const { data: institution, error: institutionError } = useInstitutionById(
-    popupInfo?.institutionId ?? -1,
-  );
+  const {
+    data: institutionSmePoints,
+    error: errorSme,
+    loading: loadingSme,
+  } = useInstitutionSmePoints();
+  const {
+    data: institution,
+    error: error,
+    loading: loading,
+  } = useInstitutionById(popupInfo?.institutionId ?? -1);
 
   const layer = new ScatterplotLayer({
     id: "institutions-sme-points",

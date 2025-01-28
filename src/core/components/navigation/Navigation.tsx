@@ -24,11 +24,12 @@ type PathMap = {
   };
 };
 
+// ToDo Use the json[] from page and put that somewhere else
 const pathToTitle: PathMap = {
-  "/scenarios/institutions_sme_map": {
+  "/scenarios/institutions": {
     title: "Institutions",
     icon: Building2,
-    path: "/scenarios/institutions_sme_map",
+    path: "/scenarios/institutions",
   },
   "/scenarios/project_coordinators_globe": {
     title: "Projects",
