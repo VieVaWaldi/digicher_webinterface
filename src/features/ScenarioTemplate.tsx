@@ -3,9 +3,9 @@ import React, { ReactNode, useEffect, useState } from "react";
 import DeckGL from "@deck.gl/react";
 import Map, { ViewState } from "react-map-gl";
 import { Layer } from "@deck.gl/core";
-import { Loader2 } from "lucide-react";
 import { H2, Lead, P } from "core/components/shadcn/typography";
 import { Card } from "core/components/shadcn/card";
+import { Spinner } from "core/components/shadcn/spinner";
 
 interface ScenarioTemplateProps {
   title: string;
@@ -36,10 +36,15 @@ export default function ScenarioTemplate({
 }: ScenarioTemplateProps) {
   const [isInfoOpen, setInfoOpen] = useState<boolean>(false);
   useEffect(() => {
-    // window.dispatchEvent(new Event("resize"));
+    const timer = setTimeout(() => {
+      // This replaces the map elements (dots etc) when the map size changes
+      window.dispatchEvent(new Event("resize"));
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [isInfoOpen]);
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full flex-col">
       {/* Header */}
       <div className="mb-4 mt-4 flex flex-col gap-8 p-4">
         <div className="mx-auto max-w-4xl text-center">
@@ -52,7 +57,7 @@ export default function ScenarioTemplate({
             {error ? (
               <Lead>{error}</Lead>
             ) : isLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <Spinner />
             ) : (
               <Lead>{statsCard}</Lead>
             )}
@@ -63,9 +68,9 @@ export default function ScenarioTemplate({
       </div>
 
       {/* DeckGL & InfoArea */}
-      <div className="flex h-screen flex-col md:flex-row">
+      <div className="flex h-[90vh] flex-col md:flex-row">
         <div
-          className={`duration-600 overflow-hidden transition-all ease-in ${isInfoOpen ? "w-full md:w-64" : "h-0 w-0 md:h-64"}`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${isInfoOpen ? "w-full md:w-64" : "h-0 w-0"} `}
         >
           {detailsCard}
         </div>
@@ -74,7 +79,6 @@ export default function ScenarioTemplate({
             initialViewState={initialViewState}
             layers={layers}
             controller={true}
-            // style={style}
             onClick={(info) => {
               if (!info.object) {
                 setInfoOpen(false);

@@ -4,7 +4,7 @@ import { ScatterplotLayer } from "deck.gl";
 import { useInstitutionSmePoints } from "core/hooks/queries/useInstitutionSmePoints";
 import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
 import InstitutionCard from "core/components/cards/InstitutionCard";
-import { Institution, InstitutionSmePoint } from "datamodel/institution/types";
+import { InstitutionSmePoint } from "datamodel/institution/types";
 import ScenarioTemplate from "features/ScenarioTemplate";
 import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
 
