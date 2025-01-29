@@ -33,7 +33,12 @@ export function H2({ children, className }: TypographyProps) {
 
 export function P({ children, className }: TypographyProps) {
   return (
-    <p className={cn("leading-7 [&:not(:first-child)]:mt-6", className)}>
+    <p
+      className={cn(
+        "text-justify leading-7 [&:not(:first-child)]:mt-6 px-4 md:px-12",
+        className,
+      )}
+    >
       {children}
     </p>
   );

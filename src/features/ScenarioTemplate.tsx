@@ -1,4 +1,5 @@
-import React, { ReactNode } from "react";
+"use client";
+import React, { ReactNode, useEffect, useState } from "react";
 import DeckGL from "@deck.gl/react";
 import Map, { ViewState } from "react-map-gl";
 import { Layer } from "@deck.gl/core";
@@ -8,27 +9,21 @@ import { Card } from "core/components/shadcn/card";
 
 interface ScenarioTemplateProps {
   title: string;
-  description: string;
+  description?: string;
   statsCard?: ReactNode;
   filters?: ReactNode;
   mapView?: ReactNode;
   detailsCard?: ReactNode;
-  initialViewState: ViewState;
+  initialViewState: ViewState; // ViewState
   layers: Layer[];
   isLoading?: boolean;
   error?: string | null;
-  onMapClick?: (info: {
-    object: unknown;
-    x: number;
-    y: number;
-    picked: boolean;
-  }) => void;
   mapStyle?: string;
 }
 
 export default function ScenarioTemplate({
   title,
-  description,
+  description = "The common snapping turtlse (Chelydra serpentina) is a species of large freshwater turtle in the family Chelydridae. Its natural range extends from southeastern Canada, southwest to the edge of the Rocky Mountains, as far east as Nova Scotia and Florida. The present-day Chelydra serpentina population in the Middle Rio Grande suggests that the common snapping turtle has been present in this drainage since at least the seventeenth century and is likely native.",
   statsCard,
   filters,
   mapView,
@@ -37,14 +32,15 @@ export default function ScenarioTemplate({
   layers,
   isLoading = false,
   error = null,
-  onMapClick,
   mapStyle = "mapbox://styles/mapbox/light-v11",
 }: ScenarioTemplateProps) {
-  const style = {
-    // margin: "100px",
-  };
+  const [isInfoOpen, setInfoOpen] = useState<boolean>(false);
+  useEffect(() => {
+    // window.dispatchEvent(new Event("resize"));
+  }, [isInfoOpen]);
   return (
     <div className="flex h-screen flex-col">
+      {/* Header */}
       <div className="mb-4 mt-4 flex flex-col gap-8 p-4">
         <div className="mx-auto max-w-4xl text-center">
           <H2>{title}</H2>
@@ -66,15 +62,26 @@ export default function ScenarioTemplate({
         {filters && <Card className="mx-auto max-w-2xl p-6">{filters}</Card>}
       </div>
 
-      <main className="relative flex-1 p-4">
-        <h1>hi</h1>
-        <div>
+      {/* DeckGL & InfoArea */}
+      <div className="flex h-screen flex-col md:flex-row">
+        <div
+          className={`duration-600 overflow-hidden transition-all ease-in ${isInfoOpen ? "w-full md:w-64" : "h-0 w-0 md:h-64"}`}
+        >
+          {detailsCard}
+        </div>
+        <div className="relative flex-1 overflow-hidden rounded-lg">
           <DeckGL
             initialViewState={initialViewState}
             layers={layers}
             controller={true}
-            style={style}
-            // onClick={onMapClick}
+            // style={style}
+            onClick={(info) => {
+              if (!info.object) {
+                setInfoOpen(false);
+              } else {
+                setInfoOpen(true);
+              }
+            }}
           >
             <Map
               mapStyle={mapStyle}
@@ -84,7 +91,7 @@ export default function ScenarioTemplate({
             {mapView}
           </DeckGL>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

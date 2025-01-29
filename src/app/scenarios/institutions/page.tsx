@@ -10,7 +10,7 @@ import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
 
 export default function InstitutionScenario() {
   const [selectedInstitution, setSelectedInstitution] =
-    useState<Institution | null>(null);
+    useState<InstitutionSmePoint | null>(null);
   const { data: points, loading, error } = useInstitutionSmePoints();
   const { data: institution } = useInstitutionById(
     selectedInstitution?.id ?? -1,
@@ -29,16 +29,17 @@ export default function InstitutionScenario() {
     lineWidthMinPixels: 1,
     getPosition: (d) => [d.address_geolocation[1], d.address_geolocation[0]],
     getFillColor: (d) => (d.sme ? [20, 140, 0] : [255, 140, 0]),
-    // onClick: (info) => {
-    //   console.log("1", info);
-    // },
+    onClick: (info) => {
+      if (info.object) {
+        setSelectedInstitution(info.object as InstitutionSmePoint);
+      }
+    },
     getRadius: 100,
   });
 
   return (
     <ScenarioTemplate
       title="Institution Map"
-      description="Crocodiles (family Crocodylidae) or true crocodiles are large, semiaquatic reptiles..."
       isLoading={loading}
       error={error}
       statsCard={
@@ -47,9 +48,6 @@ export default function InstitutionScenario() {
       initialViewState={INITIAL_VIEW_STATE_EU}
       layers={[layer]}
       detailsCard={institution && <InstitutionCard institution={institution} />}
-      // onMapClick={(info) => {
-      //   setSelectedInstitution(info.object as Institution);
-      // }}
     />
   );
 }
