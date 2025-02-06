@@ -19,7 +19,7 @@ const SELECT_INSTITUTION_SME_POINTS = `
 export async function getInstitutionPoints(): Promise<InstitutionSmePoint[]> {
   const pool = getConnection();
   const result = await pool.query<InstitutionSmePoint>(
-    SELECT_INSTITUTION_SME_POINTS
+    SELECT_INSTITUTION_SME_POINTS,
   );
   return result.rows;
 }
@@ -48,7 +48,7 @@ export async function getInstitutionECNetFunding(): Promise<
 > {
   const pool = getConnection();
   const result = await pool.query<InstitutionECNetFunding>(
-    SELECT_INSTITUTION_ECNET_FUNDING
+    SELECT_INSTITUTION_ECNET_FUNDING,
   );
   return result.rows;
 }
@@ -64,7 +64,7 @@ export async function getInstitutionCollaborationWeights(): Promise<
 > {
   const pool = getConnection();
   const result = await pool.query<InstitutionCollaborationWeights>(
-    SELECT_INSTITUTION_COLLABORATION_WEIGHTS
+    SELECT_INSTITUTION_COLLABORATION_WEIGHTS,
   );
   return result.rows;
 }
@@ -74,12 +74,12 @@ const SELECT_INSTITUTION_COLLABORATORS = `
 `;
 
 export async function getInstititutionCollaborators(
-  id: number
+  id: number,
 ): Promise<InstitutionCollaborators[]> {
   const pool = getConnection();
   const result = await pool.query<InstitutionCollaborators>(
     SELECT_INSTITUTION_COLLABORATORS,
-    [id]
+    [id],
   );
   return result.rows;
 }

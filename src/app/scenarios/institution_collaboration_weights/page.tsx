@@ -141,6 +141,7 @@ export default function InstitutionCollaborationWeightsMap() {
       </div>
       <main className="flex-1 relative">
         <DeckGL
+        key="a"
           initialViewState={INITIAL_VIEW_STATE_TILTED_EU}
           layers={[columnLayer, arcLayer]}
           controller={true}

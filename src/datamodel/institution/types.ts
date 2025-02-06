@@ -8,6 +8,7 @@ export interface Institution {
   address_geolocation: number[] | null;
   url: string | null;
   short_name: string | null;
+  // vat_number;
 }
 
 export interface InstitutionSmePoint {

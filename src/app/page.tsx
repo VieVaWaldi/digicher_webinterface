@@ -1,14 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Card } from "core/components/shadcn/card";
 import ResourcesList from "core/components/content/ResourcesList";
 import { H1, Lead, P } from "core/components/shadcn/typography";
 import { MapPin, Building2, Coins, UsersRound } from "lucide-react";
-import DeckGL from "deck.gl";
-import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
-import Map, { ViewState } from "react-map-gl";
 
 const scenarios = [
   {
@@ -19,7 +16,7 @@ const scenarios = [
   },
   {
     title: "Projects",
-    href: "/scenarios/project_coordinators_globe",
+    href: "/scenarios/projects",
     icon: MapPin,
     description:
       "Discover project locations and their geographical distribution",
@@ -39,7 +36,6 @@ const scenarios = [
 ];
 
 export default function Home() {
-  const [isOpen, setOpen] = useState(false);
   useEffect(() => {
     fetch("/api/wakeup_neon");
   }, []);

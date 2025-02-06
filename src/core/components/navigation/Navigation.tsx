@@ -1,5 +1,4 @@
 "use client";
-
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,6 +14,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { Separator } from "../shadcn/separator";
+import SettingsMenu from "../menus/SettingsMenu";
 
 type PathMap = {
   [key: string]: {
@@ -31,7 +31,7 @@ const pathToTitle: PathMap = {
     icon: Building2,
     path: "/scenarios/institutions",
   },
-  "/scenarios/project_coordinators_globe": {
+  "/scenarios/projects": {
     title: "Projects",
     icon: MapPin,
     path: "/scenarios/project_coordinators_globe",
@@ -116,7 +116,7 @@ export function Navigation() {
           </Button>
           <SheetContent>
             <SheetTitle>Settings</SheetTitle>
-            {/* Settings content */}
+            <SettingsMenu />
           </SheetContent>
         </Sheet>
       </div>

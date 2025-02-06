@@ -1,36 +1,37 @@
 "use client";
-
+import { COORDINATE_SYSTEM, _GlobeView as GlobeView } from "@deck.gl/core";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@deck.gl/widgets/stylesheet.css";
 
-import React from "react";
+import React, { useMemo } from "react";
 import DeckGL from "@deck.gl/react";
-import Map from "react-map-gl";
-import { ColumnLayer } from "@deck.gl/layers";
+import { BitmapLayer, ColumnLayer } from "@deck.gl/layers";
 import { FullscreenWidget } from "@deck.gl/widgets";
 
 import { INITIAL_VIEW_STATE_TILTED_EU } from "core/components/deckgl/viewports";
 import { useInstitutionECNetFundings } from "core/hooks/queries/useInstitutionECNetFunding";
 import { InstitutionECNetFunding } from "datamodel/institution/types";
+import { TileLayer } from "deck.gl";
 
 export default function InstitutionECNetFundingMap() {
   const {
     data: institutionECNetFundings,
     error: institutionECNetFundingsError,
   } = useInstitutionECNetFundings();
+  const id: string = "institutions-ecnet-funding";
 
   const layer = new ColumnLayer<InstitutionECNetFunding>({
-    id: "institutions-ecnet-funding",
+    id: id,
     data: institutionECNetFundings,
-    diskResolution: 6,
-    radius: 1000,
+    diskResolution: 60,
+    radius: 10000,
 
     getPosition: (d) => [d.address_geolocation[1], d.address_geolocation[0]],
 
     // Height of each column based on funding
     getElevation: (d) => {
       const MAX_FUNDING = 205538467.02; // Your known maximum
-      const MAX_HEIGHT = 300000; // Maximum height in meters you want for the tallest bar
+      const MAX_HEIGHT = 3000000; // Maximum height in meters you want for the tallest bar
 
       const funding = d.total_eu_funding
         ? parseFloat(d.total_eu_funding as string)
@@ -64,10 +65,41 @@ export default function InstitutionECNetFundingMap() {
     },
   });
 
+  const backgroundLayers = useMemo(
+    () => [
+      new TileLayer({
+        // data: "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        data:
+          "https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=" +
+          process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+        minZoom: 0,
+        maxZoom: 19,
+        tileSize: 256,
+
+        renderSubLayers: (props) => {
+          const { boundingBox } = props.tile;
+
+          return new BitmapLayer(props, {
+            data: undefined,
+            image: props.data,
+            _imageCoordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+            bounds: [
+              boundingBox[0][0],
+              boundingBox[0][1],
+              boundingBox[1][0],
+              boundingBox[1][1],
+            ],
+          });
+        },
+      }),
+    ],
+    [],
+  );
+
   return (
-    <div className="flex flex-col h-screen">
-      <div className="p-4 bg-white">
-        <h1 className="text-2xl font-bold mb-2">
+    <div className="flex h-screen flex-col">
+      <div className="bg-white p-4">
+        <h1 className="mb-2 text-2xl font-bold">
           Scenario | Institutions EC net fungding Bars
         </h1>
         <p className="mb-4">
@@ -75,10 +107,12 @@ export default function InstitutionECNetFundingMap() {
           0.
         </p>
       </div>
-      <main className="flex-1 relative">
+      <main className="relative flex-1">
         <DeckGL
+          key={id}
           initialViewState={INITIAL_VIEW_STATE_TILTED_EU}
-          layers={[layer]}
+          layers={[backgroundLayers, layer]}
+          views={new GlobeView()}
           controller={true}
           getTooltip={({ object }) =>
             object && {
@@ -100,11 +134,12 @@ export default function InstitutionECNetFundingMap() {
             }),
           ]}
         >
-          <Map
+          {/* <Map
             mapStyle="mapbox://styles/mapbox/light-v11" // mapbox://styles/mapbox/dark-v11
             mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
-            projection={{ name: "mercator" }}
-          />
+            projection={{ name: "globe" }}
+            fog={{}}
+          /> */}
         </DeckGL>
       </main>
     </div>

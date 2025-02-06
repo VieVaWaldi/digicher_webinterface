@@ -1,12 +1,3 @@
-// export const INITIAL_VIEW_STATE_2D = {
-//   longitude: 10,
-//   latitude: 52,
-//   zoom: 4,
-//   pitch: 0,
-//   bearing: 0,
-//   projection: "mercator", // Explicitly setting 2D projection
-// };
-
 import { ViewState } from "react-map-gl";
 
 export const INITIAL_VIEW_STATE_EU: ViewState = {
@@ -21,11 +12,6 @@ export const INITIAL_VIEW_STATE_EU: ViewState = {
     left: 0,
     right: 0,
   },
-  // controller: {
-  //   touchPitch: true, // Enables two-finger pitch/tilt
-  //   touchRotate: true, // Enables two-finger rotation
-  // },
-  // projection: "mercator",
 };
 
 export const INITIAL_VIEW_STATE_TILTED_EU = {

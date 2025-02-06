@@ -1,20 +1,19 @@
 "use client";
 import React, { ReactNode, useEffect, useState } from "react";
-import DeckGL from "@deck.gl/react";
-import Map, { ViewState } from "react-map-gl";
-import { Layer } from "@deck.gl/core";
+import { Layer, PickingInfo } from "@deck.gl/core";
 import { H2, Lead, P } from "core/components/shadcn/typography";
 import { Card } from "core/components/shadcn/card";
 import { Spinner } from "core/components/shadcn/spinner";
 
+import UnifiedDeckMap from "core/components/deckgl/UnifiedDeckMap";
+
 interface ScenarioTemplateProps {
+  id: string;
   title: string;
   description?: string;
   statsCard?: ReactNode;
   filters?: ReactNode;
-  mapView?: ReactNode;
   detailsCard?: ReactNode;
-  initialViewState: ViewState; // ViewState
   layers: Layer[];
   isLoading?: boolean;
   error?: string | null;
@@ -22,19 +21,18 @@ interface ScenarioTemplateProps {
 }
 
 export default function ScenarioTemplate({
+  id,
   title,
   description = "The common snapping turtlse (Chelydra serpentina) is a species of large freshwater turtle in the family Chelydridae. Its natural range extends from southeastern Canada, southwest to the edge of the Rocky Mountains, as far east as Nova Scotia and Florida. The present-day Chelydra serpentina population in the Middle Rio Grande suggests that the common snapping turtle has been present in this drainage since at least the seventeenth century and is likely native.",
   statsCard,
   filters,
-  mapView,
   detailsCard,
-  initialViewState,
   layers,
   isLoading = false,
   error = null,
-  mapStyle = "mapbox://styles/mapbox/light-v11",
 }: ScenarioTemplateProps) {
   const [isInfoOpen, setInfoOpen] = useState<boolean>(false);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       // This replaces the map elements (dots etc) when the map size changes
@@ -43,6 +41,15 @@ export default function ScenarioTemplate({
 
     return () => clearTimeout(timer);
   }, [isInfoOpen]);
+
+  const onMapClick = (info: PickingInfo) => {
+    if (!info.object) {
+      setInfoOpen(false);
+    } else {
+      setInfoOpen(true);
+    }
+  };
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -75,25 +82,7 @@ export default function ScenarioTemplate({
           {detailsCard}
         </div>
         <div className="relative flex-1 overflow-hidden rounded-lg">
-          <DeckGL
-            initialViewState={initialViewState}
-            layers={layers}
-            controller={true}
-            onClick={(info) => {
-              if (!info.object) {
-                setInfoOpen(false);
-              } else {
-                setInfoOpen(true);
-              }
-            }}
-          >
-            <Map
-              mapStyle={mapStyle}
-              mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
-              projection={{ name: "mercator" }}
-            />
-            {mapView}
-          </DeckGL>
+          <UnifiedDeckMap id={id} layers={layers} onMapClick={onMapClick} />
         </div>
       </div>
     </div>

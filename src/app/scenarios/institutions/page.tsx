@@ -6,22 +6,21 @@ import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
 import InstitutionCard from "core/components/cards/InstitutionCard";
 import { InstitutionSmePoint } from "datamodel/institution/types";
 import ScenarioTemplate from "features/ScenarioTemplate";
-import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
 
 export default function InstitutionScenario() {
   const [selectedInstitution, setSelectedInstitution] =
     useState<InstitutionSmePoint | null>(null);
-  const { data: points, loading, error } = useInstitutionSmePoints();
+  const { data: institutions, loading, error } = useInstitutionSmePoints();
   const { data: institution } = useInstitutionById(
     selectedInstitution?.id ?? -1,
   ); // loading, error
+  const id: string = "institutions";
 
   const layer = new ScatterplotLayer({
-    id: "institutions-points",
-    data: points,
+    id: `scatter-${id}`,
+    data: institutions,
     pickable: true,
     opacity: 0.8,
-    stroked: true,
     filled: true,
     radiusScale: 6,
     radiusMinPixels: 3,
@@ -39,13 +38,15 @@ export default function InstitutionScenario() {
 
   return (
     <ScenarioTemplate
+      id={id}
       title="Institution Map"
       isLoading={loading}
       error={error}
       statsCard={
-        <span>Total Institutions: {points?.length.toLocaleString() || 0}</span>
+        <span>
+          Total Institutions: {institutions?.length.toLocaleString() || 0}
+        </span>
       }
-      initialViewState={INITIAL_VIEW_STATE_EU}
       layers={[layer]}
       detailsCard={institution && <InstitutionCard institution={institution} />}
     />
