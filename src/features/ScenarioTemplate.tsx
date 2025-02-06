@@ -81,7 +81,7 @@ export default function ScenarioTemplate({
         >
           {detailsCard}
         </div>
-        <div className="relative flex-1 overflow-hidden rounded-lg">
+        <div className="relative flex-1 overflow-hidden rounded-lg border border-gray-200">
           <UnifiedDeckMap id={id} layers={layers} onMapClick={onMapClick} />
         </div>
       </div>

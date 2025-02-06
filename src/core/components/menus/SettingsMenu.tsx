@@ -3,6 +3,8 @@ import { Globe2, Map } from "lucide-react";
 import { MapBoxStyle, useSettings } from "core/context/SettingsContext";
 import { Card } from "../shadcn/card";
 import { Button } from "../shadcn/button";
+import Image from "next/image";
+import { H3 } from "../shadcn/typography";
 
 const ViewToggle = ({
   isGlobe,
@@ -57,17 +59,17 @@ const SettingsMenu = () => {
     {
       value: "mapbox/standard",
       label: "Standard",
-      imageUrl: "/api/placeholder/120/80",
+      imageUrl: "/images/settings/mapbox-standard.png",
     },
     {
       value: "mapbox/light-v11",
       label: "Light",
-      imageUrl: "/api/placeholder/120/80",
+      imageUrl: "/images/settings/mapbox-light.png",
     },
     {
       value: "mapbox/dark-v11",
       label: "Dark",
-      imageUrl: "/api/placeholder/120/80",
+      imageUrl: "/images/settings/mapbox-dark.png",
     },
   ];
 
@@ -76,12 +78,12 @@ const SettingsMenu = () => {
       <div className="space-y-8">
         {/* Map Style Selection */}
         <div className="flex flex-col space-y-4">
-          <h3 className="text-lg font-semibold">Map Style</h3>
-          <div className="flex flex-col gap-4">
+          <H3 className="text-center">Map Style</H3>
+          <div className="flex flex-col gap-4 items-center">
             {mapStyles.map((style) => (
               <Card
                 key={style.value}
-                className={`relative cursor-pointer overflow-hidden ${
+                className={`relative cursor-pointer overflow-hidden w-64 ${
                   mapBoxStyle === style.value
                     ? "ring-2 ring-primary"
                     : "hover:ring-2 hover:ring-muted"
@@ -89,9 +91,11 @@ const SettingsMenu = () => {
                 onClick={() => setMapBoxStyle(style.value)}
               >
                 <div className="relative h-20">
-                  <img
+                  <Image
                     src={style.imageUrl}
                     alt={style.label}
+                    height={240}
+                    width={100}
                     className="h-full w-full object-cover"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">

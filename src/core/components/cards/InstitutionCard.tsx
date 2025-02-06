@@ -12,7 +12,7 @@ const InstitutionCard = ({
 }: InstitutionCardProps) => {
   return (
     <Card
-      className={`h-full w-full border border-gray-100 bg-white p-0 transition-all duration-1000 hover:shadow-xl ${className}`}
+      className={`h-full w-full border border-gray-200 bg-white p-0 transition-all duration-1000 hover:shadow-xl ${className}`}
     >
       <CardContent className="p-4">
         <h3 className="mb-1 text-lg font-bold text-gray-900">
