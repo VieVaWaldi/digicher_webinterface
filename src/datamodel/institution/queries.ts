@@ -20,6 +20,19 @@ export async function getInstitutionById(id: number): Promise<Institution> {
   return result.rows[0];
 }
 
+const SELECT_INSTITUTIONS_TOPICS = `
+  SELECT *
+  FROM mat_institutions_topics;`;
+
+export async function getInstitutionsTopics(): Promise<InstitutionTopics[]> {
+  const pool = getConnection();
+  const result = await pool.query<InstitutionTopics>(
+    SELECT_INSTITUTIONS_TOPICS,
+  );
+  console.log(result.rows[0]);
+  return result.rows;
+}
+
 /** Scenario Institutions */
 
 const SELECT_INSTITUTION_POINTS = `
@@ -98,8 +111,8 @@ const SELECT_INSTITUTION_TOPICS = `
   WHERE address_geolocation IS NOT NULL;
 `;
 
-export async function getInstitutionTopics(): Promise<InstitutionTopics[]> {
-  const pool = getConnection();
-  const result = await pool.query<InstitutionTopics>(SELECT_INSTITUTION_TOPICS);
-  return result.rows;
-}
+// export async function getInstitutionTopics(): Promise<InstitutionTopics[]> {
+//   const pool = getConnection();
+//   const result = await pool.query<InstitutionTopics>(SELECT_INSTITUTION_TOPICS);
+//   return result.rows;
+// }

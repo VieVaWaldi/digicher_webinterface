@@ -9,8 +9,8 @@ import { ScatterplotLayer } from "deck.gl";
 import { INITIAL_VIEW_STATE_EU_GLOBE } from "core/components/deckgl/viewports";
 
 import TimeSlider from "core/components/menus/TimeSlider";
-import { useProjectCoordinators } from "core/hooks/queries/useProjectCoordinators";
-import { useProjectById } from "core/hooks/queries/useProjectById";
+import { useProjectCoordinators } from "core/hooks/queries/project/useProjectCoordinators";
+import { useProjectById } from "core/hooks/queries/project/useProjectById";
 import ProjectCard from "core/components/cards/ProjectCard";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;

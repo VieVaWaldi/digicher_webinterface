@@ -6,9 +6,9 @@ import DeckGL from "@deck.gl/react";
 import Map from "react-map-gl";
 import { ScatterplotLayer } from "deck.gl";
 import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
-import { useInstitutionTopics } from "core/hooks/queries/useInstitutionTopics";
+import { useInstitutionTopics } from "core/hooks/queries/institution/useInstitutionTopics";
 import FilterMenu, { CATEGORY_COLORS } from "core/components/menus/FilterMenu";
-import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
+import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import InstitutionCard from "core/components/cards/InstitutionCard";
 
 interface InstitutionTopics {

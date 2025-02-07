@@ -9,7 +9,7 @@ import { BitmapLayer, ColumnLayer } from "@deck.gl/layers";
 import { FullscreenWidget } from "@deck.gl/widgets";
 
 import { INITIAL_VIEW_STATE_TILTED_EU } from "core/components/deckgl/viewports";
-import { useInstitutionECNetFundings } from "core/hooks/queries/useInstitutionECNetFunding";
+import { useInstitutionECNetFundings } from "core/hooks/queries/institution/useInstitutionECNetFunding";
 import { InstitutionECNetFunding } from "datamodel/institution/types";
 import { TileLayer } from "deck.gl";
 

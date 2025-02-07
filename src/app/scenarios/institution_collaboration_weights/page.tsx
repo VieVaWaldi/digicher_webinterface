@@ -10,8 +10,8 @@ import { ColumnLayer, ArcLayer } from "@deck.gl/layers";
 import { FullscreenWidget } from "@deck.gl/widgets";
 
 import { INITIAL_VIEW_STATE_TILTED_EU } from "core/components/deckgl/viewports";
-import { useInstitutionCollaborationWeights } from "core/hooks/queries/useInstitutionCollaborationWeights";
-import { useInstitutionCollaboratorsById } from "core/hooks/queries/useInstitutionCollaboratorsById";
+import { useInstitutionCollaborationWeights } from "core/hooks/queries/institution/useInstitutionCollaborationWeights";
+import { useInstitutionCollaboratorsById } from "core/hooks/queries/institution/useInstitutionCollaboratorsById";
 import { InstitutionCollaborationWeights } from "datamodel/institution/types";
 
 export default function InstitutionCollaborationWeightsMap() {

@@ -1,8 +1,8 @@
 "use client";
 import { ReactNode, useState } from "react";
 import { ScatterplotLayer } from "deck.gl";
-import { useInstitutionPoints } from "core/hooks/queries/useInstitutionPoints";
-import { useInstitutionById } from "core/hooks/queries/useInstitutionById";
+import { useInstitutionPoints } from "core/hooks/queries/institution/useInstitutionPoints";
+import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import InstitutionCard from "core/components/cards/InstitutionCard";
 import { InstitutionPoint } from "datamodel/institution/types";
 import CountryFilter from "core/components/menus/filter/CountryFilter";
