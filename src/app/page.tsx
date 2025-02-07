@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { Card } from "core/components/shadcn/card";
-import ResourcesList from "core/components/content/ResourcesList";
-import { H1, Lead, P } from "core/components/shadcn/typography";
+import { Card } from "shadcn/card";
+import ResourcesList from "core/components/navigation/ResourcesList";
+import { H1, Lead, P } from "shadcn/typography";
 import { MapPin, Building2, Coins, UsersRound } from "lucide-react";
 
 const scenarios = [

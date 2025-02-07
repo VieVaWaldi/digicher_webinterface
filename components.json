@@ -12,8 +12,8 @@
   },
   "aliases": {
     "components": "@/core/components",
-    "utils": "@/core/utils",
-    "ui": "core/components/shadcn/",
+    "utils": "shadcn/utils",
+    "ui": "shadcn/",
     "lib": "@/core",
     "hooks": "@/core/hooks"
   },

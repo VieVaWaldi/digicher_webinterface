@@ -8,14 +8,24 @@ export interface Institution {
   address_geolocation: number[] | null;
   url: string | null;
   short_name: string | null;
-  // vat_number;
 }
 
-export interface InstitutionSmePoint {
+/** Scenario Institutions */
+
+export interface InstitutionPoint {
   id: number;
+  address_geolocation: number[];
   sme: boolean | null;
-  address_geolocation: number[] | null;
+  address_country: string | null;
+  // topics: any[];
+  // funding_programmes: any[];
 }
+
+// export interface InstitutionSmePoint {
+//   id: number;
+//   sme: boolean | null;
+//   address_geolocation: number[] | null;
+// }
 
 export interface InstitutionECNetFunding {
   institution_id: number;

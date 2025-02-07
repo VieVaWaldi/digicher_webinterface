@@ -1,5 +1,5 @@
 import { Institution } from "datamodel/institution/types";
-import { Card, CardContent } from "../shadcn/card";
+import { Card, CardContent } from "../../../shadcn/card";
 
 interface InstitutionCardProps {
   institution: Institution;

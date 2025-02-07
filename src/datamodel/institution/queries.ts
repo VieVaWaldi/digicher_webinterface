@@ -1,28 +1,12 @@
 import { getConnection } from "core/database/connection";
 import {
   Institution,
-  InstitutionSmePoint,
+  InstitutionPoint,
   InstitutionCollaborators,
   InstitutionCollaborationWeights,
   InstitutionECNetFunding,
   InstitutionTopics,
 } from "datamodel/institution/types";
-
-/* SCENARIO | Institutions SME Map */
-
-const SELECT_INSTITUTION_SME_POINTS = `
-  SELECT 
-      id, sme, address_geolocation
-  FROM institutions
-  WHERE address_geolocation IS NOT NULL;`;
-
-export async function getInstitutionPoints(): Promise<InstitutionSmePoint[]> {
-  const pool = getConnection();
-  const result = await pool.query<InstitutionSmePoint>(
-    SELECT_INSTITUTION_SME_POINTS,
-  );
-  return result.rows;
-}
 
 const SELECT_INSTITUTION = `
   SELECT *
@@ -35,6 +19,24 @@ export async function getInstitutionById(id: number): Promise<Institution> {
   const result = await pool.query<Institution>(SELECT_INSTITUTION, [id]);
   return result.rows[0];
 }
+
+/** Scenario Institutions */
+
+const SELECT_INSTITUTION_POINTS = `
+  SELECT 
+      id, address_geolocation, sme, address_country
+  FROM institutions
+  WHERE address_geolocation IS NOT NULL;`;
+
+export async function getInstitutionPoints(): Promise<InstitutionPoint[]> {
+  const pool = getConnection();
+  const result = await pool.query<InstitutionPoint>(SELECT_INSTITUTION_POINTS);
+  return result.rows;
+}
+
+//
+//
+//
 
 /* SCENARIO | Institution EC net Funding */
 

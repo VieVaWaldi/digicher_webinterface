@@ -1,4 +1,4 @@
-import { cn } from "core/utils/shadcn-utils";
+import { cn } from "shadcn/utils/shadcn-utils";
 
 interface TypographyProps {
   children: React.ReactNode;

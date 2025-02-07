@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardTitle,
   CardDescription,
-} from "core/components/shadcn/card";
+} from "shadcn/card";
 import { Calendar, Banknote, Award } from "lucide-react";
 import { Project } from "datamodel/project/types";
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { H2, Lead } from "core/components/shadcn/typography";
+import { H2, Lead } from "shadcn/typography";
 import { Book, Binary, Layers, Palette } from "lucide-react";
 
 const resources = [

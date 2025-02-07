@@ -3,8 +3,8 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { createElement, FC, SVGProps } from "react";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../shadcn/sheet";
-import { Button } from "../shadcn/button";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../../../shadcn/sheet";
+import { Button } from "../../../shadcn/button";
 import {
   Settings,
   Home,
@@ -13,7 +13,7 @@ import {
   Coins,
   UsersRound,
 } from "lucide-react";
-import { Separator } from "../shadcn/separator";
+import { Separator } from "../../../shadcn/separator";
 import SettingsMenu from "../menus/SettingsMenu";
 
 type PathMap = {

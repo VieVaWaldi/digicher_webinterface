@@ -1,9 +1,9 @@
 "use client";
 import React, { ReactNode, useEffect, useState } from "react";
 import { Layer, PickingInfo } from "@deck.gl/core";
-import { H2, Lead, P } from "core/components/shadcn/typography";
-import { Card } from "core/components/shadcn/card";
-import { Spinner } from "core/components/shadcn/spinner";
+import { H2, Lead, P } from "shadcn/typography";
+import { Card } from "shadcn/card";
+import { Spinner } from "shadcn/spinner";
 
 import UnifiedDeckMap from "core/components/deckgl/UnifiedDeckMap";
 
@@ -12,7 +12,7 @@ interface ScenarioTemplateProps {
   title: string;
   description?: string;
   statsCard?: ReactNode;
-  filters?: ReactNode;
+  filterMenus: ReactNode[];
   detailsCard?: ReactNode;
   layers: Layer[];
   isLoading?: boolean;
@@ -25,7 +25,7 @@ export default function ScenarioTemplate({
   title,
   description = "The common snapping turtlse (Chelydra serpentina) is a species of large freshwater turtle in the family Chelydridae. Its natural range extends from southeastern Canada, southwest to the edge of the Rocky Mountains, as far east as Nova Scotia and Florida. The present-day Chelydra serpentina population in the Middle Rio Grande suggests that the common snapping turtle has been present in this drainage since at least the seventeenth century and is likely native.",
   statsCard,
-  filters,
+  filterMenus,
   detailsCard,
   layers,
   isLoading = false,
@@ -60,7 +60,7 @@ export default function ScenarioTemplate({
         </div>
 
         {(statsCard || isLoading || error) && (
-          <Card className="mx-auto max-w-2xl p-6">
+          <Card className="mx-auto p-6">
             {error ? (
               <Lead>{error}</Lead>
             ) : isLoading ? (
@@ -71,7 +71,14 @@ export default function ScenarioTemplate({
           </Card>
         )}
 
-        {filters && <Card className="mx-auto max-w-2xl p-6">{filters}</Card>}
+        {/* Filter */}
+        <div className="mx-auto flex flex-wrap justify-start gap-4">
+          {filterMenus.map((filter, index) => (
+            <Card key={`filter-${index}`} className="w-full p-6 sm:w-auto">
+              {filter}
+            </Card>
+          ))}
+        </div>
       </div>
 
       {/* DeckGL & InfoArea */}

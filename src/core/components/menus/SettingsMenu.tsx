@@ -1,10 +1,10 @@
 import React from "react";
 import { Globe2, Map } from "lucide-react";
 import { MapBoxStyle, useSettings } from "core/context/SettingsContext";
-import { Card } from "../shadcn/card";
-import { Button } from "../shadcn/button";
+import { Card } from "../../../shadcn/card";
+import { Button } from "../../../shadcn/button";
 import Image from "next/image";
-import { H3 } from "../shadcn/typography";
+import { H3 } from "../../../shadcn/typography";
 
 const ViewToggle = ({
   isGlobe,
