@@ -18,9 +18,9 @@ function getPool() {
     port: parseInt(process.env.POSTGRES_PORT),
 
     // ToDo IF env.PROD use ssl
-    // ssl: {
-    //   rejectUnauthorized: true,
-    // },
+    ssl: {
+      rejectUnauthorized: true,
+    },
   });
 }
 
