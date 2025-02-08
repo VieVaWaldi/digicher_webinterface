@@ -50,7 +50,7 @@ const ProjectCard = ({ project, className = "" }: ProjectCardProps) => {
 
   return (
     <Card
-      className={`overflow-hidden transition-all duration-300 hover:shadow-lg ${className}`}
+      className={`h-full w-full border border-gray-200 bg-white p-0 transition-all duration-1000 hover:shadow-xl ${className}`}
     >
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-2">

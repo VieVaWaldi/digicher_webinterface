@@ -3,29 +3,18 @@ import { Project, ProjectCoordinatorPoint } from "./types";
 
 /* SCENARIO | Project Coordinators Globe */
 
-const SELECT_PROJECT_COORDINATORS_BY_YEAR = `
-  SELECT 
-      p.id AS project_id,
-      i.id AS coordinator_id,
-      i.address_geolocation AS coordinator_location
-  FROM 
-      Projects p
-      INNER JOIN Projects_Institutions pi ON p.id = pi.project_id
-      INNER JOIN Institutions i ON pi.institution_id = i.id
-  WHERE 
-      pi.type = 'coordinator'
-      AND $1 BETWEEN EXTRACT(YEAR FROM p.start_date) 
-                  AND EXTRACT(YEAR FROM p.end_date)
-      AND i.address_geolocation IS NOT NULL;`;
+const SELECT_PROJECTS_COORDINATOR = `
+  SELECT * 
+  FROM mat_projects_coordinator
+  WHERE address_geolocation IS NOT NULL;
+`;
 
-export async function getProjectCoordinatorsByYear(
-  year: number
-): Promise<ProjectCoordinatorPoint[]> {
+export async function getProjectsCoordinatorPoints(): Promise<
+  ProjectCoordinatorPoint[]
+> {
   const pool = getConnection();
-  const date = `${year}`;
   const result = await pool.query<ProjectCoordinatorPoint>(
-    SELECT_PROJECT_COORDINATORS_BY_YEAR,
-    [date]
+    SELECT_PROJECTS_COORDINATOR,
   );
   return result.rows;
 }

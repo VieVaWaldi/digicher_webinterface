@@ -31,8 +31,8 @@ export default function InstitutionScenario() {
     useState<InstitutionPoint | null>(null);
   const {
     data: institution,
-    loading: loadingCard,
-    error: errorCard,
+    loading: loadingInfo,
+    error: errorInfo,
   } = useInstitutionById(selectedInstitution?.id ?? -1);
 
   // Progressive Enhancement
@@ -127,6 +127,7 @@ export default function InstitutionScenario() {
     radiusMaxPixels: 100,
     lineWidthMinPixels: 1,
     getRadius: 100,
+    antialiasing: true,
     getPosition: (d) => [d.address_geolocation[1], d.address_geolocation[0]],
     getFillColor: (d) =>
       d.id === selectedInstitution?.id

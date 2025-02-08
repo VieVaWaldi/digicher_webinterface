@@ -24,7 +24,7 @@ export default function TimeSlider({ year, onChange }: TimeSliderProps) {
   }, [isPlaying, onChange]);
 
   return (
-    <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg z-10">
+    <div className="bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg z-10">
       <div className="flex items-center gap-4">
         <button
           onClick={() => setIsPlaying(!isPlaying)}

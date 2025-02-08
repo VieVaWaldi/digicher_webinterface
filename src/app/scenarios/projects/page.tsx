@@ -1,112 +1,161 @@
 "use client";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import React, { useState } from "react";
-import Map from "react-map-gl";
-import DeckGL from "@deck.gl/react";
-import { _GlobeView as GlobeView } from "@deck.gl/core";
+import React, { ReactNode, useState } from "react";
 import { ScatterplotLayer } from "deck.gl";
-import { INITIAL_VIEW_STATE_EU_GLOBE } from "core/components/deckgl/viewports";
 
 import TimeSlider from "core/components/menus/TimeSlider";
-import { useProjectCoordinators } from "core/hooks/queries/project/useProjectCoordinators";
+import { useProjectsCoordinatorPoints } from "core/hooks/queries/project/useProjectsCoordinatorPoints";
 import { useProjectById } from "core/hooks/queries/project/useProjectById";
 import ProjectCard from "core/components/cards/ProjectCard";
+import { ProjectCoordinatorPoint } from "datamodel/project/types";
+import ScenarioTemplate from "core/components/deckgl/ScenarioTemplate";
+import CountryFilter from "core/components/menus/filter/CountryFilter";
+import useTransformProjectCoordinator from "core/hooks/transform/useTransformProjectCoordinatorTopics";
+import TopicFilter from "core/components/menus/filter/TopicFilter";
+import FundingFilter from "core/components/menus/filter/FundingFilter";
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+export default function ProjectScenario() {
+  const id: string = "projects";
 
-export default function Projects() {
-  const [selectedYear, setSelectedYear] = useState(2014);
-  const [popupInfo, setPopupInfo] = useState<{
-    projectId: number;
-    x: number;
-    y: number;
-  } | null>(null);
-  const { data: projectCoordinators, error: coordinatorsError } =
-    useProjectCoordinators(selectedYear);
-  const { data: project, error: projectError } = useProjectById(
-    popupInfo?.projectId ?? -1,
-  );
+  /** Data */
+  // filter year below
+  const {
+    data: projectCoordinatorPoints,
+    loading,
+    error,
+  } = useProjectsCoordinatorPoints();
+  const {
+    data: transformedPoints,
+    loading: loadingTransformed,
+    error: errorTransformed,
+  } = useTransformProjectCoordinator(projectCoordinatorPoints);
+  const [selectedProject, setSelectedProject] =
+    useState<ProjectCoordinatorPoint | null>(null);
+  const {
+    data: project,
+    loading: loadingInfo,
+    error: errorInfo,
+  } = useProjectById(selectedProject?.project_id ?? -1);
 
+  // Progressive Enhancement
+  const dataPoints = transformedPoints ?? projectCoordinatorPoints; // ?? institutionPoints;
+
+  /** Filter */
+  const [selectedYear, setSelectedYear] = useState(2024);
+  const [countriesFilter, setCountriesFilter] = useState<string[]>([]);
+  const [topics0Filter, setTopics0Filter] = useState<string[]>([]);
+  const [topics1Filter, setTopics1Filter] = useState<string[]>([]);
+  const [topics2Filter, setTopics2Filter] = useState<string[]>([]);
+  const [frameworksFilter, setFrameworksFilter] = useState<string[]>([]);
+  const [codeFilter, setCodeFilter] = useState<string[]>([]);
+
+  const filterdDataPoints = dataPoints?.filter((point) => {
+    const passesTimeFilter =
+      selectedYear >= new Date(point.start_date).getFullYear() &&
+      selectedYear <= new Date(point.end_date).getFullYear();
+
+    const passesCountryFilter =
+      countriesFilter.length === 0 ||
+      !point.address_country ||
+      countriesFilter.includes(point.address_country);
+
+    function topicFilter(data: string[]): boolean {
+      return (
+        data.length === 0 ||
+        (point.topics?.some((topic) => data.includes(topic.id.toString())) ??
+          false)
+      );
+    }
+    const passesTopic0Filter = topicFilter(topics0Filter);
+    const passesTopic1Filter = topicFilter(topics1Filter);
+    const passesTopic2Filter = topicFilter(topics2Filter);
+
+    const passesFrameworkFilter =
+      frameworksFilter.length === 0 ||
+      (point.funding_programmes?.some((funding) =>
+        frameworksFilter.includes(funding.framework_programme),
+      ) ??
+        false);
+    const passesCodeFilter =
+      codeFilter.length === 0 ||
+      (point.funding_programmes?.some((funding) =>
+        codeFilter.includes(funding.code),
+      ) ??
+        false);
+
+    return (
+      passesTimeFilter &&
+      passesCountryFilter &&
+      passesTopic0Filter &&
+      passesTopic1Filter &&
+      passesTopic2Filter &&
+      passesFrameworkFilter &&
+      passesCodeFilter
+    );
+  });
+
+  const filterMenus: ReactNode[] = [
+    <TimeSlider
+      key="time-filter"
+      year={selectedYear}
+      onChange={setSelectedYear}
+    />,
+    <CountryFilter
+      key="country-filter"
+      setSelectedCountries={setCountriesFilter}
+    />,
+    <TopicFilter
+      key="topic-filter"
+      setTopics0Filter={setTopics0Filter}
+      setTopics1Filter={setTopics1Filter}
+      setTopics2Filter={setTopics2Filter}
+    />,
+    <FundingFilter
+      key="funding-filter"
+      setFrameworksFilter={setFrameworksFilter}
+      setCodeFilter={setCodeFilter}
+    />,
+  ];
+
+  /** Layer */
   const layer = new ScatterplotLayer({
-    id: "projectCoordinators",
-    data: projectCoordinators,
+    id: `scatter-${id}`,
+    data: filterdDataPoints,
     pickable: true,
     opacity: 0.8,
-    stroked: true,
     filled: true,
-    radiusScale: 1,
-    radiusMinPixels: 8,
-    radiusMaxPixels: 12,
+    stroked: false,
+    radiusScale: 6,
+    radiusMinPixels: 3,
+    radiusMaxPixels: 100,
     lineWidthMinPixels: 1,
+    getRadius: 100,
     getFillColor: [255, 140, 0],
-    getRadius: 6,
     antialiasing: true,
-    getPosition: (d) => [d.coordinator_location[1], d.coordinator_location[0]],
+    getPosition: (d) => [d.address_geolocation[1], d.address_geolocation[0]],
     onClick: (info) => {
       if (info.object) {
-        setPopupInfo({
-          projectId: info.object.project_id,
-          x: info.x,
-          y: info.y,
-        });
-      } else {
-        setPopupInfo(null);
+        setSelectedProject(info.object as ProjectCoordinatorPoint);
       }
-    },
-    parameters: {
-      depthTest: false,
-      depthMask: true,
     },
   });
 
   return (
-    <div className="flex h-screen flex-col">
-      <div className="bg-white p-4">
-        <h1 className="mb-2 text-2xl font-bold">
-          {projectCoordinators?.length}
-        </h1>
-        <p className="mb-4">
-          Displays the coordinators of each project given a year. Click on a
-          project to get more information. BUG: projects are hovering where the
-          ISS should be, hope i ll fix that soon.
-        </p>
-      </div>
-      <main className="relative flex-1">
-        <DeckGL
-          views={new GlobeView()}
-          initialViewState={INITIAL_VIEW_STATE_EU_GLOBE}
-          layers={[layer]}
-          controller={true}
-          style={{ position: "absolute", width: "100%", height: "100%" }}
-          onClick={(info) => {
-            if (!info.picked) {
-              setPopupInfo(null);
-            }
-          }}
-        >
-          <Map
-            mapStyle="mapbox://styles/mapbox/streets-v12"
-            mapboxAccessToken={MAPBOX_TOKEN}
-          />
-        </DeckGL>
-
-        {popupInfo && project && (
-          <div
-            className="absolute z-10"
-            style={{
-              left: popupInfo.x,
-              top: popupInfo.y,
-              transform: "translate(-50%, -100%)",
-              marginTop: "-10px",
-            }}
-          >
-            <ProjectCard project={project} />
-          </div>
-        )}
-
-        <TimeSlider year={selectedYear} onChange={setSelectedYear} />
-      </main>
-    </div>
+    <ScenarioTemplate
+      id={id}
+      title="Project Map"
+      description="WIP! this displays the coordinators topics and funding programmes, not the projects topics and funding programmes."
+      isLoading={loading}
+      error={error}
+      statsCard={
+        <span>
+          Displaying {filterdDataPoints?.length.toLocaleString() || 0} Projects
+        </span>
+      }
+      filterMenus={filterMenus}
+      layers={[layer]}
+      detailsCard={project && <ProjectCard project={project} />}
+    />
   );
 }
