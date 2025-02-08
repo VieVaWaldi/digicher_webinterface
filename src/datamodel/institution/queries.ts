@@ -5,8 +5,8 @@ import {
   InstitutionCollaborators,
   InstitutionCollaborationWeights,
   InstitutionECNetFunding,
-  InstitutionTopics,
 } from "datamodel/institution/types";
+import { InstitutionTopics } from "datamodel/junctions/types";
 
 const SELECT_INSTITUTION = `
   SELECT *
