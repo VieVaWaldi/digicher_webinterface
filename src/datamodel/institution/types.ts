@@ -1,3 +1,4 @@
+import { FundingProgramme } from "datamodel/fundingprogrammes/types";
 import { Topic } from "datamodel/topic/types";
 
 export interface Institution {
@@ -12,11 +13,6 @@ export interface Institution {
   short_name: string | null;
 }
 
-export interface InstitutionTopic {
-  id_institution: number;
-  id_topic: number[];
-}
-
 /** Scenario Institutions */
 
 export interface InstitutionPoint {
@@ -25,7 +21,7 @@ export interface InstitutionPoint {
   sme: boolean | null;
   address_country: string | null;
   topics?: Topic[];
-  // funding_programmes: any[];
+  funding_programmes?: FundingProgramme[];
 }
 
 // export interface InstitutionSmePoint {
@@ -56,9 +52,9 @@ export interface InstitutionCollaborators {
   collaborator_geolocation: number[];
 }
 
-export interface InstitutionTopics {
-  institution_id: number;
-  institution_name: string;
-  address_geolocation: number[];
-  topic: string[];
-}
+// export interface InstitutionTopics {
+//   institution_id: number;
+//   institution_name: string;
+//   address_geolocation: number[];
+//   topic: string[];
+// }

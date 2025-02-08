@@ -19,12 +19,10 @@ const countryList = Object.entries(countries).map(([code, country]) => ({
 }));
 
 interface CountryFilterProps {
-  selectedCountries: string[];
   setSelectedCountries: (value: string[]) => void;
 }
 
 export default function CountryFilter({
-  selectedCountries,
   setSelectedCountries,
 }: CountryFilterProps) {
   return (

@@ -23,7 +23,7 @@ interface ScenarioTemplateProps {
 export default function ScenarioTemplate({
   id,
   title,
-  description = "The common snapping turtlse (Chelydra serpentina) is a species of large freshwater turtle in the family Chelydridae. Its natural range extends from southeastern Canada, southwest to the edge of the Rocky Mountains, as far east as Nova Scotia and Florida. The present-day Chelydra serpentina population in the Middle Rio Grande suggests that the common snapping turtle has been present in this drainage since at least the seventeenth century and is likely native.",
+  description = "The common snapping turtlse (Chelydra serpentina) is a species of large freshwater turtle in the family Chelydridae. Its natural range extends from southeastern Canada, southwest to the edge of the Rocky Mountains.",
   statsCard,
   filterMenus,
   detailsCard,
