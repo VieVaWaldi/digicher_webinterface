@@ -1,4 +1,7 @@
-import { InstitutionPoint } from "datamodel/institution/types";
+import {
+  InstitutionFundingPoint,
+  InstitutionPoint,
+} from "datamodel/institution/types";
 import { useTopics } from "../queries/topic/useTopics";
 import { useInstitutionsTopics } from "../queries/junction/useInstitutionsTopics";
 import { useMemo } from "react";
@@ -40,7 +43,7 @@ function reduceFundingProgrammes(
 }
 
 export default function useTransformInstitution(
-  institutionPoints: InstitutionPoint[] | undefined,
+  institutionPoints: InstitutionPoint[] | InstitutionFundingPoint[] | undefined,
 ) /**
  * This stitches topics and funding programmes given the junction tables to the institutions
  * so we can save a shit town of bandwidth. We do both in the same place for simpler state management.

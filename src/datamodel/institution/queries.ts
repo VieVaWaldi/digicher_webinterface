@@ -4,7 +4,7 @@ import {
   InstitutionPoint,
   InstitutionCollaborators,
   InstitutionCollaborationWeights,
-  InstitutionECNetFunding,
+  InstitutionFundingPoint,
 } from "datamodel/institution/types";
 import { InstitutionTopics } from "datamodel/junctions/types";
 
@@ -47,22 +47,18 @@ export async function getInstitutionPoints(): Promise<InstitutionPoint[]> {
   return result.rows;
 }
 
-//
-//
-//
-
-/* SCENARIO | Institution EC net Funding */
+/** Scenario Funding */
 
 const SELECT_INSTITUTION_ECNET_FUNDING = `
-  SELECT * FROM institution_ecnet_funding
+  SELECT * FROM mat_institution_funding
   WHERE total_eu_funding != 0;
 `;
 
-export async function getInstitutionECNetFunding(): Promise<
-  InstitutionECNetFunding[]
+export async function getInstitutionFundingPoint(): Promise<
+  InstitutionFundingPoint[]
 > {
   const pool = getConnection();
-  const result = await pool.query<InstitutionECNetFunding>(
+  const result = await pool.query<InstitutionFundingPoint>(
     SELECT_INSTITUTION_ECNET_FUNDING,
   );
   return result.rows;

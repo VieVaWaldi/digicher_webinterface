@@ -1,8 +1,8 @@
-import { InstitutionECNetFunding } from "datamodel/institution/types";
-import { useFetch } from "../../useFetch";
+import { useFetch } from "core/hooks/useFetch";
+import { InstitutionFundingPoint } from "datamodel/institution/types";
 
-export function useInstitutionECNetFundings() {
-  return useFetch<InstitutionECNetFunding[]>(
-    "/api/institution/institution_ecnet_funding",
+export function useInstitutionFundingsPoints() {
+  return useFetch<InstitutionFundingPoint[]>(
+    "/api/institution/institution_funding",
   );
 }

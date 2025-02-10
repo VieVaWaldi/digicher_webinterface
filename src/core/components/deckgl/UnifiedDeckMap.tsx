@@ -4,7 +4,7 @@ import Map from "react-map-gl";
 import { COORDINATE_SYSTEM, LayersList } from "@deck.gl/core";
 import { _GlobeView as GlobeView } from "@deck.gl/core";
 import { MapView } from "@deck.gl/core";
-import { BitmapLayer, TileLayer } from "deck.gl";
+import { BitmapLayer, FullscreenWidget, TileLayer } from "deck.gl";
 import { useSettings } from "core/context/SettingsContext";
 import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
 import { PickingInfo } from "@deck.gl/core";
@@ -66,6 +66,12 @@ export default function UnifiedDeckMap({
       controller={true}
       onClick={onMapClick}
       getCursor={({ isDragging }) => (isDragging ? "grabbing" : "grab")}
+      widgets={[
+        new FullscreenWidget({
+          id: "fullscreen",
+          placement: "bottom-right",
+        }),
+      ]}
     >
       {!isGlobe && (
         <Map

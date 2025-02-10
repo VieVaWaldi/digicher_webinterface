@@ -1,44 +1,92 @@
 "use client";
-import { COORDINATE_SYSTEM, _GlobeView as GlobeView } from "@deck.gl/core";
+
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@deck.gl/widgets/stylesheet.css";
 
-import React, { useMemo } from "react";
-import DeckGL from "@deck.gl/react";
-import { BitmapLayer, ColumnLayer } from "@deck.gl/layers";
-import { FullscreenWidget } from "@deck.gl/widgets";
-
-import { INITIAL_VIEW_STATE_TILTED_EU } from "core/components/deckgl/viewports";
-import { useInstitutionECNetFundings } from "core/hooks/queries/institution/useInstitutionECNetFunding";
-import { InstitutionECNetFunding } from "datamodel/institution/types";
-import { TileLayer } from "deck.gl";
+import React, { ReactNode, useState } from "react";
+import { ColumnLayer } from "@deck.gl/layers";
+import ScenarioTemplate from "core/components/deckgl/ScenarioTemplate";
+import { InstitutionFundingPoint } from "datamodel/institution/types";
+import { useInstitutionFundingsPoints } from "core/hooks/queries/institution/useInstitutionECNetFunding";
+import CountryFilter from "core/components/menus/filter/CountryFilter";
+import useTransformInstitutionTopics from "core/hooks/transform/useTransformInstitutionTopics";
+import TopicFilter from "core/components/menus/filter/TopicFilter";
 
 export default function InstitutionECNetFundingMap() {
+  const id: string = "funding";
   const {
-    data: institutionECNetFundings,
-    error: institutionECNetFundingsError,
-  } = useInstitutionECNetFundings();
-  const id: string = "institutions-ecnet-funding";
+    data: fundingPoints,
+    loading: loading,
+    error: error,
+  } = useInstitutionFundingsPoints();
+  const {
+    data: transformedPoints,
+    loading: loadingTransformed,
+    error: errorTransformed,
+  } = useTransformInstitutionTopics(fundingPoints);
 
-  const layer = new ColumnLayer<InstitutionECNetFunding>({
+  // Progressive Enhancement
+  const dataPoints = transformedPoints ?? fundingPoints;
+
+  /** Filter */
+  const [countriesFilter, setCountriesFilter] = useState<string[]>([]);
+  const [topics0Filter, setTopics0Filter] = useState<string[]>([]);
+  const [topics1Filter, setTopics1Filter] = useState<string[]>([]);
+  const [topics2Filter, setTopics2Filter] = useState<string[]>([]);
+
+  const filterdDataPoints = dataPoints?.filter((point) => {
+    const passesCountryFilter =
+      countriesFilter.length === 0 ||
+      !point.address_country ||
+      countriesFilter.includes(point.address_country);
+
+    function topicFilter(data: string[]): boolean {
+      return (
+        data.length === 0 ||
+        (point.topics?.some((topic) => data.includes(topic.id.toString())) ??
+          false)
+      );
+    }
+    const passesTopic0Filter = topicFilter(topics0Filter);
+    const passesTopic1Filter = topicFilter(topics1Filter);
+    const passesTopic2Filter = topicFilter(topics2Filter);
+
+    return (
+      passesCountryFilter &&
+      passesTopic0Filter &&
+      passesTopic1Filter &&
+      passesTopic2Filter
+    );
+  });
+
+  const filterMenus: ReactNode[] = [
+    <CountryFilter
+      key="country-filter"
+      setSelectedCountries={setCountriesFilter}
+    />,
+    <TopicFilter
+      key="topic-filter"
+      setTopics0Filter={setTopics0Filter}
+      setTopics1Filter={setTopics1Filter}
+      setTopics2Filter={setTopics2Filter}
+    />,
+  ];
+
+  const layer = new ColumnLayer<InstitutionFundingPoint>({
     id: id,
-    data: institutionECNetFundings,
-    diskResolution: 60,
+    data: filterdDataPoints,
+    diskResolution: 10,
     radius: 10000,
-
     getPosition: (d) => [d.address_geolocation[1], d.address_geolocation[0]],
-
-    // Height of each column based on funding
     getElevation: (d) => {
-      const MAX_FUNDING = 205538467.02; // Your known maximum
-      const MAX_HEIGHT = 3000000; // Maximum height in meters you want for the tallest bar
+      const MAX_FUNDING = 205538467.02; // Known maximum
+      const MAX_HEIGHT = 3000000; // Maximum height in m
 
       const funding = d.total_eu_funding
         ? parseFloat(d.total_eu_funding as string)
         : 0;
-      return (funding / MAX_FUNDING) * MAX_HEIGHT; // This will make heights relative to max
+      return (funding / MAX_FUNDING) * MAX_HEIGHT;
     },
-
     getFillColor: (d) => {
       const MAX_FUNDING = 205538467.02;
       const funding = d.total_eu_funding
@@ -46,14 +94,8 @@ export default function InstitutionECNetFundingMap() {
         : 0;
       const normalizedFunding = funding / MAX_FUNDING;
 
-      return [
-        255 * normalizedFunding, // Red increases with funding
-        0, // Green stays at 0
-        0, // Blue stays at 0
-        200, // Alpha
-      ];
+      return [255 * normalizedFunding, 0, 0, 200];
     },
-
     pickable: true,
     autoHighlight: true,
     extruded: true,
@@ -65,83 +107,30 @@ export default function InstitutionECNetFundingMap() {
     },
   });
 
-  const backgroundLayers = useMemo(
-    () => [
-      new TileLayer({
-        // data: "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        data:
-          "https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=" +
-          process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-        minZoom: 0,
-        maxZoom: 19,
-        tileSize: 256,
-
-        renderSubLayers: (props) => {
-          const { boundingBox } = props.tile;
-
-          return new BitmapLayer(props, {
-            data: undefined,
-            image: props.data,
-            _imageCoordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-            bounds: [
-              boundingBox[0][0],
-              boundingBox[0][1],
-              boundingBox[1][0],
-              boundingBox[1][1],
-            ],
-          });
-        },
-      }),
-    ],
-    [],
+  const funding = filterdDataPoints?.reduce(
+    (acc, o) => acc + parseFloat(o.total_eu_funding ? o.total_eu_funding : "0"),
+    0,
   );
 
   return (
-    <div className="flex h-screen flex-col">
-      <div className="bg-white p-4">
-        <h1 className="mb-2 text-2xl font-bold">
-          Scenario | Institutions EC net fungding Bars
-        </h1>
-        <p className="mb-4">
-          From 31k institutions displays 13k where ec net funding greater than
-          0.
-        </p>
-      </div>
-      <main className="relative flex-1">
-        <DeckGL
-          key={id}
-          initialViewState={INITIAL_VIEW_STATE_TILTED_EU}
-          layers={[backgroundLayers, layer]}
-          views={new GlobeView()}
-          controller={true}
-          getTooltip={({ object }) =>
-            object && {
-              html: `
-                <div>
-                    <b>${object.institution_name}</b><br/>
-                    Funding: €${(
-                      parseFloat(object.total_eu_funding || "0") / 1000000
-                    ).toFixed(2)}M<br/>
-                    Projects: ${object.number_of_projects}
-                </div>
-            `,
-            }
-          }
-          widgets={[
-            new FullscreenWidget({
-              id: "fullscreen",
-              placement: "bottom-right",
-            }),
-          ]}
-        >
-          {/* <Map
-            mapStyle="mapbox://styles/mapbox/light-v11" // mapbox://styles/mapbox/dark-v11
-            mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
-            projection={{ name: "globe" }}
-            fog={{}}
-          /> */}
-        </DeckGL>
-      </main>
-    </div>
+    <ScenarioTemplate
+      id={id}
+      title="Funding Map"
+      isLoading={loading}
+      error={error}
+      statsCard={
+        <span>
+          Displaying {filterdDataPoints?.length.toLocaleString() || 0}{" "}
+          Institutions with{" "}
+          {new Intl.NumberFormat("de-DE", {
+            style: "currency",
+            currency: "EUR",
+          }).format(funding ? funding : 0)}
+        </span>
+      }
+      filterMenus={filterMenus}
+      layers={[layer]}
+      // detailsCard={institution && <InstitutionCard institution={institution} />}
+    />
   );
 }

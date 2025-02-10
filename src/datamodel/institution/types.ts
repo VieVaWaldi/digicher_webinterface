@@ -22,21 +22,19 @@ export interface InstitutionPoint {
   address_country: string | null;
   topics?: Topic[];
   funding_programmes?: FundingProgramme[];
+  total_eu_funding: string | null; // NO
 }
 
-// export interface InstitutionSmePoint {
-//   id: number;
-//   sme: boolean | null;
-//   address_geolocation: number[] | null;
-// }
-
-export interface InstitutionECNetFunding {
-  institution_id: number;
-  institution_name: string;
+export interface InstitutionFundingPoint {
+  id: number;
   address_geolocation: number[];
   total_eu_funding: string | null;
   number_of_projects: string;
+  address_country: string | null;
   avg_project_funding: string | null;
+  topics?: Topic[];
+  sme: boolean | null; // NO
+  funding_programmes?: FundingProgramme[];
 }
 
 export interface InstitutionCollaborationWeights {
