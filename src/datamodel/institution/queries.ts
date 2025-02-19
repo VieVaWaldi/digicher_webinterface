@@ -1,15 +1,23 @@
 import { getConnection } from "core/database/connection";
 import {
   Institution,
-  InstitutionPoint,
-  InstitutionCollaborators,
-  InstitutionCollaborationWeights,
-  InstitutionFundingPoint,
+  InstitutionFundingProgrammes,
+  InstitutionTopics,
 } from "datamodel/institution/types";
-import { InstitutionTopics } from "datamodel/junctions/types";
+
+/** Institution */
 
 const SELECT_INSTITUTION = `
-  SELECT *
+  SELECT 
+    id AS institution_id, 
+    name,
+    sme as is_sme,
+    address_street as street,
+    address_city as city,
+    address_country as country,
+    address_geolocation as geolocation,
+    url,
+    short_name
   FROM institutions
   WHERE id = $1 AND
   address_geolocation IS NOT NULL;`;
@@ -20,8 +28,12 @@ export async function getInstitutionById(id: number): Promise<Institution> {
   return result.rows[0];
 }
 
+/** Institution Topics */
+
 const SELECT_INSTITUTIONS_TOPICS = `
-  SELECT *
+  SELECT 
+    institution_id,
+    topic_ids
   FROM mat_institutions_topics;`;
 
 export async function getInstitutionsTopics(): Promise<InstitutionTopics[]> {
@@ -29,86 +41,23 @@ export async function getInstitutionsTopics(): Promise<InstitutionTopics[]> {
   const result = await pool.query<InstitutionTopics>(
     SELECT_INSTITUTIONS_TOPICS,
   );
-  console.log(result.rows[0]);
   return result.rows;
 }
 
-/** Scenario Institutions */
+/** Institution Funding Programmes */
 
-const SELECT_INSTITUTION_POINTS = `
+const SELECT_INSTITUTION_FUNDING_PROGRAMME = `
   SELECT 
-      id, address_geolocation, sme, address_country
-  FROM institutions
-  WHERE address_geolocation IS NOT NULL;`;
+    institution_id,
+    funding_ids
+  FROM mat_institutions_fundingprogrammes;`;
 
-export async function getInstitutionPoints(): Promise<InstitutionPoint[]> {
-  const pool = getConnection();
-  const result = await pool.query<InstitutionPoint>(SELECT_INSTITUTION_POINTS);
-  return result.rows;
-}
-
-/** Scenario Funding */
-
-const SELECT_INSTITUTION_ECNET_FUNDING = `
-  SELECT * FROM mat_institution_funding
-  WHERE total_eu_funding != 0;
-`;
-
-export async function getInstitutionFundingPoint(): Promise<
-  InstitutionFundingPoint[]
+export async function getInstitutionsFundingProgrammes(): Promise<
+  InstitutionFundingProgrammes[]
 > {
   const pool = getConnection();
-  const result = await pool.query<InstitutionFundingPoint>(
-    SELECT_INSTITUTION_ECNET_FUNDING,
+  const result = await pool.query<InstitutionFundingProgrammes>(
+    SELECT_INSTITUTION_FUNDING_PROGRAMME,
   );
   return result.rows;
 }
-
-/* Institution Collaboration */
-
-const SELECT_INSTITUTION_COLLABORATION_WEIGHTS = `
-  SELECT * FROM institution_collaboration_weights;
-`;
-
-export async function getInstitutionCollaborationWeights(): Promise<
-  InstitutionCollaborationWeights[]
-> {
-  const pool = getConnection();
-  const result = await pool.query<InstitutionCollaborationWeights>(
-    SELECT_INSTITUTION_COLLABORATION_WEIGHTS,
-  );
-  return result.rows;
-}
-
-const SELECT_INSTITUTION_COLLABORATORS = `
-  SELECT * FROM get_institution_collaborators($1);
-`;
-
-export async function getInstititutionCollaborators(
-  id: number,
-): Promise<InstitutionCollaborators[]> {
-  const pool = getConnection();
-  const result = await pool.query<InstitutionCollaborators>(
-    SELECT_INSTITUTION_COLLABORATORS,
-    [id],
-  );
-  return result.rows;
-}
-
-/* Institution Topics */
-
-const SELECT_INSTITUTION_TOPICS = `
-  SELECT 
-    id as institution_id,
-    name as institution_name,
-    address_geolocation,
-    topic_codes as topic
-  FROM institution_topics
-  WHERE address_geolocation IS NOT NULL;
-`;
-
-// export async function getInstitutionTopics(): Promise<InstitutionTopics[]> {
-//   const pool = getConnection();
-//   const result = await pool.query<InstitutionTopics>(SELECT_INSTITUTION_TOPICS);
-//   return result.rows;
-// }

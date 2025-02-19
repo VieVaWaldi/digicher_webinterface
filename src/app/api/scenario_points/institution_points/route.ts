@@ -1,8 +1,8 @@
 import { createApiHandler } from "core/api/response";
-import { getFundingProgrammes } from "datamodel/fundingprogramme/queries";
+import { getInstitutionPoints } from "datamodel/scenario_points/queries";
 
 export const GET = createApiHandler({
   handler: async () => {
-    return await getFundingProgrammes();
+    return await getInstitutionPoints();
   },
 });

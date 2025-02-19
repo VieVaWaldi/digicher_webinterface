@@ -22,9 +22,9 @@ const InstitutionCard = ({
           <p className="mb-3 text-sm text-blue-600">{institution.short_name}</p>
         )}
         <div className="space-y-2 text-sm">
-          {(institution.address_street ||
-            institution.address_city ||
-            institution.address_country) && (
+          {(institution.street ||
+            institution.city ||
+            institution.country) && (
             <div className="flex items-start space-x-2 text-gray-600">
               <svg
                 className="mt-0.5 h-4 w-4"
@@ -47,16 +47,16 @@ const InstitutionCard = ({
               </svg>
               <span>
                 {[
-                  institution.address_street,
-                  institution.address_city,
-                  institution.address_country,
+                  institution.street,
+                  institution.city,
+                  institution.country,
                 ]
                   .filter(Boolean)
                   .join(", ")}
               </span>
             </div>
           )}
-          {institution.sme && (
+          {institution.is_sme && (
             <div className="flex items-center space-x-2 text-green-600">
               <svg
                 className="h-4 w-4"

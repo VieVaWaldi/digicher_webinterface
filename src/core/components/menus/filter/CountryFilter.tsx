@@ -1,4 +1,8 @@
+"use client";
+
 import { countries, getEmojiFlag, TCountryCode } from "countries-list";
+import { BasePoint } from "datamodel/scenario_points/types";
+import { useState } from "react";
 import { MultiSelect } from "shadcn/multi-select";
 
 const FlagIcon = ({
@@ -10,7 +14,7 @@ const FlagIcon = ({
   return <span>{getEmojiFlag(countryCode)}</span>;
 };
 
-const countryList = Object.entries(countries).map(([code, country]) => ({
+const allCountries = Object.entries(countries).map(([code, country]) => ({
   value: code,
   label: country.name,
   icon: (props: { className?: string }) => (
@@ -18,20 +22,40 @@ const countryList = Object.entries(countries).map(([code, country]) => ({
   ),
 }));
 
-interface CountryFilterProps {
-  setSelectedCountries: (value: string[]) => void;
+interface CountryFilterResult {
+  CountryFilter: React.FC;
+  countryPredicate: (point: BasePoint) => boolean;
 }
 
-export default function CountryFilter({
-  setSelectedCountries,
-}: CountryFilterProps) {
-  return (
-    <MultiSelect
-      options={countryList}
-      onValueChange={setSelectedCountries}
-      placeholder="Select Countries"
-      variant="default"
-      maxCount={6}
-    />
-  );
+export default function useCountryFilter(): CountryFilterResult {
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+
+  const CountryFilter = () => {
+    return (
+      <MultiSelect
+        options={allCountries}
+        value={selectedCountries}
+        defaultValue={selectedCountries}
+        onValueChange={setSelectedCountries}
+        placeholder="Select Countries"
+        variant="default"
+        maxCount={6}
+      />
+    );
+  };
+
+  const countryPredicate = (point: BasePoint): boolean => {
+    if (selectedCountries.length === 0) {
+      return true;
+    }
+
+    // If country_code is null, return false when countries are selected
+    if (!point.country_code) {
+      return false;
+    }
+
+    return selectedCountries.includes(point.country_code);
+  };
+
+  return { CountryFilter, countryPredicate };
 }

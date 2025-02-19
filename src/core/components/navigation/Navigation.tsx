@@ -2,55 +2,22 @@
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { createElement, FC, SVGProps } from "react";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../../../shadcn/sheet";
-import { Button } from "../../../shadcn/button";
+import { createElement } from "react";
 import {
-  Settings,
-  Home,
-  Building2,
-  MapPin,
-  Coins,
-  UsersRound,
-} from "lucide-react";
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "../../../shadcn/sheet";
+import { Button } from "../../../shadcn/button";
+import { Settings, Home } from "lucide-react";
 import { Separator } from "../../../shadcn/separator";
 import SettingsMenu from "../menus/SettingsMenu";
-
-type PathMap = {
-  [key: string]: {
-    title: string;
-    icon: FC<SVGProps<SVGSVGElement>>;
-    path: string;
-  };
-};
-
-// ToDo Use the json[] from page and put that somewhere else
-const pathToTitle: PathMap = {
-  "/scenarios/institutions": {
-    title: "Institutions",
-    icon: Building2,
-    path: "/scenarios/institutions",
-  },
-  "/scenarios/projects": {
-    title: "Projects",
-    icon: MapPin,
-    path: "/scenarios/project_coordinators_globe",
-  },
-  "/scenarios/institutions_ecnetfunding_bars": {
-    title: "Funding",
-    icon: Coins,
-    path: "/scenarios/institutions_ecnetfunding_bars",
-  },
-  "/scenarios/institution_collaboration_weights": {
-    title: "Collaboration",
-    icon: UsersRound,
-    path: "/scenarios/institution_collaboration_weights",
-  },
-};
+import { getScenario } from "app/scenarios";
 
 export function Navigation() {
   const pathname = usePathname();
-  const currentPath = pathToTitle[pathname];
+  const scenario = getScenario(pathname);
 
   return (
     // z-10 needed to hide DeckGL behind nav
@@ -82,26 +49,26 @@ export function Navigation() {
             </Button>
           </div>
 
-          {currentPath && (
+          {scenario && (
             <>
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center gap-2">
-                {createElement(currentPath.icon, {
+                {createElement(scenario.icon, {
                   // size: 20,
                   strokeWidth: 1.25,
                   className:
-                    pathname === currentPath.path
+                    pathname === scenario.href
                       ? "text-orange-500"
                       : "text-muted-foreground",
                 })}
                 <span
                   className={
-                    pathname === currentPath.path
+                    pathname === scenario.href
                       ? "text-orange-500"
                       : "text-muted-foreground"
                   }
                 >
-                  {currentPath.title}
+                  {scenario.title}
                 </span>
               </div>
             </>

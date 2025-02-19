@@ -1,5 +1,5 @@
-import { FundingProgramme } from "datamodel/fundingprogrammes/types";
-import { useFetch } from "../../useFetch";
+import { useFetch } from "core/hooks/useFetch";
+import { FundingProgramme } from "datamodel/fundingprogramme/types";
 
 export function useFundingProgrammes() {
   return useFetch<FundingProgramme[]>("/api/fundingprogramme");

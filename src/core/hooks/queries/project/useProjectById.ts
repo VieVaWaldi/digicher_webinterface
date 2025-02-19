@@ -1,5 +1,5 @@
 import { Project } from "datamodel/project/types";
-import { useFetch } from "../../useFetch";
+import { useFetch } from "core/hooks/useFetch";
 
 export function useProjectById(id: number) {
   return useFetch<Project>("/api/project/project_by_id", {

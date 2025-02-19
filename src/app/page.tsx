@@ -1,39 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
-import { Card } from "shadcn/card";
-import ResourcesList from "core/components/navigation/ResourcesList";
-import { H1, Lead, P } from "shadcn/typography";
-import { MapPin, Building2, Coins, UsersRound } from "lucide-react";
 
-const scenarios = [
-  {
-    title: "Institutions",
-    href: "/scenarios/institutions",
-    icon: Building2,
-    description: "Explore cultural heritage institutions across Europe",
-  },
-  {
-    title: "Projects",
-    href: "/scenarios/projects",
-    icon: MapPin,
-    description:
-      "Discover project locations and their geographical distribution",
-  },
-  {
-    title: "Funding",
-    href: "/scenarios/institutions_ecnetfunding_bars",
-    icon: Coins,
-    description: "Analyze funding distribution and financial patterns",
-  },
-  {
-    title: "Collaboration",
-    href: "/scenarios/institution_collaboration_weights",
-    icon: UsersRound,
-    description: "Visualize collaboration networks between institutions",
-  },
-];
+import Link from "next/link";
+import { Card } from "shadcn/card";
+import { H1, Lead, P } from "shadcn/typography";
+import ResourcesList from "core/components/navigation/ResourcesList";
+
+import { scenarios } from "./scenarios";
 
 export default function Home() {
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { getConnection } from "core/database/connection";
-import { Topic } from "datamodel/topic/types";
+import { Topic } from "./types";
 
 const SELECT_TOPIC = `
   SELECT id, name, level 

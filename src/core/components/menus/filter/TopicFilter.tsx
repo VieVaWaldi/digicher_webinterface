@@ -1,21 +1,21 @@
 import { useTopics } from "core/hooks/queries/topic/useTopics";
+import { BasePoint } from "datamodel/scenario_points/types";
 import { Topic } from "datamodel/topic/types";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { MultiSelect } from "shadcn/multi-select";
 import { Spinner } from "shadcn/spinner";
 
-interface TopicFilterProps {
-  setTopics0Filter: (value: string[]) => void;
-  setTopics1Filter: (value: string[]) => void;
-  setTopics2Filter: (value: string[]) => void;
+interface TopicFilterResult {
+  TopicFilter: React.FC;
+  topicPredicate: (point: BasePoint) => boolean;
 }
 
-export default function TopicFilter({
-  setTopics0Filter,
-  setTopics1Filter,
-  setTopics2Filter,
-}: TopicFilterProps) {
-  const { data: topics, loading, error } = useTopics();
+export default function useTopicFilter(): TopicFilterResult {
+  const [topics0Filter, setTopics0Filter] = useState<string[]>([]);
+  const [topics1Filter, setTopics1Filter] = useState<string[]>([]);
+  const [topics2Filter, setTopics2Filter] = useState<string[]>([]);
+
+  const { data: topics, loading } = useTopics();
 
   function filterTopics(
     data: Topic[] | undefined,
@@ -39,37 +39,62 @@ export default function TopicFilter({
   const topicsLevel1 = useMemo(() => filterTopics(topics, 1), [topics]);
   const topicsLevel2 = useMemo(() => filterTopics(topics, 2, true), [topics]);
 
-  if (loading) {
+  const TopicFilter: React.FC = () => {
+    if (loading) {
+      return (
+        <div className="flex h-24 items-center justify-center">
+          <Spinner />
+        </div>
+      );
+    }
+
     return (
-      <div className="flex h-24 items-center justify-center">
-        <Spinner />
+      <div className="flex flex-col gap-2 md:flex-row">
+        <MultiSelect
+          options={topicsLevel0}
+          value={topics0Filter}
+          defaultValue={topics0Filter}
+          onValueChange={setTopics0Filter}
+          placeholder="Select Main Topic"
+          variant="inverted"
+          maxCount={6}
+        />
+        <MultiSelect
+          options={topicsLevel1}
+          value={topics1Filter}
+          defaultValue={topics1Filter}
+          onValueChange={setTopics1Filter}
+          placeholder="Select Secondary Topic"
+          variant="default"
+          maxCount={6}
+        />
+        <MultiSelect
+          options={topicsLevel2}
+          value={topics2Filter}
+          defaultValue={topics2Filter}
+          onValueChange={setTopics2Filter}
+          placeholder="Select Tertiary Topics"
+          variant="default"
+          maxCount={6}
+        />
       </div>
     );
-  }
+  };
 
-  return (
-    <div className="flex flex-col gap-2 md:flex-row">
-      <MultiSelect
-        options={topicsLevel0}
-        onValueChange={setTopics0Filter}
-        placeholder="Select Main Topic"
-        variant="inverted"
-        maxCount={6}
-      />
-      <MultiSelect
-        options={topicsLevel1}
-        onValueChange={setTopics1Filter}
-        placeholder="Select Secondary Topic"
-        variant="default"
-        maxCount={6}
-      />
-      <MultiSelect
-        options={topicsLevel2}
-        onValueChange={setTopics2Filter}
-        placeholder="Select Tertiary Topics"
-        variant="default"
-        maxCount={6}
-      />
-    </div>
-  );
+  const topicPredicate = (point: BasePoint) => {
+    function topicFilter(data: string[]): boolean {
+      return (
+        data.length === 0 ||
+        (point.topics?.some((topic) => data.includes(topic.id.toString())) ??
+          false)
+      );
+    }
+    return (
+      topicFilter(topics0Filter) &&
+      topicFilter(topics1Filter) &&
+      topicFilter(topics2Filter)
+    );
+  };
+
+  return { TopicFilter, topicPredicate };
 }

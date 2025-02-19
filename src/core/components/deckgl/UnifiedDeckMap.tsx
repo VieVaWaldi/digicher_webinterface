@@ -1,13 +1,18 @@
 import React from "react";
-import DeckGL from "@deck.gl/react";
+
 import Map from "react-map-gl";
-import { COORDINATE_SYSTEM, LayersList } from "@deck.gl/core";
-import { _GlobeView as GlobeView } from "@deck.gl/core";
-import { MapView } from "@deck.gl/core";
 import { BitmapLayer, FullscreenWidget, TileLayer } from "deck.gl";
-import { useSettings } from "core/context/SettingsContext";
-import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
+
+import DeckGL from "@deck.gl/react";
+import { MapView } from "@deck.gl/core";
 import { PickingInfo } from "@deck.gl/core";
+import { _GlobeView as GlobeView } from "@deck.gl/core";
+import { useSettings } from "core/context/SettingsContext";
+import { COORDINATE_SYSTEM, LayersList } from "@deck.gl/core";
+import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
+
+import "mapbox-gl/dist/mapbox-gl.css";
+import "@deck.gl/widgets/stylesheet.css";
 
 interface UnifiedDeckMapProps {
   id: string;

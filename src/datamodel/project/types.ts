@@ -1,6 +1,3 @@
-import { FundingProgramme } from "datamodel/fundingprogrammes/types";
-import { Topic } from "datamodel/topic/types";
-
 export interface Project {
   id: number;
   id_original: string;
@@ -19,13 +16,12 @@ export interface Project {
   call_rcn: string | null;
 }
 
-export interface ProjectCoordinatorPoint {
+export interface ProjectTopics {
   project_id: number;
-  coordinator_id: number;
-  address_geolocation: number[];
-  address_country: string;
-  start_date: Date;
-  end_date: Date;
-  topics?: Topic[];
-  funding_programmes?: FundingProgramme[];
+  topic_ids: number[];
+}
+
+export interface ProjectFundingProgrammes {
+  project_id: number;
+  funding_ids: number[];
 }
