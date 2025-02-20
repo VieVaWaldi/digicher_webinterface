@@ -1,5 +1,5 @@
-import { getProjectById } from "datamodel/project/queries";
 import { createApiHandler } from "core/api/response";
+import { getProjectById } from "datamodel/project/queries";
 
 export const GET = createApiHandler({
   requireParams: ["project_id"],

@@ -1,15 +1,14 @@
 "use client";
-
 import React, { ReactNode } from "react";
-import { ColumnLayer } from "@deck.gl/layers";
-import ScenarioTemplate from "core/components/deckgl/ScenarioTemplate";
-import useTransformInstitutions from "core/hooks/transform/useTransformInstitutions";
 
-import { useFundingInstitutionPoints } from "core/hooks/queries/scenario_points/useFundingInstitutionPoints";
+import { ColumnLayer } from "@deck.gl/layers";
 import { FundingBasePoint } from "datamodel/scenario_points/types";
-import useCountryFilter from "core/components/menus/filter/CountryFilter";
 import useTopicFilter from "core/components/menus/filter/TopicFilter";
+import ScenarioTemplate from "core/components/deckgl/ScenarioTemplate";
+import useCountryFilter from "core/components/menus/filter/CountryFilter";
+import useTransformInstitutions from "core/hooks/transform/useTransformInstitutions";
 import useFundingProgrammeFilter from "core/components/menus/filter/FundingProgrammeFilter";
+import { useFundingInstitutionPoints } from "core/hooks/queries/scenario_points/useFundingInstitutionPoints";
 
 export default function FundingScenario() {
   const id: string = "funding";

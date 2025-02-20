@@ -1,15 +1,14 @@
-import { useTopics } from "../queries/topic/useTopics";
 import { useMemo } from "react";
+
 import { Topic } from "datamodel/topic/types";
-import { useFundingProgrammes } from "../queries/fundingprogramme/useFundingProgrammes";
-import { FundingProgramme } from "datamodel/fundingprogramme/types";
 import { BasePoint } from "datamodel/scenario_points/types";
+import { FundingProgramme } from "datamodel/fundingprogramme/types";
+import { ProjectFundingProgrammes, ProjectTopics } from "datamodel/project/types";
+
+import { useTopics } from "../queries/topic/useTopics";
 import { useProjectsTopics } from "../queries/project/useProjectsTopics";
+import { useFundingProgrammes } from "../queries/fundingprogramme/useFundingProgrammes";
 import { useProjectsFundingProgrammes } from "../queries/project/useProjectsFundingProgrammes";
-import {
-  ProjectFundingProgrammes,
-  ProjectTopics,
-} from "datamodel/project/types";
 
 function createTopicsLookup(data: ProjectTopics[]): Record<number, number[]> {
   return data.reduce(

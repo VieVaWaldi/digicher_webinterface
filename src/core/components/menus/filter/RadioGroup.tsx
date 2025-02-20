@@ -1,5 +1,5 @@
-import { SmeFilter } from "app/scenarios/institutions/page";
 import { Label } from "shadcn/label";
+import { SmeFilter } from "app/scenarios/institutions/page";
 import { RadioGroup, RadioGroupItem } from "shadcn/radio-group";
 
 interface RadioGroupFilterProps {

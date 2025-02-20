@@ -1,4 +1,5 @@
 import { getConnection } from "core/database/connection";
+
 import { FundingProgramme } from "./types";
 
 const SELECT_FUNDING_PROGRAMME = `

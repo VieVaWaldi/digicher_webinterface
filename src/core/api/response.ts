@@ -1,4 +1,5 @@
 import { console } from "inspector";
+
 import { NextRequest, NextResponse } from "next/server";
 
 interface ApiHandlerOptions<T> {

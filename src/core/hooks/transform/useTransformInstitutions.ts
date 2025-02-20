@@ -1,15 +1,14 @@
+import { useMemo } from "react";
+
+import { Topic } from "datamodel/topic/types";
+import { BasePoint } from "datamodel/scenario_points/types";
+import { FundingProgramme } from "datamodel/fundingprogramme/types";
+import { InstitutionFundingProgrammes, InstitutionTopics } from "datamodel/institution/types";
+
 import { useTopics } from "../queries/topic/useTopics";
 import { useInstitutionsTopics } from "../queries/institution/useInstitutionsTopics";
-import { useMemo } from "react";
-import { Topic } from "datamodel/topic/types";
 import { useFundingProgrammes } from "../queries/fundingprogramme/useFundingProgrammes";
-import { FundingProgramme } from "datamodel/fundingprogramme/types";
 import { useInstitutionFundingProgrammes } from "../queries/institution/useInstitutionsFundingProgrammes";
-import { BasePoint } from "datamodel/scenario_points/types";
-import {
-  InstitutionFundingProgrammes,
-  InstitutionTopics,
-} from "datamodel/institution/types";
 
 function createTopicsLookup(
   data: InstitutionTopics[],

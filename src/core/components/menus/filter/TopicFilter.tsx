@@ -1,9 +1,10 @@
-import { useTopics } from "core/hooks/queries/topic/useTopics";
-import { BasePoint } from "datamodel/scenario_points/types";
-import { Topic } from "datamodel/topic/types";
 import { useMemo, useState } from "react";
-import { MultiSelect } from "shadcn/multi-select";
+
 import { Spinner } from "shadcn/spinner";
+import { Topic } from "datamodel/topic/types";
+import { MultiSelect } from "shadcn/multi-select";
+import { BasePoint } from "datamodel/scenario_points/types";
+import { useTopics } from "core/hooks/queries/topic/useTopics";
 
 interface TopicFilterResult {
   TopicFilter: React.FC;

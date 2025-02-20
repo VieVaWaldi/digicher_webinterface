@@ -1,5 +1,5 @@
+import { Card, CardContent } from "shadcn/card";
 import { Institution } from "datamodel/institution/types";
-import { Card, CardContent } from "../../../shadcn/card";
 
 interface InstitutionCardProps {
   institution: Institution;
@@ -22,9 +22,7 @@ const InstitutionCard = ({
           <p className="mb-3 text-sm text-blue-600">{institution.short_name}</p>
         )}
         <div className="space-y-2 text-sm">
-          {(institution.street ||
-            institution.city ||
-            institution.country) && (
+          {(institution.street || institution.city || institution.country) && (
             <div className="flex items-start space-x-2 text-gray-600">
               <svg
                 className="mt-0.5 h-4 w-4"
@@ -46,11 +44,7 @@ const InstitutionCard = ({
                 />
               </svg>
               <span>
-                {[
-                  institution.street,
-                  institution.city,
-                  institution.country,
-                ]
+                {[institution.street, institution.city, institution.country]
                   .filter(Boolean)
                   .join(", ")}
               </span>

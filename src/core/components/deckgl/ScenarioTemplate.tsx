@@ -1,10 +1,11 @@
 "use client";
+
 import React, { ReactNode, useEffect, useState } from "react";
-import { Layer, PickingInfo } from "@deck.gl/core";
-import { H2, Lead, P } from "shadcn/typography";
+
 import { Card } from "shadcn/card";
 import { Spinner } from "shadcn/spinner";
-
+import { H2, Lead, P } from "shadcn/typography";
+import { Layer, PickingInfo } from "@deck.gl/core";
 import UnifiedDeckMap from "core/components/deckgl/UnifiedDeckMap";
 
 interface ScenarioTemplateProps {

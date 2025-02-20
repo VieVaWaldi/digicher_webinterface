@@ -1,4 +1,5 @@
 import { getConnection } from "core/database/connection";
+
 import { Topic } from "./types";
 
 const SELECT_TOPIC = `

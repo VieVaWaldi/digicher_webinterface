@@ -1,10 +1,12 @@
 import React from "react";
+
 import { Globe2, Map } from "lucide-react";
-import { MapBoxStyle, useSettings } from "core/context/SettingsContext";
-import { Card } from "../../../shadcn/card";
-import { Button } from "../../../shadcn/button";
+
 import Image from "next/image";
-import { H3 } from "../../../shadcn/typography";
+import { Card } from "shadcn/card";
+import { Button } from "shadcn/button";
+import { H3 } from "shadcn/typography";
+import { MapBoxStyle, useSettings } from "core/context/SettingsContext";
 
 const ViewToggle = ({
   isGlobe,
@@ -79,11 +81,11 @@ const SettingsMenu = () => {
         {/* Map Style Selection */}
         <div className="flex flex-col space-y-4">
           <H3 className="text-center">Map Style</H3>
-          <div className="flex flex-col gap-4 items-center">
+          <div className="flex flex-col items-center gap-4">
             {mapStyles.map((style) => (
               <Card
                 key={style.value}
-                className={`relative cursor-pointer overflow-hidden w-64 ${
+                className={`relative w-64 cursor-pointer overflow-hidden ${
                   mapBoxStyle === style.value
                     ? "ring-2 ring-primary"
                     : "hover:ring-2 hover:ring-muted"

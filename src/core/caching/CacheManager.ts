@@ -4,7 +4,6 @@ interface CacheEntry<T> {
   queryParams: string;
 }
 
-// Cache manager to handle in-memory storage
 export class CacheManager {
   private static instance: CacheManager | null = null;
   private cache: Map<string, CacheEntry<unknown>>;
@@ -34,10 +33,8 @@ export class CacheManager {
 
     if (!entry) return null;
 
-    // Check if the query params match
     if (entry.queryParams !== queryParams) return null;
 
-    // Check if the cache has expired
     if (Date.now() - entry.timestamp > this.CACHE_DURATION) {
       this.cache.delete(key);
       return null;
@@ -51,7 +48,6 @@ export class CacheManager {
   }
 }
 
-// Export cache manager functions
 export const clearCache = (): void => {
   CacheManager.getInstance().clear();
 };

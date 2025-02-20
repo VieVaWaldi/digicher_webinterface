@@ -1,14 +1,16 @@
 import React from "react";
+
+import { Award, Banknote, Calendar } from "lucide-react";
+
+import { Project } from "datamodel/project/types";
 import {
   Card,
-  CardHeader,
   CardContent,
-  CardFooter,
-  CardTitle,
   CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "shadcn/card";
-import { Calendar, Banknote, Award } from "lucide-react";
-import { Project } from "datamodel/project/types";
 
 interface ProjectCardProps {
   project: Project;

@@ -1,19 +1,18 @@
 "use client";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
+
 import { createElement } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "../../../shadcn/sheet";
-import { Button } from "../../../shadcn/button";
-import { Settings, Home } from "lucide-react";
-import { Separator } from "../../../shadcn/separator";
-import SettingsMenu from "../menus/SettingsMenu";
+
+import { Home, Settings } from "lucide-react";
+
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "shadcn/button";
 import { getScenario } from "app/scenarios";
+import { Separator } from "shadcn/separator";
+import { usePathname } from "next/navigation";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "shadcn/sheet";
+
+import SettingsMenu from "../menus/SettingsMenu";
 
 export function Navigation() {
   const pathname = usePathname();

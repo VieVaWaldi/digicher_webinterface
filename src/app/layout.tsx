@@ -1,9 +1,10 @@
-import "./globals.css";
-import { Navigation } from "core/components/navigation/Navigation";
+import { Metadata } from "next";
+
 import { Footer } from "core/components/navigation/Footer";
 import { SettingsProvider } from "core/context/SettingsContext";
+import { Navigation } from "core/components/navigation/Navigation";
 
-import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "DIGICHER Map",

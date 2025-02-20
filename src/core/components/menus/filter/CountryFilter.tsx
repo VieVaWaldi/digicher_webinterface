@@ -1,9 +1,11 @@
 "use client";
 
-import { countries, getEmojiFlag, TCountryCode } from "countries-list";
-import { BasePoint } from "datamodel/scenario_points/types";
 import { useState } from "react";
+
+import { countries, getEmojiFlag, TCountryCode } from "countries-list";
+
 import { MultiSelect } from "shadcn/multi-select";
+import { BasePoint } from "datamodel/scenario_points/types";
 
 const FlagIcon = ({
   countryCode,
