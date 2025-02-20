@@ -3,6 +3,8 @@ export interface Institution {
   name: string;
   is_sme: boolean | null;
   street: string | null;
+  postbox: string | null;
+  postalcode: string | null;
   city: string | null;
   country: string | null;
   geolocation: number[] | null;

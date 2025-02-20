@@ -43,7 +43,7 @@ export default function useTopicFilter(): TopicFilterResult {
   const TopicFilter: React.FC = () => {
     if (loading) {
       return (
-        <div className="flex h-24 items-center justify-center">
+        <div className="flex h-12 items-center justify-center">
           <Spinner />
         </div>
       );
@@ -58,7 +58,7 @@ export default function useTopicFilter(): TopicFilterResult {
           onValueChange={setTopics0Filter}
           placeholder="Select Main Topic"
           variant="inverted"
-          maxCount={6}
+          maxCount={2}
         />
         <MultiSelect
           options={topicsLevel1}
@@ -67,7 +67,7 @@ export default function useTopicFilter(): TopicFilterResult {
           onValueChange={setTopics1Filter}
           placeholder="Select Secondary Topic"
           variant="default"
-          maxCount={6}
+          maxCount={2}
         />
         <MultiSelect
           options={topicsLevel2}
@@ -76,7 +76,7 @@ export default function useTopicFilter(): TopicFilterResult {
           onValueChange={setTopics2Filter}
           placeholder="Select Tertiary Topics"
           variant="default"
-          maxCount={6}
+          maxCount={2}
         />
       </div>
     );

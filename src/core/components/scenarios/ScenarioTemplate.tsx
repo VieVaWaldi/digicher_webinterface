@@ -1,12 +1,11 @@
 "use client";
 
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useState } from "react";
 
-import { Card } from "shadcn/card";
 import { Spinner } from "shadcn/spinner";
 import { H2, Lead, P } from "shadcn/typography";
 import { Layer, PickingInfo } from "@deck.gl/core";
-import UnifiedDeckMap from "core/components/deckgl/UnifiedDeckMap";
+import BaseDeckGLMap from "core/components/scenarios/BaseDeckGLMap";
 
 interface ScenarioTemplateProps {
   id: string;
@@ -14,7 +13,7 @@ interface ScenarioTemplateProps {
   description?: string;
   statsCard?: ReactNode;
   filterMenus: ReactNode[];
-  detailsCard?: ReactNode;
+  infoPanel?: ReactNode;
   layers: Layer[];
   isLoading?: boolean;
   error?: string | null;
@@ -27,21 +26,12 @@ export default function ScenarioTemplate({
   description = "The common snapping turtlse (Chelydra serpentina) is a species of large freshwater turtle in the family Chelydridae. Its natural range extends from southeastern Canada, southwest to the edge of the Rocky Mountains.",
   statsCard,
   filterMenus,
-  detailsCard,
+  infoPanel,
   layers,
   isLoading = false,
   error = null,
 }: ScenarioTemplateProps) {
   const [isInfoOpen, setInfoOpen] = useState<boolean>(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // This replaces the map elements (dots etc) when the map size changes
-      window.dispatchEvent(new Event("resize"));
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [isInfoOpen]);
 
   const onMapClick = (info: PickingInfo) => {
     if (!info.object) {
@@ -61,7 +51,7 @@ export default function ScenarioTemplate({
         </div>
 
         {(statsCard || isLoading || error) && (
-          <Card className="mx-auto p-6">
+          <div className="mx-auto p-6">
             {error ? (
               <Lead>{error}</Lead>
             ) : isLoading ? (
@@ -69,28 +59,37 @@ export default function ScenarioTemplate({
             ) : (
               <Lead>{statsCard}</Lead>
             )}
-          </Card>
+          </div>
         )}
-
-        {/* Filter */}
-        <div className="mx-auto flex flex-wrap justify-start gap-4">
-          {filterMenus.map((filter, index) => (
-            <Card key={`filter-${index}`} className="w-full p-6 sm:w-auto">
-              {filter}
-            </Card>
-          ))}
-        </div>
       </div>
 
-      {/* DeckGL & InfoArea */}
-      <div className="flex h-[90vh] flex-col md:flex-row">
-        <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${isInfoOpen ? "w-full md:w-64" : "h-0 w-0"} `}
-        >
-          {detailsCard}
+      {/* Filter */}
+      <div className="flex max-h-full flex-wrap justify-center rounded-lg border border-gray-200">
+        {filterMenus.map((filter, index) => (
+          <div key={`filter-${index}`} className="w-full p-2 sm:w-auto md:p-5">
+            {filter}
+          </div>
+        ))}
+      </div>
+
+      {/* DeckGL & Infopanel */}
+      <div className="relative h-[90vh] overflow-hidden">
+        {/* Map container */}
+        <div className="h-full w-full">
+          <div className="relative h-full overflow-hidden rounded-lg border border-gray-200">
+            <BaseDeckGLMap id={id} layers={layers} onMapClick={onMapClick} />
+          </div>
         </div>
-        <div className="relative flex-1 overflow-hidden rounded-lg border border-gray-200">
-          <UnifiedDeckMap id={id} layers={layers} onMapClick={onMapClick} />
+
+        {/* Info panel overlay */}
+        <div
+          className={`absolute transition-all duration-300 ease-in-out ${
+            isInfoOpen ? "opacity-100" : "pointer-events-none opacity-0"
+          } bottom-0 h-[20vh] w-full translate-y-full ${isInfoOpen ? "!translate-y-0" : ""} md:right-0 md:top-0 md:h-full md:w-96 md:translate-x-full md:translate-y-0 ${isInfoOpen ? "md:!translate-x-0" : ""} `}
+        >
+          <div className="flex h-full overflow-auto rounded-xl bg-white">
+            <div className="min-h-full w-full">{infoPanel}</div>
+          </div>
         </div>
       </div>
     </div>

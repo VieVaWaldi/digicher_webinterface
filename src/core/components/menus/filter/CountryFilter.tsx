@@ -41,7 +41,7 @@ export default function useCountryFilter(): CountryFilterResult {
         onValueChange={setSelectedCountries}
         placeholder="Select Countries"
         variant="default"
-        maxCount={6}
+        maxCount={2}
       />
     );
   };

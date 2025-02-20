@@ -41,7 +41,7 @@ export default function useFundingProgrammeFilter(): FundingProgrammeFilterResul
   const FundingProgrammeFilter = () => {
     if (loading) {
       return (
-        <div className="flex h-24 items-center justify-center">
+        <div className="flex h-12 items-center justify-center">
           <Spinner />
         </div>
       );
@@ -64,7 +64,7 @@ export default function useFundingProgrammeFilter(): FundingProgrammeFilterResul
             onValueChange={setCodeFilter}
             placeholder="Select Code"
             variant="default"
-            maxCount={6}
+            maxCount={2}
           />
         </div>
       );

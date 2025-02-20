@@ -5,9 +5,9 @@ import React, { ReactNode, useState } from "react";
 import { ScatterplotLayer } from "deck.gl";
 
 import { DualRangeSlider } from "shadcn/dual-range-slider";
-import ProjectCard from "core/components/cards/ProjectCard";
+import ProjectInfoPanel from "core/components/infoPanels/ProjectInfoPanel";
 import useTopicFilter from "core/components/menus/filter/TopicFilter";
-import ScenarioTemplate from "core/components/deckgl/ScenarioTemplate";
+import ScenarioTemplate from "core/components/scenarios/ScenarioTemplate";
 import { ProjectCoordinatorPoint } from "datamodel/scenario_points/types";
 import useCountryFilter from "core/components/menus/filter/CountryFilter";
 import { useProjectById } from "core/hooks/queries/project/useProjectById";
@@ -54,7 +54,10 @@ export default function ProjectScenario() {
   });
 
   const filterMenus: ReactNode[] = [
-    <div className="h-auto w-96 px-2 pt-5" key="dualyear-filter">
+    <div
+      className="h-auto min-w-72 px-6 pb-2 pt-8 md:pt-6"
+      key="dualyear-filter"
+    >
       <DualRangeSlider
         label={(value) => value}
         value={years}
@@ -105,7 +108,7 @@ export default function ProjectScenario() {
       }
       filterMenus={filterMenus}
       layers={[layer]}
-      detailsCard={project && <ProjectCard project={project} />}
+      infoPanel={project && <ProjectInfoPanel project={project} />}
     />
   );
 }

@@ -5,9 +5,9 @@ import { ReactNode, useState } from "react";
 import { ScatterplotLayer } from "deck.gl";
 
 import { InstitutionPoint } from "datamodel/scenario_points/types";
-import InstitutionCard from "core/components/cards/InstitutionCard";
+import InstitutionInfoPanel from "core/components/infoPanels/InstitutionInfoPanel";
 import useTopicFilter from "core/components/menus/filter/TopicFilter";
-import ScenarioTemplate from "core/components/deckgl/ScenarioTemplate";
+import ScenarioTemplate from "core/components/scenarios/ScenarioTemplate";
 import useCountryFilter from "core/components/menus/filter/CountryFilter";
 import { RadioGroupFilter } from "core/components/menus/filter/RadioGroup";
 import useTransformInstitutions from "core/hooks/transform/useTransformInstitutions";
@@ -70,28 +70,29 @@ export default function InstitutionScenario() {
   const layer = new ScatterplotLayer({
     id: `scatter-${id}`,
     data: filteredDataPoints,
-    pickable: true,
-    opacity: 0.8,
+
     filled: true,
     stroked: false,
-    radiusScale: 6,
-    radiusMinPixels: 3,
-    radiusMaxPixels: 100,
-    lineWidthMinPixels: 1,
-    getRadius: 100,
-    antialiasing: true,
+
+    getRadius: 2000,
+    // radiusScale: 60,
+    // radiusMinPixels: 4,
+    // radiusMaxPixels: 4,
+    // lineWidthMinPixels: 1,
+
     getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
-    getFillColor: (d) =>
-      d.institution_id === selectedInstitution?.institution_id
-        ? [1, 2, 3]
-        : d.is_sme
-          ? [20, 140, 0]
-          : [255, 140, 0],
+    getFillColor: (d) => (d.is_sme ? [20, 140, 0] : [255, 140, 0]),
     onClick: (info) => {
       if (info.object) {
         setSelectedInstitution(info.object as InstitutionPoint);
       }
     },
+
+    pickable: true,
+    opacity: 0.8,
+    antialiasing: true,
+    highlightColor: [1, 1, 1],
+    autoHighlight: true,
   });
 
   return (
@@ -108,7 +109,7 @@ export default function InstitutionScenario() {
       }
       filterMenus={filterMenus}
       layers={[layer]}
-      detailsCard={institution && <InstitutionCard institution={institution} />}
+      infoPanel={institution && <InstitutionInfoPanel institution={institution} />}
     />
   );
 }

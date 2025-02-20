@@ -3,11 +3,11 @@
 import React, { ReactNode, useState } from "react";
 
 import { ArcLayer, ColumnLayer } from "@deck.gl/layers";
-import InstitutionCard from "core/components/cards/InstitutionCard";
 import useTopicFilter from "core/components/menus/filter/TopicFilter";
-import ScenarioTemplate from "core/components/deckgl/ScenarioTemplate";
+import ScenarioTemplate from "core/components/scenarios/ScenarioTemplate";
 import useCountryFilter from "core/components/menus/filter/CountryFilter";
 import { InstitutionCollaborationWeights } from "datamodel/scenario_points/types";
+import InstitutionInfoPanel from "core/components/infoPanels/InstitutionInfoPanel";
 import useTransformInstitutions from "core/hooks/transform/useTransformInstitutions";
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import useFundingProgrammeFilter from "core/components/menus/filter/FundingProgrammeFilter";
@@ -149,7 +149,9 @@ export default function CollaborationScenario() {
       }
       filterMenus={filterMenus}
       layers={[columnLayer, arcLayer]}
-      detailsCard={institution && <InstitutionCard institution={institution} />}
+      infoPanel={
+        institution && <InstitutionInfoPanel institution={institution} />
+      }
     />
   );
 }

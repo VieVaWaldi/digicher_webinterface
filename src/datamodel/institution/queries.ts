@@ -13,6 +13,8 @@ const SELECT_INSTITUTION = `
     name,
     sme as is_sme,
     address_street as street,
+    address_postbox as postbox,
+    address_postalcode as postalcode,
     address_city as city,
     address_country as country,
     address_geolocation as geolocation,

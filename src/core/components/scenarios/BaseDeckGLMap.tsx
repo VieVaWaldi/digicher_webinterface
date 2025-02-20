@@ -9,7 +9,7 @@ import { PickingInfo } from "@deck.gl/core";
 import { _GlobeView as GlobeView } from "@deck.gl/core";
 import { useSettings } from "core/context/SettingsContext";
 import { COORDINATE_SYSTEM, LayersList } from "@deck.gl/core";
-import { INITIAL_VIEW_STATE_EU } from "core/components/deckgl/viewports";
+import { INITIAL_VIEW_STATE_EU } from "core/components/scenarios/viewports";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@deck.gl/widgets/stylesheet.css";
@@ -20,7 +20,7 @@ interface UnifiedDeckMapProps {
   onMapClick: (info: PickingInfo) => void;
 }
 
-export default function UnifiedDeckMap({
+export default function BaseDeckGLMap({
   id,
   layers,
   onMapClick,
