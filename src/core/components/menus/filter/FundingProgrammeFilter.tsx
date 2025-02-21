@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { H4 } from "shadcn/typography";
 import { Spinner } from "shadcn/spinner";
 import { MultiSelect } from "shadcn/multi-select";
 import { BasePoint } from "datamodel/scenario_points/types";
@@ -47,7 +48,8 @@ export default function useFundingProgrammeFilter(): FundingProgrammeFilterResul
       );
     } else {
       return (
-        <div className="flex flex-col gap-2 md:flex-row">
+        <div className="flex flex-col gap-2">
+          <H4 >Funding Programmes</H4>
           <MultiSelect
             options={frameworkOptions}
             value={frameworksFilter}
@@ -55,7 +57,7 @@ export default function useFundingProgrammeFilter(): FundingProgrammeFilterResul
             onValueChange={setFrameworksFilter}
             placeholder="Select Framework"
             variant="inverted"
-            maxCount={6}
+            maxCount={4}
           />
           <MultiSelect
             options={codeOptions}
@@ -64,7 +66,7 @@ export default function useFundingProgrammeFilter(): FundingProgrammeFilterResul
             onValueChange={setCodeFilter}
             placeholder="Select Code"
             variant="default"
-            maxCount={2}
+            maxCount={4}
           />
         </div>
       );

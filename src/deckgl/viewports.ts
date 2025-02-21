@@ -14,15 +14,17 @@ export const INITIAL_VIEW_STATE_EU: ViewState = {
   },
 };
 
-export const INITIAL_VIEW_STATE_TILTED_EU = {
-  longitude: 10,
-  latitude: 50,
-  zoom: 4,
-  pitch: 45, // Adds 45-degree tilt
-  bearing: 0, // Optional: controls rotation (0 means north is up)
-  controller: {
-    touchPitch: true, // Enables two-finger pitch/tilt
-    touchRotate: true, // Enables two-finger rotation
+export const INITIAL_VIEW_STATE_TILTED_EU: ViewState = {
+  longitude: 8,
+  latitude: 48,
+  zoom: 4.2,
+  pitch: 45,
+  bearing: 15,
+  padding: {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 };
 

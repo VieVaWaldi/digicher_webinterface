@@ -1,6 +1,6 @@
 import React from "react";
 
-import Map from "react-map-gl";
+import Map, { ViewState } from "react-map-gl";
 import { BitmapLayer, FullscreenWidget, TileLayer } from "deck.gl";
 
 import DeckGL from "@deck.gl/react";
@@ -9,7 +9,6 @@ import { PickingInfo } from "@deck.gl/core";
 import { _GlobeView as GlobeView } from "@deck.gl/core";
 import { useSettings } from "core/context/SettingsContext";
 import { COORDINATE_SYSTEM, LayersList } from "@deck.gl/core";
-import { INITIAL_VIEW_STATE_EU } from "core/components/scenarios/viewports";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@deck.gl/widgets/stylesheet.css";
@@ -17,12 +16,14 @@ import "@deck.gl/widgets/stylesheet.css";
 interface UnifiedDeckMapProps {
   id: string;
   layers: LayersList;
+  viewState: ViewState;
   onMapClick: (info: PickingInfo) => void;
 }
 
 export default function BaseDeckGLMap({
   id,
   layers,
+  viewState,
   onMapClick,
 }: UnifiedDeckMapProps) {
   const { mapBoxStyle, isGlobe } = useSettings();
@@ -65,12 +66,16 @@ export default function BaseDeckGLMap({
     <DeckGL
       id={`deck-id-${id}`}
       key={`deck-key-${id}`}
-      initialViewState={INITIAL_VIEW_STATE_EU}
+      initialViewState={viewState}
       views={view}
       layers={activeLayers}
       controller={true}
       onClick={onMapClick}
-      getCursor={({ isDragging }) => (isDragging ? "grabbing" : "grab")}
+      getCursor={({ isDragging, isHovering }) => {
+        if (isDragging) return "grabbing";
+        if (isHovering) return "pointer";
+        return "grab";
+      }}
       widgets={[
         new FullscreenWidget({
           id: "fullscreen",

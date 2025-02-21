@@ -5,6 +5,7 @@ import { Topic } from "datamodel/topic/types";
 import { MultiSelect } from "shadcn/multi-select";
 import { BasePoint } from "datamodel/scenario_points/types";
 import { useTopics } from "core/hooks/queries/topic/useTopics";
+import { H4 } from "shadcn/typography";
 
 interface TopicFilterResult {
   TopicFilter: React.FC;
@@ -50,7 +51,8 @@ export default function useTopicFilter(): TopicFilterResult {
     }
 
     return (
-      <div className="flex flex-col gap-2 md:flex-row">
+      <div className="flex flex-col gap-2">
+        <H4 >Topic</H4>
         <MultiSelect
           options={topicsLevel0}
           value={topics0Filter}
@@ -58,7 +60,7 @@ export default function useTopicFilter(): TopicFilterResult {
           onValueChange={setTopics0Filter}
           placeholder="Select Main Topic"
           variant="inverted"
-          maxCount={2}
+          maxCount={4}
         />
         <MultiSelect
           options={topicsLevel1}
@@ -67,7 +69,7 @@ export default function useTopicFilter(): TopicFilterResult {
           onValueChange={setTopics1Filter}
           placeholder="Select Secondary Topic"
           variant="default"
-          maxCount={2}
+          maxCount={4}
         />
         <MultiSelect
           options={topicsLevel2}
@@ -76,7 +78,7 @@ export default function useTopicFilter(): TopicFilterResult {
           onValueChange={setTopics2Filter}
           placeholder="Select Tertiary Topics"
           variant="default"
-          maxCount={2}
+          maxCount={4}
         />
       </div>
     );

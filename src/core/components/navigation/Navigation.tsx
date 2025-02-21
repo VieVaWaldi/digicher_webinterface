@@ -20,7 +20,7 @@ export function Navigation() {
 
   return (
     // z-10 needed to hide DeckGL behind nav
-    <nav className="static z-10 w-full border-b bg-background px-4 py-2 md:fixed md:top-0 md:w-full">
+    <nav className="static z-30 w-full border-b bg-background px-4 py-2 md:fixed md:top-0 md:w-full">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-4">
           <Image

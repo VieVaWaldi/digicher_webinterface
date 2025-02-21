@@ -14,6 +14,7 @@ import useTransformInstitutions from "core/hooks/transform/useTransformInstituti
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import useFundingProgrammeFilter from "core/components/menus/filter/FundingProgrammeFilter";
 import { useInstitutionPoints } from "core/hooks/queries/scenario_points/useInstitutionPoints";
+import { baseLayerProps } from "deckgl/baseLayerProps";
 
 const SME_FILTERS = ["All", "SME", "Non-SME"] as const;
 export type SmeFilter = (typeof SME_FILTERS)[number];
@@ -68,16 +69,17 @@ export default function InstitutionScenario() {
 
   /** Layer */
   const layer = new ScatterplotLayer({
+    ...baseLayerProps,
     id: `scatter-${id}`,
     data: filteredDataPoints,
 
     filled: true,
     stroked: false,
 
-    getRadius: 2000,
+    // getRadius: 2000,
     // radiusScale: 60,
-    // radiusMinPixels: 4,
-    // radiusMaxPixels: 4,
+    radiusMinPixels: 5,
+    radiusMaxPixels: 5,
     // lineWidthMinPixels: 1,
 
     getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
@@ -87,12 +89,6 @@ export default function InstitutionScenario() {
         setSelectedInstitution(info.object as InstitutionPoint);
       }
     },
-
-    pickable: true,
-    opacity: 0.8,
-    antialiasing: true,
-    highlightColor: [1, 1, 1],
-    autoHighlight: true,
   });
 
   return (
@@ -109,7 +105,9 @@ export default function InstitutionScenario() {
       }
       filterMenus={filterMenus}
       layers={[layer]}
-      infoPanel={institution && <InstitutionInfoPanel institution={institution} />}
+      infoPanel={
+        institution && <InstitutionInfoPanel institution={institution} />
+      }
     />
   );
 }

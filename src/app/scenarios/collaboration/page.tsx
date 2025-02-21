@@ -13,6 +13,8 @@ import { useInstitutionById } from "core/hooks/queries/institution/useInstitutio
 import useFundingProgrammeFilter from "core/components/menus/filter/FundingProgrammeFilter";
 import { useInstitutionCollaboratorsById } from "core/hooks/queries/scenario_points/useCollaborationInstitutionById";
 import { useInstitutionCollaborationWeights } from "core/hooks/queries/scenario_points/useCollaborationWeightsPoints";
+import { baseLayerProps } from "deckgl/baseLayerProps";
+import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
 
 export default function CollaborationScenario() {
   const id: string = "collaboration";
@@ -66,6 +68,7 @@ export default function CollaborationScenario() {
   }, [filteredDataPoints]);
 
   const columnLayer = new ColumnLayer<InstitutionCollaborationWeights>({
+    ...baseLayerProps,
     id: `column-${id}`,
     data: filteredDataPoints || [],
     diskResolution: 12,
@@ -152,6 +155,7 @@ export default function CollaborationScenario() {
       infoPanel={
         institution && <InstitutionInfoPanel institution={institution} />
       }
+      viewState={INITIAL_VIEW_STATE_TILTED_EU}
     />
   );
 }

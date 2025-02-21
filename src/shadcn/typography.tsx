@@ -33,14 +33,27 @@ export function H2({ children, className }: TypographyProps) {
 
 export function H3({ children, className }: TypographyProps) {
   return (
-    <h2
+    <h3
+      className={cn(
+        "text-2xl scroll-m-20 pb-2 font-semibold tracking-tight first:mt-0",
+        className,
+      )}
+    >
+      {children}
+    </h3>
+  );
+}
+
+export function H4({ children, className }: TypographyProps) {
+  return (
+    <h4
       className={cn(
         "scroll-m-20 pb-2 text-1xl font-semibold tracking-tight first:mt-0",
         className,
       )}
     >
       {children}
-    </h2>
+    </h4>
   );
 }
 

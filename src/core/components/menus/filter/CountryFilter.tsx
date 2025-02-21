@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { countries, getEmojiFlag, TCountryCode } from "countries-list";
 
+import { H4 } from "shadcn/typography";
 import { MultiSelect } from "shadcn/multi-select";
 import { BasePoint } from "datamodel/scenario_points/types";
 
@@ -34,15 +35,19 @@ export default function useCountryFilter(): CountryFilterResult {
 
   const CountryFilter = () => {
     return (
-      <MultiSelect
-        options={allCountries}
-        value={selectedCountries}
-        defaultValue={selectedCountries}
-        onValueChange={setSelectedCountries}
-        placeholder="Select Countries"
-        variant="default"
-        maxCount={2}
-      />
+      <>
+        <H4 className="pl">Region</H4>
+        <MultiSelect
+          options={allCountries}
+          value={selectedCountries}
+          defaultValue={selectedCountries}
+          onValueChange={setSelectedCountries}
+          placeholder="Select Countries"
+          variant="default"
+          maxCount={4}
+          className="w-full"
+        />
+      </>
     );
   };
 
