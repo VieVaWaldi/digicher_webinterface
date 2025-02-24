@@ -34,10 +34,16 @@ export interface FundingBasePoint extends BasePoint {
   total_cost: string | null;
 }
 
+// Individual Projects of a Institution
+export interface InstitutionProjectsFunding extends BasePoint {
+  ec_contribution: number | null;
+  net_ec_contribution: number | null;
+  total_cost: number | null;
+}
+
 export interface FundingInstitutionPoint extends FundingBasePoint {
   type: "institution";
-  number_of_projects: string;
-  avg_project_funding: string | null;
+  projects_funding: InstitutionProjectsFunding[];
 }
 
 export interface FundingProjectPoint extends FundingBasePoint {

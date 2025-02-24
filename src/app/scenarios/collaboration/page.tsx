@@ -56,8 +56,8 @@ export default function CollaborationScenario() {
 
   const filterMenus: ReactNode[] = [
     <CountryFilter key="country-filter" />,
-    <TopicFilter key="topic-filter" />,
     <FundingProgrammeFilter key="funding-filter" />,
+    <TopicFilter key="topic-filter" />,
   ];
 
   /** Layer */

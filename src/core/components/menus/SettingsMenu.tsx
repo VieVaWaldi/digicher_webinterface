@@ -1,54 +1,10 @@
 import React from "react";
 
-import { Globe2, Map } from "lucide-react";
-
 import Image from "next/image";
 import { Card } from "shadcn/card";
-import { Button } from "shadcn/button";
 import { H3 } from "shadcn/typography";
 import { MapBoxStyle, useSettings } from "core/context/SettingsContext";
-
-const ViewToggle = ({
-  isGlobe,
-  onChange,
-}: {
-  isGlobe: boolean;
-  onChange: (value: boolean) => void;
-}) => {
-  return (
-    <Button
-      variant="outline"
-      className="relative h-10 w-32 cursor-pointer overflow-hidden p-0"
-      onClick={() => onChange(!isGlobe)}
-    >
-      {/* Background indicator that slides */}
-      <div
-        className={`absolute inset-0 bg-primary transition-transform duration-200 ${
-          isGlobe ? "translate-x-0" : "translate-x-16"
-        }`}
-        style={{ width: "50%" }}
-      />
-
-      {/* Globe side */}
-      <div
-        className={`absolute left-0 flex h-full w-16 items-center justify-center transition-colors duration-200 ${
-          isGlobe ? "text-primary-foreground" : "text-foreground"
-        }`}
-      >
-        <Globe2 className="h-4 w-4" />
-      </div>
-
-      {/* Map side */}
-      <div
-        className={`absolute right-0 flex h-full w-16 items-center justify-center transition-colors duration-200 ${
-          !isGlobe ? "text-primary-foreground" : "text-foreground"
-        }`}
-      >
-        <Map className="h-4 w-4" />
-      </div>
-    </Button>
-  );
-};
+import { ViewToggle } from "../buttons/toggle";
 
 const SettingsMenu = () => {
   const { mapBoxStyle, setMapBoxStyle, isGlobe, setIsGlobe } = useSettings();
@@ -112,7 +68,7 @@ const SettingsMenu = () => {
         </div>
 
         {/* View Toggle */}
-        <div className="flex flex-col items-center space-y-2 pb-4">
+        <div className="flex flex-col items-center space-y-2 pb-8">
           <span className="text-sm font-medium">Map View</span>
           <ViewToggle isGlobe={isGlobe} onChange={setIsGlobe} />
         </div>

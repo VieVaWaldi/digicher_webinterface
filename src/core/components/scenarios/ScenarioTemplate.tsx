@@ -59,7 +59,7 @@ export default function ScenarioTemplate({
   const panelWidthStyles = "w-[35vh]";
   const panelContainerStyles = "rounded-2xl border border-gray-200 bg-white";
   const panelHiddenStyles = "pointer-events-none opacity-0";
-  const panelVisibleStyles = "opacity-90";
+  const panelVisibleStyles = "opacity-95";
 
   return (
     <div className="flex h-full flex-col">

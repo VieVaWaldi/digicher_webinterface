@@ -6,6 +6,7 @@ import {
   InstitutionCollaborationWeights,
   InstitutionCollaborators,
   InstitutionPoint,
+  InstitutionProjectsFunding,
   ProjectCoordinatorPoint,
 } from "./types";
 
@@ -57,11 +58,9 @@ const SELECT_FUNDING_INSTITUTIONS = `
     id as institution_id,
     address_geolocation as geolocation,
     address_country as country_code,
-    total_eu_funding as total_cost,
-    number_of_projects,
-    avg_project_funding
+    projects_funding
   FROM mat_institution_funding
-  WHERE total_eu_funding != 0;
+  WHERE address_geolocation IS NOT NULL;
 `;
 
 export async function getFundingInstitutionPoints(): Promise<
@@ -71,7 +70,10 @@ export async function getFundingInstitutionPoints(): Promise<
   const result = await pool.query<FundingInstitutionPoint>(
     SELECT_FUNDING_INSTITUTIONS,
   );
-  return result.rows;
+  return result.rows.map((row) => ({
+    ...row,
+    projects_funding: parseProjectsFunding(row.projects_funding.toString()),
+  }));
 }
 
 const SELECT_FUNDING_PROJECTS = `
@@ -133,4 +135,36 @@ export async function getInstititutionCollaborators(
     [id],
   );
   return result.rows;
+}
+
+/** Data Parser Functions */
+
+function parseProjectsFunding(
+  project_funding_string: string,
+): InstitutionProjectsFunding[] {
+  const project_funding_clean = project_funding_string
+    .replaceAll('{"', "")
+    .replaceAll(')","', "")
+    .replaceAll(')"}', "")
+    .split("(");
+
+  if (project_funding_clean[0] === "") {
+    project_funding_clean.shift();
+  }
+
+  const projects_funding: InstitutionProjectsFunding[] = [];
+  project_funding_clean.map((entry) => {
+    const entries = entry.split(",");
+    projects_funding.push({
+      institution_id: 0,
+      geolocation: [0, 0],
+      country_code: "",
+      project_id: parseInt(entries[0]),
+      ec_contribution: parseInt(entries[1]) || null,
+      net_ec_contribution: parseInt(entries[2]) || null,
+      total_cost: parseInt(entries[3]) || null,
+    });
+  });
+
+  return projects_funding;
 }
