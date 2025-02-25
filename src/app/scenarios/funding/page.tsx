@@ -315,6 +315,7 @@ export default function FundingScenario() {
     <div
       style={{
         position: "absolute",
+        pointerEvents: "none",
         left: hoverInfo?.x,
         top: hoverInfo?.y,
         backgroundColor: "rgba(0, 0, 0, 0.8)",
@@ -339,7 +340,9 @@ export default function FundingScenario() {
     <ScenarioTemplate
       id={id}
       title="Funding Map"
-      description="Projects are placed given their coordinatores geolocation. About a quarter of the projects dont have a specific cost listing attributed to the individual institutions (sadly especially the big ones like ALTER-NET or SUNLIQUID). When displaying institutions the sum of all existing partial listings is used as the funding amount displayed, which means some projects are excluded from the Institution view. WIP: Institution Project Cards doesnt update with Filters."
+      description="You may toggle between Projects and Institutions. Projects are geographically placed given their coordinators geolocation.
+      Institutions have all their projects listed, the funding amount is in regard to the part of the project funding they received.  
+      About a quarter of the projects dont list the funding amount for individual institutions especially a couple big ones like ALTER-NET or SUNLIQUID)."
       statsCard={
         <span>
           Displaying {dataLength}{" "}
