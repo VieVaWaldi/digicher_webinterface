@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
-import { Footer } from "core/components/navigation/Footer";
+import { Footer } from "components/navigation/Footer";
 import { SettingsProvider } from "core/context/SettingsContext";
-import { Navigation } from "core/components/navigation/Navigation";
+import { Navigation } from "components/navigation/Navigation";
 
 import "./globals.css";
 

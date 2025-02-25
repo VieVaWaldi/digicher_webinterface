@@ -16,6 +16,25 @@ export async function getProjectById(id: number): Promise<Project> {
   return result.rows[0];
 }
 
+function SELECT_PROJECTS_BY_IDS(ids: string): string {
+  return `
+  SELECT *
+  FROM Projects
+  WHERE id IN (${ids});
+`;
+}
+
+export async function getProjectsByIds(ids: string): Promise<Project[]> {
+  try {
+    const pool = getConnection();
+    const result = await pool.query<Project>(SELECT_PROJECTS_BY_IDS(ids));
+    return result.rows;
+  } catch (e) {
+    console.log(e);
+    throw Error;
+  }
+}
+
 /** Project Topics */
 
 const SELECT_PROJECTS_TOPICS = `

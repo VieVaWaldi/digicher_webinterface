@@ -13,6 +13,6 @@ export const baseLayerProps: BaseLayerProps = {
   pickable: true,
   opacity: 0.8,
   antialiasing: true,
-  highlightColor: [1, 1, 1],
+  highlightColor: [1, 200, 1],
   autoHighlight: true,
 };

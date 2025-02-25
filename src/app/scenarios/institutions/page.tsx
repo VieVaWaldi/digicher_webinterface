@@ -4,17 +4,17 @@ import { ReactNode, useState } from "react";
 
 import { ScatterplotLayer } from "deck.gl";
 
+import { baseLayerProps } from "deckgl/baseLayerProps";
 import { InstitutionPoint } from "datamodel/scenario_points/types";
-import InstitutionInfoPanel from "core/components/infoPanels/InstitutionInfoPanel";
-import useTopicFilter from "core/components/menus/filter/TopicFilter";
-import ScenarioTemplate from "core/components/scenarios/ScenarioTemplate";
-import useCountryFilter from "core/components/menus/filter/CountryFilter";
-import { RadioGroupFilter } from "core/components/menus/filter/RadioGroup";
+import useTopicFilter from "components/menus/filter/TopicFilter";
+import ScenarioTemplate from "components/scenarios/ScenarioTemplate";
+import useCountryFilter from "components/menus/filter/CountryFilter";
+import { RadioGroupFilter } from "components/menus/filter/RadioGroup";
+import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
 import useTransformInstitutions from "core/hooks/transform/useTransformInstitutions";
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
-import useFundingProgrammeFilter from "core/components/menus/filter/FundingProgrammeFilter";
+import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
 import { useInstitutionPoints } from "core/hooks/queries/scenario_points/useInstitutionPoints";
-import { baseLayerProps } from "deckgl/baseLayerProps";
 
 const SME_FILTERS = ["All", "SME", "Non-SME"] as const;
 export type SmeFilter = (typeof SME_FILTERS)[number];
@@ -23,6 +23,7 @@ export default function InstitutionScenario() {
   const id: string = "institutions";
 
   /** Data */
+
   const { data: institutionPoints, loading, error } = useInstitutionPoints();
   const { data: transformedPoints } =
     useTransformInstitutions(institutionPoints);
@@ -33,9 +34,11 @@ export default function InstitutionScenario() {
   );
 
   /** Progressive Enhancement */
+
   const dataPoints = transformedPoints ?? institutionPoints;
 
   /** Filter */
+
   const [smeFilter, setSmeFilter] = useState<SmeFilter>("All");
   const { CountryFilter, countryPredicate } = useCountryFilter();
   const { TopicFilter, topicPredicate } = useTopicFilter();
@@ -55,6 +58,29 @@ export default function InstitutionScenario() {
     );
   });
 
+  /** Layer */
+
+  const layer = new ScatterplotLayer({
+    ...baseLayerProps,
+    id: `scatter-${id}`,
+    data: filteredDataPoints,
+
+    filled: true,
+    stroked: false,
+    radiusMinPixels: 5,
+    radiusMaxPixels: 5,
+
+    getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
+    getFillColor: (d) => (d.is_sme ? [20, 140, 0] : [255, 140, 0]),
+    onClick: (info) => {
+      if (info.object) {
+        setSelectedInstitution(info.object as InstitutionPoint);
+      }
+    },
+  });
+
+  /** Component */
+
   const filterMenus: ReactNode[] = [
     <RadioGroupFilter
       key="sme-filter"
@@ -67,36 +93,10 @@ export default function InstitutionScenario() {
     <TopicFilter key="topic-filter" />,
   ];
 
-  /** Layer */
-  const layer = new ScatterplotLayer({
-    ...baseLayerProps,
-    id: `scatter-${id}`,
-    data: filteredDataPoints,
-
-    filled: true,
-    stroked: false,
-
-    // getRadius: 2000,
-    // radiusScale: 60,
-    radiusMinPixels: 5,
-    radiusMaxPixels: 5,
-    // lineWidthMinPixels: 1,
-
-    getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
-    getFillColor: (d) => (d.is_sme ? [20, 140, 0] : [255, 140, 0]),
-    onClick: (info) => {
-      if (info.object) {
-        setSelectedInstitution(info.object as InstitutionPoint);
-      }
-    },
-  });
-
   return (
     <ScenarioTemplate
       id={id}
       title="Institution Map"
-      isLoading={loading}
-      error={error}
       statsCard={
         <span>
           Displaying {filteredDataPoints?.length.toLocaleString() || 0}{" "}
@@ -104,10 +104,12 @@ export default function InstitutionScenario() {
         </span>
       }
       filterMenus={filterMenus}
-      layers={[layer]}
       infoPanel={
         institution && <InstitutionInfoPanel institution={institution} />
       }
+      layers={[layer]}
+      isLoading={loading}
+      error={error}
     />
   );
 }

@@ -17,8 +17,16 @@ const FlagIcon = ({
   return <span>{getEmojiFlag(countryCode)}</span>;
 };
 
+function matchCodesToDB(code: string): string {
+  /**
+   * Some country codes in the DB dont match the codes from countries-list.
+   */
+  if (code === "GB") return "UK";
+  return code;
+}
+
 const allCountries = Object.entries(countries).map(([code, country]) => ({
-  value: code,
+  value: matchCodesToDB(code),
   label: country.name,
   icon: (props: { className?: string }) => (
     <FlagIcon countryCode={code as TCountryCode} {...props} />

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { Card } from "shadcn/card";
 import { H1, Lead, P } from "shadcn/typography";
-import ResourcesList from "core/components/navigation/ResourcesList";
+import ResourcesList from "components/navigation/ResourcesList";
 
 import { scenarios } from "./scenarios";
 

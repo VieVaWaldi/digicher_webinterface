@@ -4,20 +4,22 @@ import React, { ReactNode, useState } from "react";
 
 import { PickingInfo } from "deck.gl";
 
-import { Button } from "shadcn/button";
+import { H3 } from "shadcn/typography";
 import { ColumnLayer } from "@deck.gl/layers";
 import { baseLayerProps } from "deckgl/baseLayerProps";
 import { useSettings } from "core/context/SettingsContext";
+import { ScopeToggle } from "components/buttons/toggle";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
-import useTopicFilter from "core/components/menus/filter/TopicFilter";
-import ScenarioTemplate from "core/components/scenarios/ScenarioTemplate";
-import useCountryFilter from "core/components/menus/filter/CountryFilter";
-import ProjectInfoPanel from "core/components/infoPanels/ProjectInfoPanel";
+import useTopicFilter from "components/menus/filter/TopicFilter";
+import ScenarioTemplate from "components/scenarios/ScenarioTemplate";
+import useCountryFilter from "components/menus/filter/CountryFilter";
 import { useProjectById } from "core/hooks/queries/project/useProjectById";
+import ProjectInfoPanel from "components/infoPanels/ProjectInfoPanel";
 import useTransformProjects from "core/hooks/transform/useTransformProjects";
-import InstitutionInfoPanel from "core/components/infoPanels/InstitutionInfoPanel";
+import { useProjectsByIds } from "core/hooks/queries/project/useProjectsById";
+import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
-import useFundingProgrammeFilter from "core/components/menus/filter/FundingProgrammeFilter";
+import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
 import { useFundingProjectPoints } from "core/hooks/queries/scenario_points/useFundingProjectPoints";
 import { useFundingInstitutionPoints } from "core/hooks/queries/scenario_points/useFundingInstitutionPoints";
 import {
@@ -26,7 +28,6 @@ import {
   FundingProjectPoint,
 } from "datamodel/scenario_points/types";
 import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransformationInstitutionsWithProjects";
-import { ScopeToggle } from "core/components/buttons/toggle";
 
 export default function FundingScenario() {
   const id: string = "funding";
@@ -37,7 +38,15 @@ export default function FundingScenario() {
   const MAX_HEIGHT = isGlobe ? 5_000_000 : 800_000;
   const BAR_RADIUS = isGlobe ? 2_500 : 700;
 
+  const [hoverInfo, setHoverInfo] = useState<{
+    x: number;
+    y: number;
+    funding: number;
+    object: FundingBasePoint | null;
+  } | null>(null);
+
   /** Institution data */
+
   const {
     data: fundingInstitutionPoints,
     loading,
@@ -45,35 +54,32 @@ export default function FundingScenario() {
   } = useFundingInstitutionPoints();
   const { data: transformedInstitutionPoints } =
     useTransformInstitutionsWithProjects(fundingInstitutionPoints);
-  const [selectedInstitution, setSelectedInstitution] =
-    useState<FundingInstitutionPoint | null>(null);
-  const { data: institution } = useInstitutionById(
-    selectedInstitution?.institution_id ?? -1,
-  );
 
   /** Project data */
+
   const { data: fundingProjectPoints } = useFundingProjectPoints();
   const { data: transformedProjectPoints } =
     useTransformProjects(fundingProjectPoints);
-  const [selectedProject, setSelectedProject] =
-    useState<FundingProjectPoint | null>(null);
-  const { data: project } = useProjectById(selectedProject?.project_id ?? -1);
 
   /**  Progressive Enhancement */
+
   const dataInstitutionPoints =
     transformedInstitutionPoints ?? fundingInstitutionPoints;
   const dataProjectPoints = transformedProjectPoints ?? fundingProjectPoints;
 
   /**  Filters */
+
   const { CountryFilter, countryPredicate } = useCountryFilter();
   const { TopicFilter, topicPredicate } = useTopicFilter();
   const { FundingProgrammeFilter, fundingProgrammePredicate } =
     useFundingProgrammeFilter();
 
   /**  Filters Institutions */
+
   const countryFilteredInstitutions = dataInstitutionPoints?.filter(
     (institution) => countryPredicate(institution),
   );
+
   const filteredAllInstitutions = countryFilteredInstitutions?.map(
     (institution) => {
       const filteredProjects = institution.projects_funding.filter(
@@ -86,11 +92,13 @@ export default function FundingScenario() {
       } as FundingInstitutionPoint;
     },
   );
+
   const filterdInstitutionPoints = filteredAllInstitutions?.filter(
     (institution) => institution.projects_funding.length > 0,
   );
 
   /**  Filters Projects */
+
   const filterdProjectPoints = dataProjectPoints?.filter(
     (point) =>
       countryPredicate(point) &&
@@ -98,7 +106,44 @@ export default function FundingScenario() {
       fundingProgrammePredicate(point),
   );
 
+  /**  State Selected Institution */
+
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState<
+    number | null
+  >(null);
+  const selectedInstitution = selectedInstitutionId
+    ? filterdInstitutionPoints?.find(
+        (i) => i.institution_id === selectedInstitutionId,
+      ) || null
+    : null;
+
+  const { data: institution } = useInstitutionById(
+    selectedInstitution?.institution_id ?? -1,
+  );
+  const projectIds = selectedInstitution
+    ? selectedInstitution.projects_funding.map((p) => p.project_id ?? -1)
+    : [];
+
+  const { data: institutionProjects } = useProjectsByIds(
+    projectIds.slice(0, 10),
+  );
+
+  /**  State Selected Project */
+
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null,
+  );
+  const selectedProject = selectedProjectId
+    ? filterdProjectPoints?.find((p) => p.project_id === selectedProjectId) ||
+      null
+    : null;
+  const { data: project } = useProjectById(selectedProject?.project_id ?? -1);
+  const { data: coordinator } = useInstitutionById(
+    selectedProject?.institution_id ?? -1,
+  );
+
   /** Calculations */
+
   const getInstitutionFunding = (inst: FundingInstitutionPoint): number =>
     inst.projects_funding.reduce(
       (acc, p) => acc + (p.total_cost ? p.total_cost : 0),
@@ -137,7 +182,17 @@ export default function FundingScenario() {
       0,
     ) ?? 0;
 
+  const dataLength: string =
+    (showInstitutions
+      ? filterdInstitutionPoints
+      : filterdProjectPoints
+    )?.length.toLocaleString() || "0";
+  const totalFunding: number = showInstitutions
+    ? totalFundingInstitutions
+    : totalFundingProjects;
+
   /** Layers */
+
   const createColumnLayer = <T extends FundingBasePoint>(
     id: string,
     data: T[] | undefined,
@@ -168,6 +223,18 @@ export default function FundingScenario() {
           handleClick(info.object as T);
         }
       },
+      onHover: (info: PickingInfo) => {
+        if (info.object) {
+          setHoverInfo({
+            x: info.x,
+            y: info.y,
+            funding: getFunding(info.object as T),
+            object: info.object as FundingBasePoint,
+          });
+        } else {
+          setHoverInfo(null);
+        }
+      },
       ...baseLayerProps,
       diskResolution: 32,
       radius: BAR_RADIUS,
@@ -186,15 +253,21 @@ export default function FundingScenario() {
     "institutions",
     filterdInstitutionPoints,
     getInstitutionFunding,
-    (object) => showInstitutions && setSelectedInstitution(object),
+    (object) =>
+      showInstitutions && setSelectedInstitutionId(object.institution_id),
   );
 
   const layerPrj = createColumnLayer<FundingProjectPoint>(
     "projects",
     filterdProjectPoints,
     getProjectFunding,
-    (object) => !showInstitutions && setSelectedProject(object),
+    (object) =>
+      !showInstitutions && setSelectedProjectId(object.project_id ?? -1),
   );
+
+  const layer = showInstitutions ? layerInst : layerPrj;
+
+  /** Components */
 
   const filterMenus: ReactNode[] = [
     <div key="toggle-filter" className="flex justify-center">
@@ -208,24 +281,68 @@ export default function FundingScenario() {
     <TopicFilter key="topic-filter" />,
   ];
 
-  const data: FundingBasePoint[] | undefined = showInstitutions
-    ? filterdInstitutionPoints
-    : filterdProjectPoints;
-  const layer = showInstitutions ? layerInst : layerPrj;
-  const totalFunding: number = showInstitutions
-    ? totalFundingInstitutions
-    : totalFundingProjects;
+  const infoPanel = (
+    <>
+      {showInstitutions
+        ? selectedInstitution && (
+            <div>
+              {institution && (
+                <InstitutionInfoPanel institution={institution} />
+              )}
+              {institutionProjects && (
+                <H3 className="p-2 text-center">
+                  displaying {institutionProjects.length} of{" "}
+                  {selectedInstitution.projects_funding.length} Projects
+                </H3>
+              )}
+              {institutionProjects?.map((p) => (
+                <ProjectInfoPanel key={`prj-${p.id}`} project={p} />
+              ))}
+            </div>
+          )
+        : selectedProject && (
+            <div>
+              {coordinator && (
+                <InstitutionInfoPanel institution={coordinator} />
+              )}
+              {project && <ProjectInfoPanel project={project} />}
+            </div>
+          )}
+    </>
+  );
+
+  const hoverInfoComponent = (
+    <div
+      style={{
+        position: "absolute",
+        left: hoverInfo?.x,
+        top: hoverInfo?.y,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        color: "#fff",
+        padding: "8px",
+        borderRadius: "4px",
+        transform: "translate(-50%, -100%)",
+        marginTop: "-15px",
+      }}
+    >
+      <div>
+        Total Cost:{" "}
+        {new Intl.NumberFormat("de-DE", {
+          style: "currency",
+          currency: "EUR",
+        }).format(hoverInfo?.funding ?? -1)}
+      </div>
+    </div>
+  );
 
   return (
     <ScenarioTemplate
       id={id}
       title="Funding Map"
-      description="Projects are placed given their coordinatores geolocation. About a quarter of the projects dont have a specific cost listing attributed to the individual institutions (sadly especially the big ones like ALTER-NET or SUNLIQUID). When displaying institutions the sum of all existing partial listings is used as the funding amount displayed, which means some projects are excluded from the Institution view."
-      isLoading={loading}
-      error={error}
+      description="Projects are placed given their coordinatores geolocation. About a quarter of the projects dont have a specific cost listing attributed to the individual institutions (sadly especially the big ones like ALTER-NET or SUNLIQUID). When displaying institutions the sum of all existing partial listings is used as the funding amount displayed, which means some projects are excluded from the Institution view. WIP: Institution Project Cards doesnt update with Filters."
       statsCard={
         <span>
-          Displaying {data?.length.toLocaleString() || 0}{" "}
+          Displaying {dataLength}{" "}
           {showInstitutions ? "Institutions" : "Projects"} with{" "}
           {new Intl.NumberFormat("de-DE", {
             style: "currency",
@@ -234,13 +351,12 @@ export default function FundingScenario() {
         </span>
       }
       filterMenus={filterMenus}
+      infoPanel={infoPanel}
       layers={[layer]}
-      infoPanel={
-        showInstitutions
-          ? institution && <InstitutionInfoPanel institution={institution} />
-          : project && <ProjectInfoPanel project={project} />
-      }
+      hoverTooltip={hoverInfoComponent}
       viewState={INITIAL_VIEW_STATE_TILTED_EU}
+      isLoading={loading}
+      error={error}
     />
   );
 }

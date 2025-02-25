@@ -11,11 +11,11 @@ import {
   Target,
 } from "lucide-react";
 
+import { H3, Lead } from "shadcn/typography";
 import { Project } from "datamodel/project/types";
 import { CardContent, CardFooter, CardHeader } from "shadcn/card";
 
 import BaseInfoPanel from "./BaseInfoPanel";
-import { H3, Lead } from "shadcn/typography";
 
 interface ProjectInfoPanelProps {
   project: Project;
@@ -134,7 +134,7 @@ const ProjectInfoPanel = ({
             <div className="flex items-center gap-2">
               <Link className="h-4 w-4 text-gray-400" />
               <div>
-                <p className="text-gray-500">DOI</p>
+                <p className="text-gray-500">(DOI id in DataSet)</p>
                 <p className="font-medium">{project.doi_id}</p>
               </div>
             </div>

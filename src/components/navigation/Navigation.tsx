@@ -2,7 +2,7 @@
 
 import { createElement } from "react";
 
-import { Home, Settings } from "lucide-react";
+import { Home, Globe2 } from "lucide-react";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -77,7 +77,7 @@ export function Navigation() {
         <Sheet>
           <Button variant="ghost" size="icon" asChild>
             <SheetTrigger>
-              <Settings className="h-5 w-5" />
+              <Globe2 className="h-12 w-12" />
             </SheetTrigger>
           </Button>
           <SheetContent>

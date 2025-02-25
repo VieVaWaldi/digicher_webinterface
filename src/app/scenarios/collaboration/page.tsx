@@ -2,24 +2,25 @@
 
 import React, { ReactNode, useState } from "react";
 
+import { baseLayerProps } from "deckgl/baseLayerProps";
 import { ArcLayer, ColumnLayer } from "@deck.gl/layers";
-import useTopicFilter from "core/components/menus/filter/TopicFilter";
-import ScenarioTemplate from "core/components/scenarios/ScenarioTemplate";
-import useCountryFilter from "core/components/menus/filter/CountryFilter";
+import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
+import useTopicFilter from "components/menus/filter/TopicFilter";
+import ScenarioTemplate from "components/scenarios/ScenarioTemplate";
+import useCountryFilter from "components/menus/filter/CountryFilter";
 import { InstitutionCollaborationWeights } from "datamodel/scenario_points/types";
-import InstitutionInfoPanel from "core/components/infoPanels/InstitutionInfoPanel";
+import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
 import useTransformInstitutions from "core/hooks/transform/useTransformInstitutions";
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
-import useFundingProgrammeFilter from "core/components/menus/filter/FundingProgrammeFilter";
+import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
 import { useInstitutionCollaboratorsById } from "core/hooks/queries/scenario_points/useCollaborationInstitutionById";
 import { useInstitutionCollaborationWeights } from "core/hooks/queries/scenario_points/useCollaborationWeightsPoints";
-import { baseLayerProps } from "deckgl/baseLayerProps";
-import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
 
 export default function CollaborationScenario() {
   const id: string = "collaboration";
 
   /** Data */
+
   const {
     data: collaborationPoints,
     error,
@@ -38,9 +39,11 @@ export default function CollaborationScenario() {
   const { data: institution } = useInstitutionById(selectedInstitutionId ?? -1);
 
   /** Progressive Enhancement */
+
   const dataPoints = transformedPoints ?? collaborationPoints;
 
   /** Filter */
+
   const { CountryFilter, countryPredicate } = useCountryFilter();
   const { TopicFilter, topicPredicate } = useTopicFilter();
   const { FundingProgrammeFilter, fundingProgrammePredicate } =
@@ -53,12 +56,6 @@ export default function CollaborationScenario() {
       fundingProgrammePredicate(point)
     );
   });
-
-  const filterMenus: ReactNode[] = [
-    <CountryFilter key="country-filter" />,
-    <FundingProgrammeFilter key="funding-filter" />,
-    <TopicFilter key="topic-filter" />,
-  ];
 
   /** Layer */
 
@@ -138,12 +135,18 @@ export default function CollaborationScenario() {
     widthMinPixels: 2,
   });
 
+  /** Commponent */
+
+  const filterMenus: ReactNode[] = [
+    <CountryFilter key="country-filter" />,
+    <FundingProgrammeFilter key="funding-filter" />,
+    <TopicFilter key="topic-filter" />,
+  ];
+
   return (
     <ScenarioTemplate
       id={id}
       title="Collaboration Map"
-      isLoading={loading}
-      error={error}
       statsCard={
         <span>
           Displaying {filteredDataPoints?.length.toLocaleString() || 0}{" "}
@@ -151,11 +154,13 @@ export default function CollaborationScenario() {
         </span>
       }
       filterMenus={filterMenus}
-      layers={[columnLayer, arcLayer]}
       infoPanel={
         institution && <InstitutionInfoPanel institution={institution} />
       }
+      layers={[columnLayer, arcLayer]}
       viewState={INITIAL_VIEW_STATE_TILTED_EU}
+      isLoading={loading}
+      error={error}
     />
   );
 }

@@ -3,6 +3,7 @@
 import React, { ReactNode, useState } from "react";
 
 import { ViewState } from "react-map-gl";
+import { SlidersHorizontal, X } from "lucide-react";
 
 import { Button } from "shadcn/button";
 import { Spinner } from "shadcn/spinner";
@@ -10,8 +11,7 @@ import { cn } from "shadcn/utils/shadcn-utils";
 import { H2, Lead, P } from "shadcn/typography";
 import { Layer, PickingInfo } from "@deck.gl/core";
 import { INITIAL_VIEW_STATE_EU } from "deckgl/viewports";
-import BaseDeckGLMap from "core/components/scenarios/BaseDeckGLMap";
-import { SlidersHorizontal, X } from "lucide-react";
+import BaseDeckGLMap from "components/scenarios/BaseDeckGLMap";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "shadcn/tabs";
 
 interface ScenarioTemplateProps {
@@ -22,6 +22,7 @@ interface ScenarioTemplateProps {
   filterMenus: ReactNode[];
   infoPanel?: ReactNode;
   layers: Layer[];
+  hoverTooltip?: ReactNode;
   viewState?: ViewState;
   isLoading?: boolean;
   error?: string | null;
@@ -35,6 +36,7 @@ export default function ScenarioTemplate({
   filterMenus,
   infoPanel,
   layers,
+  hoverTooltip,
   viewState = INITIAL_VIEW_STATE_EU,
   isLoading = false,
   error = null,
@@ -155,6 +157,7 @@ export default function ScenarioTemplate({
               viewState={viewState}
               onMapClick={onMapClick}
             />
+            {hoverTooltip}
           </div>
         </div>
 

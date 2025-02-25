@@ -1,5 +1,4 @@
 import React from "react";
-import { Card } from "shadcn/card";
 
 interface BaseInfoPanelProps {
   children: React.ReactNode;

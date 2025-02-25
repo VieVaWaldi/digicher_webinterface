@@ -4,23 +4,26 @@ import React, { ReactNode, useState } from "react";
 
 import { ScatterplotLayer } from "deck.gl";
 
+import { H4 } from "shadcn/typography";
 import { baseLayerProps } from "deckgl/baseLayerProps";
 import { DualRangeSlider } from "shadcn/dual-range-slider";
-import useTopicFilter from "core/components/menus/filter/TopicFilter";
-import ScenarioTemplate from "core/components/scenarios/ScenarioTemplate";
+import useTopicFilter from "components/menus/filter/TopicFilter";
+import ScenarioTemplate from "components/scenarios/ScenarioTemplate";
 import { ProjectCoordinatorPoint } from "datamodel/scenario_points/types";
-import useCountryFilter from "core/components/menus/filter/CountryFilter";
-import ProjectInfoPanel from "core/components/infoPanels/ProjectInfoPanel";
+import useCountryFilter from "components/menus/filter/CountryFilter";
+import ProjectInfoPanel from "components/infoPanels/ProjectInfoPanel";
 import { useProjectById } from "core/hooks/queries/project/useProjectById";
 import useTransformProjects from "core/hooks/transform/useTransformProjects";
-import useFundingProgrammeFilter from "core/components/menus/filter/FundingProgrammeFilter";
+import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
+import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
+import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
 import { useProjectsCoordinatorPoints } from "core/hooks/queries/scenario_points/useProjectsCoordinatorPoints";
-import { H4 } from "shadcn/typography";
 
 export default function ProjectScenario() {
   const id: string = "projects";
 
   /** Data */
+
   const {
     data: projectCoordinatorPoints,
     loading,
@@ -32,12 +35,25 @@ export default function ProjectScenario() {
   const [selectedProject, setSelectedProject] =
     useState<ProjectCoordinatorPoint | null>(null);
   const { data: project } = useProjectById(selectedProject?.project_id ?? -1);
+  const { data: coordinator } = useInstitutionById(
+    selectedProject?.institution_id ?? -1,
+  );
 
   /** Progressive Enhancement */
+
   const dataPoints = transformedPoints ?? projectCoordinatorPoints;
 
   /** Filter */
-  const [years, setYears] = useState([1990, 2027]);
+  const MIN_YEAR =
+    dataPoints?.reduce((acc, point) => {
+      return Math.min(acc, new Date(point.start_date).getFullYear());
+    }, 9999) ?? 1990;
+  const MAX_YEAR =
+    dataPoints?.reduce((acc, point) => {
+      return Math.max(acc, new Date(point.end_date).getFullYear());
+    }, 0) ?? 2030;
+
+  const [years, setYears] = useState([MIN_YEAR, MAX_YEAR]);
   const { CountryFilter, countryPredicate } = useCountryFilter();
   const { TopicFilter, topicPredicate } = useTopicFilter();
   const { FundingProgrammeFilter, fundingProgrammePredicate } =
@@ -55,26 +71,8 @@ export default function ProjectScenario() {
     );
   });
 
-  // ToDo: Get min and max year from data in useMemo
-  const filterMenus: ReactNode[] = [
-    <div className="h-auto" key="dualyear-filter">
-      <H4>Time Range</H4>
-      <DualRangeSlider
-        className="pt-10 md:pt-8"
-        label={(value) => value}
-        value={years}
-        onValueChange={setYears}
-        min={1990}
-        max={2027}
-        step={1}
-      />
-    </div>,
-    <CountryFilter key="country-filter" />,
-    <FundingProgrammeFilter key="funding-filter" />,
-    <TopicFilter key="topic-filter" />,
-  ];
-
   /** Layer */
+
   const layer = new ScatterplotLayer({
     ...baseLayerProps,
     id: `scatter-${id}`,
@@ -97,20 +95,47 @@ export default function ProjectScenario() {
     },
   });
 
+  /** Component */
+
+  const filterMenus: ReactNode[] = [
+    <div className="h-auto" key="dualyear-filter">
+      <H4>Time Range</H4>
+      <DualRangeSlider
+        className="pt-10 md:pt-8"
+        label={(value) => value}
+        value={years}
+        onValueChange={setYears}
+        min={MIN_YEAR}
+        max={MAX_YEAR}
+        step={1}
+      />
+    </div>,
+    <CountryFilter key="country-filter" />,
+    <FundingProgrammeFilter key="funding-filter" />,
+    <TopicFilter key="topic-filter" />,
+  ];
+
+  const InfoPanel = (
+    <div>
+      {coordinator && <InstitutionInfoPanel institution={coordinator} />}
+      {project && <ProjectInfoPanel project={project} />}
+    </div>
+  );
+
   return (
     <ScenarioTemplate
       id={id}
       title="Project Map"
-      isLoading={loading}
-      error={error}
       statsCard={
         <span>
           Displaying {filterdDataPoints?.length.toLocaleString() || 0} Projects
         </span>
       }
       filterMenus={filterMenus}
+      infoPanel={InfoPanel}
       layers={[layer]}
-      infoPanel={project && <ProjectInfoPanel project={project} />}
+      isLoading={loading}
+      error={error}
     />
   );
 }
