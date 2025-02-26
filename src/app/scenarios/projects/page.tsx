@@ -128,7 +128,11 @@ export default function ProjectScenario() {
       title="Project Map"
       statsCard={
         <span>
-          Displaying {filterdDataPoints?.length.toLocaleString() || 0} Projects
+          Displaying{" "}
+          <span className="font-semibold text-orange-400">
+            {filterdDataPoints?.length.toLocaleString() || 0}
+          </span>{" "}
+          Projects
         </span>
       }
       filterMenus={filterMenus}

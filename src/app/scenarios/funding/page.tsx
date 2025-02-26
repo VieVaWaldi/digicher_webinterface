@@ -8,7 +8,7 @@ import { H3 } from "shadcn/typography";
 import { ColumnLayer } from "@deck.gl/layers";
 import { baseLayerProps } from "deckgl/baseLayerProps";
 import { useSettings } from "core/context/SettingsContext";
-import { ScopeToggle } from "components/buttons/toggle";
+import { IconToggle, ScopeToggle } from "components/buttons/toggle";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
 import useTopicFilter from "components/menus/filter/TopicFilter";
 import ScenarioTemplate from "components/scenarios/ScenarioTemplate";
@@ -28,12 +28,15 @@ import {
   FundingProjectPoint,
 } from "datamodel/scenario_points/types";
 import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransformationInstitutionsWithProjects";
+import { Globe2 } from "lucide-react";
+import { Button } from "shadcn/button";
 
 export default function FundingScenario() {
   const id: string = "funding";
   const { isGlobe } = useSettings();
   const [showInstitutions, setShowInstitutions] = useState<boolean>(true);
 
+  const [increaseMaxHeight, setIncreaseMaxHeight] = useState<boolean>(false);
   const COLOR_GAMMA = 0.7;
   const MAX_HEIGHT = isGlobe ? 5_000_000 : 800_000;
   const BAR_RADIUS = isGlobe ? 2_500 : 700;
@@ -205,7 +208,8 @@ export default function FundingScenario() {
       getElevation: (d) => {
         const funding = getFunding(d);
         const ratio = funding / MAX_TOTAL_COST;
-        return ratio * MAX_HEIGHT;
+        if (increaseMaxHeight) return ratio * MAX_HEIGHT * 6;
+        else return ratio * MAX_HEIGHT;
       },
       getFillColor: (d) => {
         const funding = getFunding(d);
@@ -275,6 +279,11 @@ export default function FundingScenario() {
         isInstitution={showInstitutions}
         onChange={setShowInstitutions}
       />
+    </div>,
+    <div key="toggle-bar-size">
+      <Button onClick={() => setIncreaseMaxHeight(!increaseMaxHeight)}>
+        {increaseMaxHeight ? "Decrease Column Size" : "Increase Column Size"}
+      </Button>
     </div>,
     <CountryFilter key="country-filter" />,
     <FundingProgrammeFilter key="funding-filter" />,
@@ -346,11 +355,16 @@ export default function FundingScenario() {
       statsCard={
         <span>
           Displaying {dataLength}{" "}
-          {showInstitutions ? "Institutions" : "Projects"} with{" "}
-          {new Intl.NumberFormat("de-DE", {
-            style: "currency",
-            currency: "EUR",
-          }).format(totalFunding)}
+          <span className="font-semibold text-orange-400">
+            {showInstitutions ? "Institutions" : "Projects"}{" "}
+          </span>{" "}
+          with{" "}
+          <span className="font-semibold text-orange-400">
+            {new Intl.NumberFormat("de-DE", {
+              style: "currency",
+              currency: "EUR",
+            }).format(totalFunding)}
+          </span>
         </span>
       }
       filterMenus={filterMenus}

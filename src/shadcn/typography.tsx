@@ -35,7 +35,7 @@ export function H3({ children, className }: TypographyProps) {
   return (
     <h3
       className={cn(
-        "text-2xl scroll-m-20 pb-2 font-semibold tracking-tight first:mt-0",
+        "scroll-m-20 pb-2 text-2xl font-semibold tracking-tight first:mt-0",
         className,
       )}
     >
@@ -46,12 +46,7 @@ export function H3({ children, className }: TypographyProps) {
 
 export function H4({ children, className }: TypographyProps) {
   return (
-    <h4
-      className={cn(
-        "scroll-m-20 pb-2 text-1xl font-semibold tracking-tight first:mt-0",
-        className,
-      )}
-    >
+    <h4 className={cn("scroll-m-20 text-2xl first:mt-0", className)}>
       {children}
     </h4>
   );
@@ -61,7 +56,7 @@ export function P({ children, className }: TypographyProps) {
   return (
     <p
       className={cn(
-        "text-justify leading-7 [&:not(:first-child)]:mt-6 px-4 md:px-12",
+        "px-4 text-justify leading-7 md:px-12 [&:not(:first-child)]:mt-6",
         className,
       )}
     >

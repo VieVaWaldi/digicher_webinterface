@@ -149,7 +149,10 @@ export default function CollaborationScenario() {
       title="Collaboration Map"
       statsCard={
         <span>
-          Displaying {filteredDataPoints?.length.toLocaleString() || 0}{" "}
+          Displaying{" "}
+          <span className="font-semibold text-orange-400">
+            {filteredDataPoints?.length.toLocaleString() || 0}
+          </span>{" "}
           Institutions
         </span>
       }

@@ -99,7 +99,10 @@ export default function InstitutionScenario() {
       title="Institution Map"
       statsCard={
         <span>
-          Displaying {filteredDataPoints?.length.toLocaleString() || 0}{" "}
+          Displaying{" "}
+          <span className="font-semibold text-orange-400">
+            {filteredDataPoints?.length.toLocaleString() || 0}
+          </span>{" "}
           Institutions
         </span>
       }

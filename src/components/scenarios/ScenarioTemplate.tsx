@@ -8,7 +8,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "shadcn/button";
 import { Spinner } from "shadcn/spinner";
 import { cn } from "shadcn/utils/shadcn-utils";
-import { H2, Lead, P } from "shadcn/typography";
+import { H2, H4, Lead, P } from "shadcn/typography";
 import { Layer, PickingInfo } from "@deck.gl/core";
 import { INITIAL_VIEW_STATE_EU } from "deckgl/viewports";
 import BaseDeckGLMap from "components/scenarios/BaseDeckGLMap";
@@ -79,7 +79,7 @@ export default function ScenarioTemplate({
             ) : isLoading ? (
               <Spinner />
             ) : (
-              <Lead>{statsCard}</Lead>
+              <H4>{statsCard}</H4>
             )}
           </div>
         )}
