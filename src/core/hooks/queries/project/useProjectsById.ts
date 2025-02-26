@@ -8,6 +8,7 @@ export function useProjectsByIds(ids: number[]) {
     param_ids = param_ids.slice(0, -1);
   }
   return useFetch<Project[]>("/api/project/projects_by_ids", {
+    enabled: param_ids.length != 0,
     params: { project_ids: param_ids },
   });
 }
