@@ -1,18 +1,20 @@
 import { useMemo } from "react";
-import { useTopics } from "../queries/topic/useTopics";
-import { useProjectsTopics } from "../queries/project/useProjectsTopics";
-import { useFundingProgrammes } from "../queries/fundingprogramme/useFundingProgrammes";
-import { useProjectsFundingProgrammes } from "../queries/project/useProjectsFundingProgrammes";
+
+import { Topic } from "datamodel/topic/types";
+import { FundingProgramme } from "datamodel/fundingprogramme/types";
 import {
   ProjectFundingProgrammes,
   ProjectTopics,
 } from "datamodel/project/types";
-import { Topic } from "datamodel/topic/types";
-import { FundingProgramme } from "datamodel/fundingprogramme/types";
 import {
   FundingInstitutionPoint,
   InstitutionProjectsFunding,
 } from "datamodel/scenario_points/types";
+
+import { useTopics } from "../queries/topic/useTopics";
+import { useProjectsTopics } from "../queries/project/useProjectsTopics";
+import { useFundingProgrammes } from "../queries/fundingprogramme/useFundingProgrammes";
+import { useProjectsFundingProgrammes } from "../queries/project/useProjectsFundingProgrammes";
 
 function createTopicsLookup(data: ProjectTopics[]): Record<number, number[]> {
   return data.reduce(
@@ -107,8 +109,8 @@ export default function useTransformInstitutionsWithProjects(
         return {
           ...project,
           institution_id: institution.institution_id,
-          country_code: institution.country_code,
-          geolocation: institution.geolocation,
+          // country_code: institution.country_code,
+          // geolocation: institution.geolocation,
 
           topics: getTopicsForProject(
             project.project_id,

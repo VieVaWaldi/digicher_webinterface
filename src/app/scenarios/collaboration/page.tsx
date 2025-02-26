@@ -8,13 +8,13 @@ import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
 import useTopicFilter from "components/menus/filter/TopicFilter";
 import ScenarioTemplate from "components/scenarios/ScenarioTemplate";
 import useCountryFilter from "components/menus/filter/CountryFilter";
-import { InstitutionCollaborationWeights } from "datamodel/scenario_points/types";
 import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
+import { InstitutionCollaborationWeights } from "datamodel/scenario_points/types";
 import useTransformInstitutions from "core/hooks/transform/useTransformInstitutions";
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
-import { useInstitutionCollaboratorsById } from "core/hooks/queries/scenario_points/useCollaborationInstitutionById";
-import { useInstitutionCollaborationWeights } from "core/hooks/queries/scenario_points/useCollaborationWeightsPoints";
+import { useCollaborationInstitutionsById } from "core/hooks/queries/scenario_points/useCollaborationInstitutionsById";
+import { useCollaborationWeightPoints } from "core/hooks/queries/scenario_points/useCollaborationWeightPoints";
 
 export default function CollaborationScenario() {
   const id: string = "collaboration";
@@ -25,15 +25,19 @@ export default function CollaborationScenario() {
     data: collaborationPoints,
     error,
     loading,
-  } = useInstitutionCollaborationWeights();
+  } = useCollaborationWeightPoints();
   const { data: transformedPoints } =
     useTransformInstitutions(collaborationPoints);
+
   const [selectedInstitutionId, setSelectedInstitutionId] =
     useState<number>(-1);
   const [selectedInstitutionLocation, setSelectedInstitutionLocation] =
     useState<number[] | null>(null);
-  const { data: institutionCollaborators } = useInstitutionCollaboratorsById(
-    selectedInstitutionId,
+
+  const { data: institutionCollaboratorsOmg } =
+    useCollaborationInstitutionsById(selectedInstitutionId);
+  const { data: transformedPoints2 } = useTransformInstitutions(
+    institutionCollaboratorsOmg,
   );
 
   const { data: institution } = useInstitutionById(selectedInstitutionId ?? -1);
@@ -41,6 +45,8 @@ export default function CollaborationScenario() {
   /** Progressive Enhancement */
 
   const dataPoints = transformedPoints ?? collaborationPoints;
+  const institutionCollaborators =
+    transformedPoints2 ?? institutionCollaboratorsOmg;
 
   /** Filter */
 
@@ -56,6 +62,33 @@ export default function CollaborationScenario() {
       fundingProgrammePredicate(point)
     );
   });
+
+  const filteredDataPointsOmg = institutionCollaborators?.filter((point) => {
+    return (
+      countryPredicate(point) &&
+      topicPredicate(point) &&
+      fundingProgrammePredicate(point)
+    );
+  });
+
+  const arcData = React.useMemo(() => {
+    if (
+      !selectedInstitutionLocation ||
+      !filteredDataPointsOmg ||
+      !Array.isArray(filteredDataPointsOmg)
+    ) {
+      return [];
+    }
+
+    return filteredDataPointsOmg.map((collaborator) => ({
+      sourcePosition: selectedInstitutionLocation,
+      targetPosition: [
+        collaborator.geolocation[1],
+        collaborator.geolocation[0],
+      ],
+      collaborator: collaborator,
+    }));
+  }, [selectedInstitutionLocation, filteredDataPointsOmg]);
 
   /** Layer */
 
@@ -103,25 +136,6 @@ export default function CollaborationScenario() {
     },
   });
 
-  const arcData = React.useMemo(() => {
-    if (
-      !selectedInstitutionLocation ||
-      !institutionCollaborators ||
-      !Array.isArray(institutionCollaborators)
-    ) {
-      return [];
-    }
-
-    return institutionCollaborators.map((collaborator) => ({
-      sourcePosition: selectedInstitutionLocation,
-      targetPosition: [
-        collaborator.geolocation[1],
-        collaborator.geolocation[0],
-      ],
-      collaborator: collaborator,
-    }));
-  }, [selectedInstitutionLocation, institutionCollaborators]);
-
   const arcLayer = new ArcLayer({
     id: "collaboration-arcs",
     data: arcData,
@@ -135,7 +149,7 @@ export default function CollaborationScenario() {
     widthMinPixels: 2,
   });
 
-  /** Commponent */
+  /** Commponents */
 
   const filterMenus: ReactNode[] = [
     <CountryFilter key="country-filter" />,
@@ -147,13 +161,23 @@ export default function CollaborationScenario() {
     <ScenarioTemplate
       id={id}
       title="Collaboration Map"
+      description="Collaboration weights values dont change with the filters!"
       statsCard={
         <span>
           Displaying{" "}
           <span className="font-semibold text-orange-400">
             {filteredDataPoints?.length.toLocaleString() || 0}
           </span>{" "}
-          Institutions
+          Institutions{" "}
+          {arcData.length !== 0 && (
+            <>
+              with{" "}
+              <span className="font-semibold text-orange-400">
+                {arcData.length}
+              </span>{" "}
+              connections
+            </>
+          )}
         </span>
       }
       filterMenus={filterMenus}

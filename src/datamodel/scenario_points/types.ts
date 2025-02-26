@@ -4,6 +4,8 @@ import { Topic } from "datamodel/topic/types";
 /**
  * The primary data in a Scenario is called Point.
  * All Points inherit from BasePoint.
+ *
+ * Interfaces with "type" define further sub classifications.
  */
 
 export interface BasePoint {
@@ -34,16 +36,16 @@ export interface FundingBasePoint extends BasePoint {
   total_cost: string | null;
 }
 
-// Individual Projects of a Institution
-export interface InstitutionProjectsFunding extends BasePoint {
-  ec_contribution: number | null;
-  net_ec_contribution: number | null;
-  total_cost: number | null;
-}
-
 export interface FundingInstitutionPoint extends FundingBasePoint {
   type: "institution";
   projects_funding: InstitutionProjectsFunding[];
+}
+
+export interface InstitutionProjectsFunding extends BasePoint {
+  type: "institution_projects";
+  ec_contribution: number | null;
+  net_ec_contribution: number | null;
+  total_cost: number | null;
 }
 
 export interface FundingProjectPoint extends FundingBasePoint {
@@ -53,10 +55,9 @@ export interface FundingProjectPoint extends FundingBasePoint {
 /** 4. Collaboration Scenario */
 
 export interface InstitutionCollaborationWeights extends BasePoint {
-  name: string;
   collaboration_weight: number;
 }
 
 export interface InstitutionCollaborators extends BasePoint {
-  name: string;
+  type: "collaborator";
 }

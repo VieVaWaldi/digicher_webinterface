@@ -97,18 +97,16 @@ export async function getFundingProjectPoints(): Promise<
 
 /** 4. Funding Scenario */
 
-// WIP
-
 const SELECT_INSTITUTION_COLLABORATION_WEIGHTS = `
   SELECT
     institution_id,
-    institution_name as name,
     address_geolocation as geolocation,
+    address_country as country_code,
     collaboration_weight
-  FROM institution_collaboration_weights;
+  FROM mat_institutions_collaboration_weights;
 `;
 
-export async function getInstitutionCollaborationWeights(): Promise<
+export async function getInstitutionCollaborationWeightPoints(): Promise<
   InstitutionCollaborationWeights[]
 > {
   const pool = getConnection();
@@ -120,9 +118,9 @@ export async function getInstitutionCollaborationWeights(): Promise<
 
 const SELECT_INSTITUTION_COLLABORATORS = `
   SELECT
-    collaborator_id as institution_id,
-    collaborator_name as name,
-    collaborator_location as geolocation
+    institution_id,
+    address_geolocation as geolocation,
+    address_country as country_code
   FROM get_institution_collaborators($1);
 `;
 
@@ -156,6 +154,7 @@ function parseProjectsFunding(
   project_funding_clean.map((entry) => {
     const entries = entry.split(",");
     projects_funding.push({
+      type: "institution_projects",
       institution_id: 0,
       geolocation: [0, 0],
       country_code: "",

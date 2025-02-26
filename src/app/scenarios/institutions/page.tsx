@@ -71,7 +71,7 @@ export default function InstitutionScenario() {
     radiusMaxPixels: 5,
 
     getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
-    getFillColor: (d) => (d.is_sme ? [20, 140, 0] : [255, 140, 0]),
+    getFillColor: (d) => (d.is_sme ? [6, 77, 135] : [255, 140, 0]),
     onClick: (info) => {
       if (info.object) {
         setSelectedInstitution(info.object as InstitutionPoint);
