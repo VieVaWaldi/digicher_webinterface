@@ -2,7 +2,7 @@
 
 import { createElement } from "react";
 
-import { Home, Globe2 } from "lucide-react";
+import { Globe2, Home } from "lucide-react";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -53,7 +53,7 @@ export function Navigation() {
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center gap-2">
                 {createElement(scenario.icon, {
-                  // size: 20,
+                  size: 20,
                   strokeWidth: 1.25,
                   className:
                     pathname === scenario.href
@@ -77,7 +77,7 @@ export function Navigation() {
         <Sheet>
           <Button variant="ghost" size="icon" asChild>
             <SheetTrigger>
-              <Globe2 className="h-12 w-12" />
+              <Globe2 />
             </SheetTrigger>
           </Button>
           <SheetContent>

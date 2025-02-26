@@ -13,11 +13,17 @@ import { InstitutionCollaborationWeights } from "datamodel/scenario_points/types
 import useTransformInstitutions from "core/hooks/transform/useTransformInstitutions";
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
-import { useCollaborationInstitutionsById } from "core/hooks/queries/scenario_points/useCollaborationInstitutionsById";
 import { useCollaborationWeightPoints } from "core/hooks/queries/scenario_points/useCollaborationWeightPoints";
+import { useCollaborationInstitutionsById } from "core/hooks/queries/scenario_points/useCollaborationInstitutionsById";
+import { useSettings } from "core/context/SettingsContext";
 
 export default function CollaborationScenario() {
   const id: string = "collaboration";
+
+  const { isGlobe } = useSettings();
+  const COLOR_GAMMA = 0.7;
+  const MAX_HEIGHT = isGlobe ? 5_000_000 : 800_000;
+  const BAR_RADIUS = isGlobe ? 3_500 : 700;
 
   /** Data */
 
@@ -90,48 +96,52 @@ export default function CollaborationScenario() {
     }));
   }, [selectedInstitutionLocation, filteredDataPointsOmg]);
 
-  /** Layer */
+  /** Calculations */
 
-  const maxCollabWeight = React.useMemo(() => {
+  const MAX_COLLAB_WEIGHT = React.useMemo(() => {
     if (!filteredDataPoints) return 0;
     return Math.max(...filteredDataPoints.map((d) => d.collaboration_weight));
   }, [filteredDataPoints]);
+
+  /** Layer */
 
   const columnLayer = new ColumnLayer<InstitutionCollaborationWeights>({
     ...baseLayerProps,
     id: `column-${id}`,
     data: filteredDataPoints || [],
-    diskResolution: 12,
-    radius: 1500,
+    diskResolution: 32,
+    radius: BAR_RADIUS,
     getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
     getElevation: (d) => {
-      const MAX_HEIGHT = 200000;
-      return (d.collaboration_weight / maxCollabWeight) * MAX_HEIGHT;
+      return (d.collaboration_weight / MAX_COLLAB_WEIGHT) * MAX_HEIGHT;
     },
     getFillColor: (d) => {
-      const normalizedWeight = d.collaboration_weight / maxCollabWeight;
-      return [0, 0 * (1 - normalizedWeight), 0 * (1 - normalizedWeight), 200];
+      const normalizedFunding = d.collaboration_weight / MAX_COLLAB_WEIGHT;
+      const adjustedValue = Math.pow(normalizedFunding, COLOR_GAMMA);
+      return [
+        50 + (255 - 50) * adjustedValue,
+        50 - 50 * adjustedValue,
+        50 - 50 * adjustedValue,
+        200,
+      ];
     },
     pickable: true,
     autoHighlight: true,
     extruded: true,
     material: {
       ambient: 0.64,
-      diffuse: 0.8,
+      diffuse: 0.6,
       shininess: 32,
       specularColor: [51, 51, 51],
     },
     onClick: (info) => {
       const { object } = info;
-      if (object) {
+      if (info.object) {
         setSelectedInstitutionId(object.institution_id);
         setSelectedInstitutionLocation([
           object.geolocation[1],
           object.geolocation[0],
         ]);
-      } else {
-        setSelectedInstitutionId(-1);
-        setSelectedInstitutionLocation(null);
       }
     },
   });
@@ -188,6 +198,10 @@ export default function CollaborationScenario() {
       viewState={INITIAL_VIEW_STATE_TILTED_EU}
       isLoading={loading}
       error={error}
+      onEmptyMapClick={() => {
+        setSelectedInstitutionId(-1);
+        setSelectedInstitutionLocation(null);
+      }}
     />
   );
 }

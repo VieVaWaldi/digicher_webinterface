@@ -27,6 +27,7 @@ export default function InstitutionScenario() {
   const { data: institutionPoints, loading, error } = useInstitutionPoints();
   const { data: transformedPoints } =
     useTransformInstitutions(institutionPoints);
+    
   const [selectedInstitution, setSelectedInstitution] =
     useState<InstitutionPoint | null>(null);
   const { data: institution } = useInstitutionById(

@@ -2,7 +2,7 @@ import React from "react";
 
 import Image from "next/image";
 import { Card } from "shadcn/card";
-import { H3 } from "shadcn/typography";
+import { H5 } from "shadcn/typography";
 import { MapBoxStyle, useSettings } from "core/context/SettingsContext";
 import { ViewToggle } from "../buttons/toggle";
 
@@ -36,7 +36,7 @@ const SettingsMenu = () => {
       <div className="space-y-8">
         {/* Map Style Selection */}
         <div className="flex flex-col space-y-4">
-          <H3 className="text-center">Map Style</H3>
+          <H5 className="text-center">Map Style</H5>
           <div className="flex flex-col items-center gap-4">
             {mapStyles.map((style) => (
               <Card
@@ -69,7 +69,7 @@ const SettingsMenu = () => {
 
         {/* View Toggle */}
         <div className="flex flex-col items-center space-y-2 pb-8">
-          <span className="text-sm font-medium">Map View</span>
+          <H5>Map View</H5>
           <ViewToggle isGlobe={isGlobe} onChange={setIsGlobe} />
         </div>
       </div>

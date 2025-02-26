@@ -44,7 +44,7 @@ export default function useCountryFilter(): CountryFilterResult {
   const CountryFilter = () => {
     return (
       <>
-        <H4 className="pl">Region</H4>
+        <H4 className="mb-2 ml-2">Region</H4>
         <MultiSelect
           options={allCountries}
           value={selectedCountries}

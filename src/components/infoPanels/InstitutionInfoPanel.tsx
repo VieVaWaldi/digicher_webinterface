@@ -32,7 +32,7 @@ const InstitutionInfoPanel = ({
         <div>
           <H3 className="!mb-1 !pb-0">{institution.name}</H3>
           {institution.short_name && (
-            <Lead className="!text-sm text-blue-600">
+            <Lead className="!text-sm text-orange-500">
               {institution.short_name}
             </Lead>
           )}
@@ -58,7 +58,7 @@ const InstitutionInfoPanel = ({
               href={institution.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 text-blue-600 transition-colors hover:text-blue-800"
+              className="flex items-center space-x-2 text-orange-500 transition-colors hover:text-orange-800"
             >
               <Globe className="h-4 w-4 flex-shrink-0" />
               <span>Visit Website</span>

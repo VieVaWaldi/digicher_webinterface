@@ -52,6 +52,16 @@ export function H4({ children, className }: TypographyProps) {
   );
 }
 
+export function H5({ children, className }: TypographyProps) {
+  return (
+    <h3
+      className={cn("text-1xl scroll-m-20 font-semibold first:mt-0", className)}
+    >
+      {children}
+    </h3>
+  );
+}
+
 export function P({ children, className }: TypographyProps) {
   return (
     <p

@@ -49,7 +49,7 @@ export default function useFundingProgrammeFilter(): FundingProgrammeFilterResul
     } else {
       return (
         <div className="flex flex-col gap-2">
-          <H4 >Funding Programmes</H4>
+          <H4 className="ml-2">Funding Programmes</H4>
           <MultiSelect
             options={frameworkOptions}
             value={frameworksFilter}

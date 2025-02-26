@@ -26,6 +26,7 @@ interface ScenarioTemplateProps {
   viewState?: ViewState;
   isLoading?: boolean;
   error?: string | null;
+  onEmptyMapClick?: () => void;
 }
 
 export default function ScenarioTemplate({
@@ -40,6 +41,7 @@ export default function ScenarioTemplate({
   viewState = INITIAL_VIEW_STATE_EU,
   isLoading = false,
   error = null,
+  onEmptyMapClick,
 }: ScenarioTemplateProps) {
   const [isInfoOpen, setInfoOpen] = useState<boolean>(false);
   const [isLeftPanelOpen, setLeftPanelOpen] = useState<boolean>(false);
@@ -47,6 +49,7 @@ export default function ScenarioTemplate({
   const onMapClick = (info: PickingInfo) => {
     if (!info.object) {
       setInfoOpen(false);
+      if (onEmptyMapClick) onEmptyMapClick();
     } else {
       setInfoOpen(true);
     }

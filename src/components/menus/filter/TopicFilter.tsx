@@ -52,7 +52,7 @@ export default function useTopicFilter(): TopicFilterResult {
 
     return (
       <div className="flex flex-col gap-2">
-        <H4 >Topic</H4>
+        <H4 className="ml-2">Topic</H4>
         <MultiSelect
           options={topicsLevel0}
           value={topics0Filter}

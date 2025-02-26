@@ -31,12 +31,12 @@ const ProjectInfoPanel = ({
   const getStatusColor = (status: string | null) => {
     if (!status) return "bg-gray-200";
     switch (status.toLowerCase()) {
-      case "active":
+      // case "active":
+      //   return "bg-green-100 text-green-800";
+      // case "completed":
+      //   return "bg-blue-100 text-blue-800";
+      case "signed":
         return "bg-green-100 text-green-800";
-      case "completed":
-        return "bg-blue-100 text-blue-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -48,7 +48,7 @@ const ProjectInfoPanel = ({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             {project.acronym && (
-              <Lead className="!mt-0 mb-1 block text-sm font-medium text-gray-500">
+              <Lead className="!mt-0 mb-1 block text-sm font-medium text-orange-500">
                 {project.acronym}
               </Lead>
             )}

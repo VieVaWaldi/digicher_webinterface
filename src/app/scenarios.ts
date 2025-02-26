@@ -1,4 +1,4 @@
-import { MapPin, Building2, Coins, UsersRound, LucideIcon } from "lucide-react";
+import { Lightbulb, Building2, Coins, Handshake, LucideIcon } from "lucide-react";
 
 interface Scenario {
   title: string;
@@ -17,7 +17,7 @@ export const scenarios: Scenario[] = [
   {
     title: "Projects",
     href: "/scenarios/projects",
-    icon: MapPin,
+    icon: Lightbulb,
     description:
       "Discover project locations and their geographical distribution",
   },
@@ -30,7 +30,7 @@ export const scenarios: Scenario[] = [
   {
     title: "Collaboration",
     href: "/scenarios/collaboration",
-    icon: UsersRound,
+    icon: Handshake,
     description: "Visualize collaboration networks between institutions",
   },
 ];

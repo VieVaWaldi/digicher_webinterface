@@ -1,6 +1,7 @@
 import { Github } from "lucide-react";
 
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -53,7 +54,14 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-8 border-t border-slate-800 pt-8 text-sm text-slate-400">
+        <div className="flex flex-col gap-6 border-t border-slate-600 pt-8 text-sm text-slate-400">
+          <Image
+            src="/images/eu-funded.png"
+            alt="Digicher Logo"
+            width={256}
+            height={128}
+            className="object-contain"
+          />
           <p>
             © {currentYear} Friedrich Schiller University Jena. All rights
             reserved.
