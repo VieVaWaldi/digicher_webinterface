@@ -33,12 +33,12 @@ export default function DIGICHerLinks() {
           rel="noopener noreferrer"
         >
           <div className="flex items-center justify-center rounded-md p-4 transition-colors hover:bg-secondary/80">
-            <div className="flex flex-col items-center text-base font-medium text-muted-foreground sm:flex-row">
+            <div className="flex flex-col items-center text-base text-muted-foreground sm:flex-row">
               <div className="mb-2 flex items-center sm:mb-0">
                 <span className="mr-2 text-3xl">🚀</span>
                 <span>Powered by the</span>
               </div>
-              <span className="mx-1 font-bold italic text-orange-500">
+              <span className="mx-1 font-medium text-orange-500">
                 Humanities Data Pipeline
               </span>
             </div>

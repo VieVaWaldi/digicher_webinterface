@@ -16,6 +16,9 @@ import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeF
 import { useCollaborationWeightPoints } from "core/hooks/queries/scenario_points/useCollaborationWeightPoints";
 import { useCollaborationInstitutionsById } from "core/hooks/queries/scenario_points/useCollaborationInstitutionsById";
 import { useSettings } from "core/context/SettingsContext";
+import { PickingInfo } from "deck.gl";
+import { H3 } from "shadcn/typography";
+import { useInstitutionsByIds } from "core/hooks/queries/institution/useInstitutionsByIds";
 
 export default function CollaborationScenario() {
   const id: string = "collaboration";
@@ -24,6 +27,13 @@ export default function CollaborationScenario() {
   const COLOR_GAMMA = 0.7;
   const MAX_HEIGHT = isGlobe ? 5_000_000 : 800_000;
   const BAR_RADIUS = isGlobe ? 3_500 : 700;
+
+  const [hoverInfo, setHoverInfo] = useState<{
+    x: number;
+    y: number;
+    weight: number;
+    object: InstitutionCollaborationWeights | null;
+  } | null>(null);
 
   /** Data */
 
@@ -39,20 +49,22 @@ export default function CollaborationScenario() {
     useState<number>(-1);
   const [selectedInstitutionLocation, setSelectedInstitutionLocation] =
     useState<number[] | null>(null);
-
-  const { data: institutionCollaboratorsOmg } =
-    useCollaborationInstitutionsById(selectedInstitutionId);
-  const { data: transformedPoints2 } = useTransformInstitutions(
-    institutionCollaboratorsOmg,
+  const { data: selectedInstitution } = useInstitutionById(
+    selectedInstitutionId ?? -1,
   );
 
-  const { data: institution } = useInstitutionById(selectedInstitutionId ?? -1);
+  const { data: collaborationPartners } = useCollaborationInstitutionsById(
+    selectedInstitutionId,
+  );
+  const { data: transformedCollaborationPartners } = useTransformInstitutions(
+    collaborationPartners,
+  );
 
   /** Progressive Enhancement */
 
   const dataPoints = transformedPoints ?? collaborationPoints;
-  const institutionCollaborators =
-    transformedPoints2 ?? institutionCollaboratorsOmg;
+  const collaboratorPartners =
+    transformedCollaborationPartners ?? collaborationPartners;
 
   /** Filter */
 
@@ -69,32 +81,37 @@ export default function CollaborationScenario() {
     );
   });
 
-  const filteredDataPointsOmg = institutionCollaborators?.filter((point) => {
-    return (
-      countryPredicate(point) &&
-      topicPredicate(point) &&
-      fundingProgrammePredicate(point)
-    );
-  });
+  const filteredCollaboratorPartners =
+    collaboratorPartners?.filter((point) => {
+      return (
+        countryPredicate(point) &&
+        topicPredicate(point) &&
+        fundingProgrammePredicate(point)
+      );
+    }) ?? [];
 
-  const arcData = React.useMemo(() => {
+  const partnerIds = selectedInstitution
+    ? (filteredCollaboratorPartners?.map((p) => p.institution_id ?? -1) ?? [])
+    : [];
+  const { data: institutionPartners } = useInstitutionsByIds(
+    partnerIds.slice(0, 10),
+  );
+
+  const partnersArcData = React.useMemo(() => {
     if (
       !selectedInstitutionLocation ||
-      !filteredDataPointsOmg ||
-      !Array.isArray(filteredDataPointsOmg)
+      !filteredCollaboratorPartners ||
+      !Array.isArray(filteredCollaboratorPartners)
     ) {
       return [];
     }
 
-    return filteredDataPointsOmg.map((collaborator) => ({
+    return filteredCollaboratorPartners.map((partner) => ({
       sourcePosition: selectedInstitutionLocation,
-      targetPosition: [
-        collaborator.geolocation[1],
-        collaborator.geolocation[0],
-      ],
-      collaborator: collaborator,
+      targetPosition: [partner.geolocation[1], partner.geolocation[0]],
+      partner: partner,
     }));
-  }, [selectedInstitutionLocation, filteredDataPointsOmg]);
+  }, [selectedInstitutionLocation, filteredCollaboratorPartners]);
 
   /** Calculations */
 
@@ -144,11 +161,23 @@ export default function CollaborationScenario() {
         ]);
       }
     },
+    onHover: (info: PickingInfo) => {
+      if (info.object) {
+        setHoverInfo({
+          x: info.x,
+          y: info.y,
+          weight: info.object.collaboration_weight,
+          object: info.object as InstitutionCollaborationWeights,
+        });
+      } else {
+        setHoverInfo(null);
+      }
+    },
   });
 
   const arcLayer = new ArcLayer({
     id: "collaboration-arcs",
-    data: arcData,
+    data: partnersArcData,
     pickable: true,
     getSourcePosition: (d) => d.sourcePosition,
     getTargetPosition: (d) => d.targetPosition,
@@ -167,11 +196,50 @@ export default function CollaborationScenario() {
     <TopicFilter key="topic-filter" />,
   ];
 
+  const infoPanel = (
+    <>
+      {selectedInstitution && (
+        <div>
+          <InstitutionInfoPanel institution={selectedInstitution} />
+          <H3 className="p-2 text-center">
+            displaying {institutionPartners?.length} of{" "}
+            {filteredCollaboratorPartners?.length} Partners
+          </H3>
+          {institutionPartners?.map((partner) => (
+            <InstitutionInfoPanel
+              key={partner.institution_id}
+              institution={partner}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  const hoverInfoComponent = (
+    <div
+      style={{
+        position: "absolute",
+        pointerEvents: "none",
+        left: hoverInfo?.x,
+        top: hoverInfo?.y,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        color: "#fff",
+        padding: "8px",
+        borderRadius: "4px",
+        transform: "translate(-50%, -100%)",
+        marginTop: "-15px",
+      }}
+    >
+      <div>* Total Collaborators: {hoverInfo?.weight ?? -1}</div>
+    </div>
+  );
+
   return (
     <ScenarioTemplate
       id={id}
       title="Collaboration Map"
-      description="Collaboration weights values dont change with the filters!"
+      description="Number of total collaborators does not change with the filters!"
       statsCard={
         <span>
           Displaying{" "}
@@ -179,11 +247,11 @@ export default function CollaborationScenario() {
             {filteredDataPoints?.length.toLocaleString() || 0}
           </span>{" "}
           Institutions{" "}
-          {arcData.length !== 0 && (
+          {partnersArcData.length !== 0 && (
             <>
               with{" "}
               <span className="font-semibold text-orange-400">
-                {arcData.length}
+                {partnersArcData.length}
               </span>{" "}
               connections
             </>
@@ -191,10 +259,9 @@ export default function CollaborationScenario() {
         </span>
       }
       filterMenus={filterMenus}
-      infoPanel={
-        institution && <InstitutionInfoPanel institution={institution} />
-      }
+      infoPanel={infoPanel}
       layers={[columnLayer, arcLayer]}
+      hoverTooltip={hoverInfoComponent}
       viewState={INITIAL_VIEW_STATE_TILTED_EU}
       isLoading={loading}
       error={error}

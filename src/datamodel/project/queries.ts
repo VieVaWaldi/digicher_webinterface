@@ -20,8 +20,7 @@ function SELECT_PROJECTS_BY_IDS(ids: string): string {
   return `
   SELECT *
   FROM Projects
-  WHERE id IN (${ids});
-`;
+  WHERE id IN (${ids});`;
 }
 
 export async function getProjectsByIds(ids: string): Promise<Project[]> {

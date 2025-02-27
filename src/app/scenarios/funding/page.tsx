@@ -16,7 +16,7 @@ import useCountryFilter from "components/menus/filter/CountryFilter";
 import { useProjectById } from "core/hooks/queries/project/useProjectById";
 import ProjectInfoPanel from "components/infoPanels/ProjectInfoPanel";
 import useTransformProjects from "core/hooks/transform/useTransformProjects";
-import { useProjectsByIds } from "core/hooks/queries/project/useProjectsById";
+import { useProjectsByIds } from "core/hooks/queries/project/useProjectsByIds";
 import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";

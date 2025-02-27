@@ -7,7 +7,7 @@ import {
 
 /** Institution */
 
-const SELECT_INSTITUTION = `
+const SELECT_INSTITUTION_BY_ID = `
   SELECT 
     id AS institution_id, 
     name,
@@ -26,8 +26,35 @@ const SELECT_INSTITUTION = `
 
 export async function getInstitutionById(id: number): Promise<Institution> {
   const pool = getConnection();
-  const result = await pool.query<Institution>(SELECT_INSTITUTION, [id]);
+  const result = await pool.query<Institution>(SELECT_INSTITUTION_BY_ID, [id]);
   return result.rows[0];
+}
+
+function SELECT_INSTITUTIONS_BY_IDS(ids: string): string {
+  return `
+  SELECT 
+    id AS institution_id, 
+    name,
+    sme as is_sme,
+    address_street as street,
+    address_postbox as postbox,
+    address_postalcode as postalcode,
+    address_city as city,
+    address_country as country,
+    address_geolocation as geolocation,
+    url,
+    short_name
+  FROM institutions
+  WHERE id IN (${ids}) AND
+  address_geolocation IS NOT NULL;`;
+}
+
+export async function getInstitutionsByIds(
+  ids: string,
+): Promise<Institution[]> {
+  const pool = getConnection();
+  const result = await pool.query<Institution>(SELECT_INSTITUTIONS_BY_IDS(ids));
+  return result.rows;
 }
 
 /** Institution Topics */
