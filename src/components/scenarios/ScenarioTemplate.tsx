@@ -20,6 +20,7 @@ interface ScenarioTemplateProps {
   description?: string;
   statsCard?: ReactNode;
   filterMenus: ReactNode[];
+  dataMenu?: ReactNode;
   infoPanel?: ReactNode;
   layers: Layer[];
   hoverTooltip?: ReactNode;
@@ -35,6 +36,7 @@ export default function ScenarioTemplate({
   description = "The common snapping turtlse (Chelydra serpentina) is a species of large freshwater turtle in the family Chelydridae. Its natural range extends from southeastern Canada, southwest to the edge of the Rocky Mountains.",
   statsCard,
   filterMenus,
+  dataMenu,
   infoPanel,
   layers,
   hoverTooltip,
@@ -131,7 +133,7 @@ export default function ScenarioTemplate({
                   </Button>
                   <TabsList>
                     <TabsTrigger value="filters">Filters</TabsTrigger>
-                    <TabsTrigger value="data">Data</TabsTrigger>
+                    <TabsTrigger value="search">Search</TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsContent value="filters">
@@ -143,9 +145,7 @@ export default function ScenarioTemplate({
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="data">
-                  <h2 className="text-center">wip ...</h2>
-                </TabsContent>
+                <TabsContent value="search">{dataMenu}</TabsContent>
               </Tabs>
             </div>
           </div>

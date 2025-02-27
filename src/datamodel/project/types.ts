@@ -25,3 +25,8 @@ export interface ProjectFundingProgrammes {
   project_id: number;
   funding_ids: number[];
 }
+
+export interface ProjectSearchResult {
+  project_id: number;
+  title: string;
+}

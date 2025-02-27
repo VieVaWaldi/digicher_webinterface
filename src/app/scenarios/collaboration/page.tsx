@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useMemo, useState } from "react";
 
 import { baseLayerProps } from "deckgl/baseLayerProps";
 import { ArcLayer, ColumnLayer } from "@deck.gl/layers";
@@ -19,6 +19,8 @@ import { useSettings } from "core/context/SettingsContext";
 import { PickingInfo } from "deck.gl";
 import { H3 } from "shadcn/typography";
 import { useInstitutionsByIds } from "core/hooks/queries/institution/useInstitutionsByIds";
+import useSearchComponent from "components/menus/filter/SearchFilter";
+import { useInstitutionsByName } from "core/hooks/queries/institution/useInstitutionByName";
 
 export default function CollaborationScenario() {
   const id: string = "collaboration";
@@ -73,22 +75,42 @@ export default function CollaborationScenario() {
   const { FundingProgrammeFilter, fundingProgrammePredicate } =
     useFundingProgrammeFilter();
 
+  const { PaginatedResults, searchPredicate } = useSearchComponent({
+    useSearchHook: useInstitutionsByName,
+    idField: "institution_id",
+    displayField: "name",
+    searchLabel: "Institution Search",
+    placeholderText: "Search institutions for name ...",
+    idPredicate: "institution_id",
+  });
+
   const filteredDataPoints = dataPoints?.filter((point) => {
     return (
       countryPredicate(point) &&
       topicPredicate(point) &&
-      fundingProgrammePredicate(point)
+      fundingProgrammePredicate(point) &&
+      searchPredicate(point)
     );
   });
 
-  const filteredCollaboratorPartners =
-    collaboratorPartners?.filter((point) => {
-      return (
-        countryPredicate(point) &&
-        topicPredicate(point) &&
-        fundingProgrammePredicate(point)
-      );
-    }) ?? [];
+  const filteredCollaboratorPartners = useMemo(() => {
+    return (
+      collaboratorPartners?.filter((point) => {
+        return (
+          countryPredicate(point) &&
+          topicPredicate(point) &&
+          fundingProgrammePredicate(point) &&
+          searchPredicate(point)
+        );
+      }) ?? []
+    );
+  }, [
+    collaboratorPartners,
+    countryPredicate,
+    topicPredicate,
+    fundingProgrammePredicate,
+    searchPredicate,
+  ]);
 
   const partnerIds = selectedInstitution
     ? (filteredCollaboratorPartners?.map((p) => p.institution_id ?? -1) ?? [])
@@ -97,7 +119,7 @@ export default function CollaborationScenario() {
     partnerIds.slice(0, 10),
   );
 
-  const partnersArcData = React.useMemo(() => {
+  const partnersArcData = useMemo(() => {
     if (
       !selectedInstitutionLocation ||
       !filteredCollaboratorPartners ||
@@ -116,9 +138,9 @@ export default function CollaborationScenario() {
   /** Calculations */
 
   const MAX_COLLAB_WEIGHT = React.useMemo(() => {
-    if (!filteredDataPoints) return 0;
-    return Math.max(...filteredDataPoints.map((d) => d.collaboration_weight));
-  }, [filteredDataPoints]);
+    if (!collaborationPoints) return 0;
+    return Math.max(...collaborationPoints.map((d) => d.collaboration_weight));
+  }, [collaborationPoints]);
 
   /** Layer */
 
@@ -201,16 +223,22 @@ export default function CollaborationScenario() {
       {selectedInstitution && (
         <div>
           <InstitutionInfoPanel institution={selectedInstitution} />
-          <H3 className="p-2 text-center">
-            displaying {institutionPartners?.length} of{" "}
-            {filteredCollaboratorPartners?.length} Partners
-          </H3>
-          {institutionPartners?.map((partner) => (
-            <InstitutionInfoPanel
-              key={partner.institution_id}
-              institution={partner}
-            />
-          ))}
+          {filteredCollaboratorPartners?.length > 0 ? (
+            <>
+              <H3 className="p-2 text-center">
+                displaying {institutionPartners?.length || 0} of{" "}
+                {filteredCollaboratorPartners?.length} Partners
+              </H3>
+              {institutionPartners?.map((partner) => (
+                <InstitutionInfoPanel
+                  key={partner.institution_id}
+                  institution={partner}
+                />
+              ))}
+            </>
+          ) : (
+            <H3 className="p-2 text-center">No partners found</H3>
+          )}
         </div>
       )}
     </>
@@ -259,6 +287,7 @@ export default function CollaborationScenario() {
         </span>
       }
       filterMenus={filterMenus}
+      dataMenu={PaginatedResults}
       infoPanel={infoPanel}
       layers={[columnLayer, arcLayer]}
       hoverTooltip={hoverInfoComponent}

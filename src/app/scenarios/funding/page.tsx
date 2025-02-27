@@ -29,6 +29,8 @@ import {
 } from "datamodel/scenario_points/types";
 import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransformationInstitutionsWithProjects";
 import { Button } from "shadcn/button";
+import useSearchComponent from "components/menus/filter/SearchFilter";
+import { useProjectsByTitle } from "core/hooks/queries/project/useProjectsByTitle";
 
 export default function FundingScenario() {
   const id: string = "funding";
@@ -38,7 +40,7 @@ export default function FundingScenario() {
   const [increaseMaxHeight, setIncreaseMaxHeight] = useState<boolean>(false);
   const COLOR_GAMMA = 0.7;
   const MAX_HEIGHT = isGlobe ? 5_000_000 : 800_000;
-  const BAR_RADIUS = isGlobe ? 2_500 : 700;
+  const BAR_RADIUS = isGlobe ? 2_500 : 1_200;
 
   const [hoverInfo, setHoverInfo] = useState<{
     x: number;
@@ -76,7 +78,21 @@ export default function FundingScenario() {
   const { FundingProgrammeFilter, fundingProgrammePredicate } =
     useFundingProgrammeFilter();
 
+  const {
+    PaginatedResults: PaginatedProjectResults,
+    searchPredicate: searchProjectPredicate,
+  } = useSearchComponent({
+    useSearchHook: useProjectsByTitle,
+    idField: "project_id",
+    displayField: "title",
+    searchLabel: "Project Search",
+    placeholderText: "Search projects for title, acronymn and objective ...",
+    idPredicate: "project_id",
+  });
+
   /**  Filters Institutions */
+
+  // ToDo we dont really need to be filtering projects when showInstitutions is enabled and vice verca lol
 
   const countryFilteredInstitutions = dataInstitutionPoints?.filter(
     (institution) => countryPredicate(institution),
@@ -86,7 +102,9 @@ export default function FundingScenario() {
     (institution) => {
       const filteredProjects = institution.projects_funding.filter(
         (project) =>
-          topicPredicate(project) && fundingProgrammePredicate(project),
+          topicPredicate(project) &&
+          fundingProgrammePredicate(project) &&
+          searchProjectPredicate(project),
       );
       return {
         ...institution,
@@ -105,7 +123,8 @@ export default function FundingScenario() {
     (point) =>
       countryPredicate(point) &&
       topicPredicate(point) &&
-      fundingProgrammePredicate(point),
+      fundingProgrammePredicate(point) &&
+      searchProjectPredicate(point),
   );
 
   /**  State Selected Institution */
@@ -350,7 +369,8 @@ export default function FundingScenario() {
       title="Funding Map"
       description="You may toggle between Projects and Institutions. Projects are geographically placed given their coordinators geolocation.
       Institutions have all their projects listed, the funding amount is in regard to the part of the project funding they received.  
-      About a quarter of the projects dont list the funding amount for individual institutions especially a couple big ones like ALTER-NET or SUNLIQUID)."
+      About a quarter of the projects dont list the funding amount for individual institutions especially a couple big ones like ALTER-NET or SUNLIQUID).
+      The search only works for projects. When toggled to institutions this filters the projects of the institution."
       statsCard={
         <span>
           Displaying {dataLength}{" "}
@@ -367,6 +387,7 @@ export default function FundingScenario() {
         </span>
       }
       filterMenus={filterMenus}
+      dataMenu={PaginatedProjectResults}
       infoPanel={infoPanel}
       layers={[layer]}
       hoverTooltip={hoverInfoComponent}

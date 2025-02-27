@@ -1,6 +1,11 @@
 import { getConnection } from "core/database/connection";
 
-import { Project, ProjectFundingProgrammes, ProjectTopics } from "./types";
+import {
+  Project,
+  ProjectFundingProgrammes,
+  ProjectSearchResult,
+  ProjectTopics,
+} from "./types";
 
 /** Project */
 
@@ -72,4 +77,31 @@ export async function getProjectsFundingProgrammes(): Promise<
     SELECT_PROJECT_FUNDING_PROGRAMME,
   );
   return result.rows;
+}
+
+/** Project Search */
+
+const SELECT_PROJECTS_SEARCH = `
+  SELECT 
+    id AS project_id, 
+    title
+  FROM projects
+  WHERE lower(title) LIKE '%' || $1 || '%'
+  OR lower(acronym) LIKE '%' || $1 || '%'
+  OR lower(objective) LIKE '%' || $1 || '%';`;
+
+export async function searchProjects(
+  title: string,
+): Promise<ProjectSearchResult[]> {
+  try {
+    const pool = getConnection();
+    const result = await pool.query<ProjectSearchResult>(
+      SELECT_PROJECTS_SEARCH,
+      [title.toLowerCase()],
+    );
+    return result.rows;
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
 }

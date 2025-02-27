@@ -1,4 +1,4 @@
-import { Building2, Globe2, MapPin, Map } from "lucide-react";
+import { Building2, Globe2, Lightbulb, Map } from "lucide-react";
 import React from "react";
 import { Button } from "shadcn/button";
 
@@ -113,7 +113,10 @@ export const ScopeToggle: React.FC<{
         icon: <Building2 className="h-4 w-4" />,
         label: "Institutions",
       }}
-      rightOption={{ icon: <MapPin className="h-4 w-4" />, label: "Projects" }}
+      rightOption={{
+        icon: <Lightbulb className="h-4 w-4" />,
+        label: "Projects",
+      }}
       className={className}
       showSwitchText={showSwitchText}
       switchTextClassName={switchTextClassName}

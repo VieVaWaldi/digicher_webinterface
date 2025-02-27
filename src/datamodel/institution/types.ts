@@ -21,3 +21,8 @@ export interface InstitutionFundingProgrammes {
   institution_id: number;
   funding_ids: number[];
 }
+
+export interface InstitutionSearchResult {
+  institution_id: number;
+  name: string;
+}

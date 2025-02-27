@@ -2,6 +2,7 @@ import { getConnection } from "core/database/connection";
 import {
   Institution,
   InstitutionFundingProgrammes,
+  InstitutionSearchResult,
   InstitutionTopics,
 } from "datamodel/institution/types";
 
@@ -89,4 +90,30 @@ export async function getInstitutionsFundingProgrammes(): Promise<
     SELECT_INSTITUTION_FUNDING_PROGRAMME,
   );
   return result.rows;
+}
+
+/** Institution Search */
+
+const SELECT_INSTITUTIONS_SEARCH = `
+  SELECT 
+    id AS institution_id, 
+    name
+  FROM institutions
+  WHERE lower(name) LIKE '%' || $1 || '%' AND
+  address_geolocation IS NOT NULL;`;
+
+export async function searchInstitutions(
+  name: string,
+): Promise<InstitutionSearchResult[]> {
+  try {
+    const pool = getConnection();
+    const result = await pool.query<InstitutionSearchResult>(
+      SELECT_INSTITUTIONS_SEARCH,
+      [name.toLowerCase()],
+    );
+    return result.rows;
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
 }

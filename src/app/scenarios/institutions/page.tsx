@@ -15,6 +15,8 @@ import useTransformInstitutions from "core/hooks/transform/useTransformInstituti
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
 import { useInstitutionPoints } from "core/hooks/queries/scenario_points/useInstitutionPoints";
+import { useInstitutionsByName } from "core/hooks/queries/institution/useInstitutionByName";
+import useSearchComponent from "components/menus/filter/SearchFilter";
 
 const SME_FILTERS = ["All", "SME", "Non-SME"] as const;
 export type SmeFilter = (typeof SME_FILTERS)[number];
@@ -27,7 +29,7 @@ export default function InstitutionScenario() {
   const { data: institutionPoints, loading, error } = useInstitutionPoints();
   const { data: transformedPoints } =
     useTransformInstitutions(institutionPoints);
-    
+
   const [selectedInstitution, setSelectedInstitution] =
     useState<InstitutionPoint | null>(null);
   const { data: institution } = useInstitutionById(
@@ -45,6 +47,14 @@ export default function InstitutionScenario() {
   const { TopicFilter, topicPredicate } = useTopicFilter();
   const { FundingProgrammeFilter, fundingProgrammePredicate } =
     useFundingProgrammeFilter();
+  const { PaginatedResults, searchPredicate } = useSearchComponent({
+    useSearchHook: useInstitutionsByName,
+    idField: "institution_id",
+    displayField: "name",
+    searchLabel: "Institution Search",
+    placeholderText: "Search institutions for name ...",
+    idPredicate: "institution_id",
+  });
 
   const filteredDataPoints = dataPoints?.filter((point) => {
     const passesSmeFilter =
@@ -55,7 +65,8 @@ export default function InstitutionScenario() {
       passesSmeFilter &&
       countryPredicate(point) &&
       topicPredicate(point) &&
-      fundingProgrammePredicate(point)
+      fundingProgrammePredicate(point) &&
+      searchPredicate(point)
     );
   });
 
@@ -65,11 +76,6 @@ export default function InstitutionScenario() {
     ...baseLayerProps,
     id: `scatter-${id}`,
     data: filteredDataPoints,
-
-    filled: true,
-    stroked: false,
-    radiusMinPixels: 5,
-    radiusMaxPixels: 5,
 
     getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
     getFillColor: (d) => (d.is_sme ? [6, 77, 135] : [255, 140, 0]),
@@ -108,6 +114,7 @@ export default function InstitutionScenario() {
         </span>
       }
       filterMenus={filterMenus}
+      dataMenu={PaginatedResults}
       infoPanel={
         institution && <InstitutionInfoPanel institution={institution} />
       }

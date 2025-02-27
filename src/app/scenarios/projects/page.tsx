@@ -9,15 +9,17 @@ import { baseLayerProps } from "deckgl/baseLayerProps";
 import { DualRangeSlider } from "shadcn/dual-range-slider";
 import useTopicFilter from "components/menus/filter/TopicFilter";
 import ScenarioTemplate from "components/scenarios/ScenarioTemplate";
-import { ProjectCoordinatorPoint } from "datamodel/scenario_points/types";
 import useCountryFilter from "components/menus/filter/CountryFilter";
 import ProjectInfoPanel from "components/infoPanels/ProjectInfoPanel";
+import { ProjectCoordinatorPoint } from "datamodel/scenario_points/types";
 import { useProjectById } from "core/hooks/queries/project/useProjectById";
 import useTransformProjects from "core/hooks/transform/useTransformProjects";
 import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
 import { useInstitutionById } from "core/hooks/queries/institution/useInstitutionById";
 import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
 import { useProjectsCoordinatorPoints } from "core/hooks/queries/scenario_points/useProjectsCoordinatorPoints";
+import useSearchComponent from "components/menus/filter/SearchFilter";
+import { useProjectsByTitle } from "core/hooks/queries/project/useProjectsByTitle";
 
 export default function ProjectScenario() {
   const id: string = "projects";
@@ -58,6 +60,14 @@ export default function ProjectScenario() {
   const { TopicFilter, topicPredicate } = useTopicFilter();
   const { FundingProgrammeFilter, fundingProgrammePredicate } =
     useFundingProgrammeFilter();
+  const { PaginatedResults, searchPredicate } = useSearchComponent({
+    useSearchHook: useProjectsByTitle,
+    idField: "project_id",
+    displayField: "title",
+    searchLabel: "Project Search",
+    placeholderText: "Search projects for title, acronymn and objective ...",
+    idPredicate: "project_id",
+  });
 
   const filterdDataPoints = dataPoints?.filter((point) => {
     const passesYearFilter =
@@ -67,7 +77,8 @@ export default function ProjectScenario() {
       passesYearFilter &&
       countryPredicate(point) &&
       topicPredicate(point) &&
-      fundingProgrammePredicate(point)
+      fundingProgrammePredicate(point) &&
+      searchPredicate(point)
     );
   });
 
@@ -77,14 +88,6 @@ export default function ProjectScenario() {
     ...baseLayerProps,
     id: `scatter-${id}`,
     data: filterdDataPoints,
-    filled: true,
-    stroked: false,
-
-    radiusScale: 6,
-    radiusMinPixels: 3,
-    radiusMaxPixels: 100,
-    lineWidthMinPixels: 1,
-    getRadius: 100,
 
     getFillColor: [255, 140, 0],
     getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
@@ -136,6 +139,7 @@ export default function ProjectScenario() {
         </span>
       }
       filterMenus={filterMenus}
+      dataMenu={PaginatedResults}
       infoPanel={InfoPanel}
       layers={[layer]}
       isLoading={loading}
