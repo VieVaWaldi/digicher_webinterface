@@ -21,6 +21,7 @@ import { H3 } from "shadcn/typography";
 import { useInstitutionsByIds } from "core/hooks/queries/institution/useInstitutionsByIds";
 import useSearchComponent from "components/menus/filter/SearchFilter";
 import { useInstitutionsByName } from "core/hooks/queries/institution/useInstitutionByName";
+import { Navigation } from "components/navigation/Navigation";
 
 export default function CollaborationScenario() {
   const id: string = "collaboration";
@@ -264,40 +265,43 @@ export default function CollaborationScenario() {
   );
 
   return (
-    <ScenarioTemplate
-      id={id}
-      title="Collaboration Map"
-      description="Number of total collaborators does not change with the filters!"
-      statsCard={
-        <span>
-          Displaying{" "}
-          <span className="font-semibold text-orange-400">
-            {filteredDataPoints?.length.toLocaleString() || 0}
-          </span>{" "}
-          Institutions{" "}
-          {partnersArcData.length !== 0 && (
-            <>
-              with{" "}
-              <span className="font-semibold text-orange-400">
-                {partnersArcData.length}
-              </span>{" "}
-              connections
-            </>
-          )}
-        </span>
-      }
-      filterMenus={filterMenus}
-      dataMenu={PaginatedResults}
-      infoPanel={infoPanel}
-      layers={[columnLayer, arcLayer]}
-      hoverTooltip={hoverInfoComponent}
-      viewState={INITIAL_VIEW_STATE_TILTED_EU}
-      isLoading={loading}
-      error={error}
-      onEmptyMapClick={() => {
-        setSelectedInstitutionId(-1);
-        setSelectedInstitutionLocation(null);
-      }}
-    />
+    <div className="md:pt-12">
+      <Navigation />
+      <ScenarioTemplate
+        id={id}
+        title="Collaboration Map"
+        description="Number of total collaborators does not change with the filters!"
+        statsCard={
+          <span>
+            Displaying{" "}
+            <span className="font-semibold text-orange-400">
+              {filteredDataPoints?.length.toLocaleString() || 0}
+            </span>{" "}
+            Institutions{" "}
+            {partnersArcData.length !== 0 && (
+              <>
+                with{" "}
+                <span className="font-semibold text-orange-400">
+                  {partnersArcData.length}
+                </span>{" "}
+                connections
+              </>
+            )}
+          </span>
+        }
+        filterMenus={filterMenus}
+        dataMenu={PaginatedResults}
+        infoPanel={infoPanel}
+        layers={[columnLayer, arcLayer]}
+        hoverTooltip={hoverInfoComponent}
+        viewState={INITIAL_VIEW_STATE_TILTED_EU}
+        isLoading={loading}
+        error={error}
+        onEmptyMapClick={() => {
+          setSelectedInstitutionId(-1);
+          setSelectedInstitutionLocation(null);
+        }}
+      />
+    </div>
   );
 }

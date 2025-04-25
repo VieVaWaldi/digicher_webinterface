@@ -20,6 +20,7 @@ import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeF
 import { useProjectsCoordinatorPoints } from "core/hooks/queries/scenario_points/useProjectsCoordinatorPoints";
 import useSearchComponent from "components/menus/filter/SearchFilter";
 import { useProjectsByTitle } from "core/hooks/queries/project/useProjectsByTitle";
+import { Navigation } from "components/navigation/Navigation";
 
 export default function ProjectScenario() {
   const id: string = "projects";
@@ -47,13 +48,29 @@ export default function ProjectScenario() {
 
   /** Filter */
   const MIN_YEAR =
-    dataPoints?.reduce((acc, point) => {
-      return Math.min(acc, new Date(point.start_date).getFullYear());
-    }, 9999) ?? 1990;
+    dataPoints
+      ?.filter(
+        (point) =>
+          point.start_date &&
+          point.end_date &&
+          new Date(point.end_date).getFullYear() < 2100 &&
+          new Date(point.start_date).getFullYear() < 2100,
+      )
+      .reduce((acc, point) => {
+        return Math.min(acc, new Date(point.start_date).getFullYear());
+      }, 10000) ?? 1957;
   const MAX_YEAR =
-    dataPoints?.reduce((acc, point) => {
-      return Math.max(acc, new Date(point.end_date).getFullYear());
-    }, 0) ?? 2030;
+    dataPoints
+      ?.filter(
+        (point) =>
+          point.start_date &&
+          point.end_date &&
+          new Date(point.end_date).getFullYear() < 2100 &&
+          new Date(point.start_date).getFullYear() < 2100,
+      )
+      .reduce((acc, point) => {
+        return Math.max(acc, new Date(point.end_date).getFullYear());
+      }, 0) ?? 2030;
 
   const [years, setYears] = useState([MIN_YEAR, MAX_YEAR]);
   const { CountryFilter, countryPredicate } = useCountryFilter();
@@ -71,6 +88,8 @@ export default function ProjectScenario() {
 
   const filterdDataPoints = dataPoints?.filter((point) => {
     const passesYearFilter =
+      point.start_date &&
+      point.end_date &&
       years[1] >= new Date(point.start_date).getFullYear() &&
       years[0] <= new Date(point.end_date).getFullYear();
     return (
@@ -126,25 +145,28 @@ export default function ProjectScenario() {
   );
 
   return (
-    <ScenarioTemplate
-      id={id}
-      title="Project Map"
-      statsCard={
-        <span>
-          Displaying{" "}
-          <span className="font-semibold text-orange-400">
-            {filterdDataPoints?.length.toLocaleString() || 0}
-          </span>{" "}
-          Projects
-        </span>
-      }
-      filterMenus={filterMenus}
-      dataMenu={PaginatedResults}
-      infoPanel={InfoPanel}
-      layers={[layer]}
-      isLoading={loading}
-      error={error}
-    />
+    <div className="md:pt-12">
+      <Navigation />
+      <ScenarioTemplate
+        id={id}
+        title="Project Map"
+        statsCard={
+          <span>
+            Displaying{" "}
+            <span className="font-semibold text-orange-400">
+              {filterdDataPoints?.length.toLocaleString() || 0}
+            </span>{" "}
+            Projects
+          </span>
+        }
+        filterMenus={filterMenus}
+        dataMenu={PaginatedResults}
+        infoPanel={InfoPanel}
+        layers={[layer]}
+        isLoading={loading}
+        error={error}
+      />
+    </div>
   );
 }
 

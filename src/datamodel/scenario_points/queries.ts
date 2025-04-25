@@ -67,6 +67,7 @@ export async function getFundingInstitutionPoints(): Promise<
   FundingInstitutionPoint[]
 > {
   const pool = getConnection();
+
   const result = await pool.query<FundingInstitutionPoint>(
     SELECT_FUNDING_INSTITUTIONS,
   );
@@ -162,6 +163,7 @@ function parseProjectsFunding(
       ec_contribution: parseInt(entries[1]) || null,
       net_ec_contribution: parseInt(entries[2]) || null,
       total_cost: parseInt(entries[3]) || null,
+      start_date: new Date(entries[4])
     });
   });
 

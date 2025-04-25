@@ -17,6 +17,7 @@ import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeF
 import { useInstitutionPoints } from "core/hooks/queries/scenario_points/useInstitutionPoints";
 import { useInstitutionsByName } from "core/hooks/queries/institution/useInstitutionByName";
 import useSearchComponent from "components/menus/filter/SearchFilter";
+import { Navigation } from "components/navigation/Navigation";
 
 const SME_FILTERS = ["All", "SME", "Non-SME"] as const;
 export type SmeFilter = (typeof SME_FILTERS)[number];
@@ -101,26 +102,29 @@ export default function InstitutionScenario() {
   ];
 
   return (
-    <ScenarioTemplate
-      id={id}
-      title="Institution Map"
-      statsCard={
-        <span>
-          Displaying{" "}
-          <span className="font-semibold text-orange-400">
-            {filteredDataPoints?.length.toLocaleString() || 0}
-          </span>{" "}
-          Institutions
-        </span>
-      }
-      filterMenus={filterMenus}
-      dataMenu={PaginatedResults}
-      infoPanel={
-        institution && <InstitutionInfoPanel institution={institution} />
-      }
-      layers={[layer]}
-      isLoading={loading}
-      error={error}
-    />
+    <div className="md:pt-12">
+      <Navigation />
+      <ScenarioTemplate
+        id={id}
+        title="Institution Map"
+        statsCard={
+          <span>
+            Displaying{" "}
+            <span className="font-semibold text-orange-400">
+              {filteredDataPoints?.length.toLocaleString() || 0}
+            </span>{" "}
+            Institutions
+          </span>
+        }
+        filterMenus={filterMenus}
+        dataMenu={PaginatedResults}
+        infoPanel={
+          institution && <InstitutionInfoPanel institution={institution} />
+        }
+        layers={[layer]}
+        isLoading={loading}
+        error={error}
+      />
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Lightbulb, Building2, Coins, Handshake, LucideIcon } from "lucide-react";
+import { Lightbulb, Building2, Coins, Handshake, LucideIcon, HandCoins } from "lucide-react";
 
 interface Scenario {
   title: string;
@@ -8,6 +8,12 @@ interface Scenario {
 }
 
 export const scenarios: Scenario[] = [
+  {
+    title: "EC Country Funding",
+    href: "/scenarios/country_funding",
+    icon: HandCoins,
+    description: "Visualized the EC contribution per country over time for CH projects",
+  },
   {
     title: "Institutions",
     href: "/scenarios/institutions",

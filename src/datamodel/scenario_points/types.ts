@@ -46,6 +46,7 @@ export interface InstitutionProjectsFunding extends BasePoint {
   ec_contribution: number | null;
   net_ec_contribution: number | null;
   total_cost: number | null;
+  start_date: Date;
 }
 
 export interface FundingProjectPoint extends FundingBasePoint {

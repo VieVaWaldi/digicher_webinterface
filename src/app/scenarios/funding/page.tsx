@@ -31,16 +31,18 @@ import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransf
 import { Button } from "shadcn/button";
 import useSearchComponent from "components/menus/filter/SearchFilter";
 import { useProjectsByTitle } from "core/hooks/queries/project/useProjectsByTitle";
+import { Navigation } from "components/navigation/Navigation";
 
 export default function FundingScenario() {
   const id: string = "funding";
   const [showInstitutions, setShowInstitutions] = useState<boolean>(true);
 
   const { isGlobe } = useSettings();
-  const [increaseMaxHeight, setIncreaseMaxHeight] = useState<boolean>(false);
+  const [visibleMode, setvisibleMode] = useState<boolean>(false);
   const COLOR_GAMMA = 0.7;
   const MAX_HEIGHT = isGlobe ? 5_000_000 : 800_000;
-  const BAR_RADIUS = isGlobe ? 2_500 : 1_200;
+  let BAR_RADIUS = isGlobe ? 2_500 : 1_200;
+  if (visibleMode) BAR_RADIUS *= 3;
 
   const [hoverInfo, setHoverInfo] = useState<{
     x: number;
@@ -213,7 +215,6 @@ export default function FundingScenario() {
     : totalFundingProjects;
 
   /** Layers */
-
   const createColumnLayer = <T extends FundingBasePoint>(
     id: string,
     data: T[] | undefined,
@@ -226,13 +227,15 @@ export default function FundingScenario() {
       getElevation: (d) => {
         const funding = getFunding(d);
         const ratio = funding / MAX_TOTAL_COST;
-        if (increaseMaxHeight) return ratio * MAX_HEIGHT * 6;
+        if (visibleMode) return ratio * MAX_HEIGHT * 24;
         else return ratio * MAX_HEIGHT;
       },
       getFillColor: (d) => {
         const funding = getFunding(d);
         const normalizedFunding = funding / MAX_TOTAL_COST;
         const adjustedValue = Math.pow(normalizedFunding, COLOR_GAMMA);
+        if (visibleMode) return [255, 15, 15];
+
         return [
           50 + (255 - 50) * adjustedValue,
           50 - 50 * adjustedValue,
@@ -299,8 +302,8 @@ export default function FundingScenario() {
       />
     </div>,
     <div key="toggle-bar-size">
-      <Button onClick={() => setIncreaseMaxHeight(!increaseMaxHeight)}>
-        {increaseMaxHeight ? "Decrease Column Size" : "Increase Column Size"}
+      <Button onClick={() => setvisibleMode(!visibleMode)}>
+        {visibleMode ? "Less visible" : "More visible"}
       </Button>
     </div>,
     <CountryFilter key="country-filter" />,
@@ -364,36 +367,39 @@ export default function FundingScenario() {
   );
 
   return (
-    <ScenarioTemplate
-      id={id}
-      title="Funding Map"
-      description="You may toggle between Projects and Institutions. Projects are geographically placed given their coordinators geolocation.
+    <div className="md:pt-12">
+      <Navigation />
+      <ScenarioTemplate
+        id={id}
+        title="Funding Map"
+        description="You may toggle between Projects and Institutions. Projects are geographically placed given their coordinators geolocation.
       Institutions have all their projects listed, the funding amount is in regard to the part of the project funding they received.  
       About a quarter of the projects dont list the funding amount for individual institutions especially a couple big ones like ALTER-NET or SUNLIQUID).
       The search only works for projects. When toggled to institutions this filters the projects of the institution."
-      statsCard={
-        <span>
-          Displaying {dataLength}{" "}
-          <span className="font-semibold text-orange-400">
-            {showInstitutions ? "Institutions" : "Projects"}{" "}
-          </span>{" "}
-          with{" "}
-          <span className="font-semibold text-orange-400">
-            {new Intl.NumberFormat("de-DE", {
-              style: "currency",
-              currency: "EUR",
-            }).format(totalFunding)}
+        statsCard={
+          <span>
+            Displaying {dataLength}{" "}
+            <span className="font-semibold text-orange-400">
+              {showInstitutions ? "Institutions" : "Projects"}{" "}
+            </span>{" "}
+            with{" "}
+            <span className="font-semibold text-orange-400">
+              {new Intl.NumberFormat("de-DE", {
+                style: "currency",
+                currency: "EUR",
+              }).format(totalFunding)}
+            </span>
           </span>
-        </span>
-      }
-      filterMenus={filterMenus}
-      dataMenu={PaginatedProjectResults}
-      infoPanel={infoPanel}
-      layers={[layer]}
-      hoverTooltip={hoverInfoComponent}
-      viewState={INITIAL_VIEW_STATE_TILTED_EU}
-      isLoading={loading}
-      error={error}
-    />
+        }
+        filterMenus={filterMenus}
+        dataMenu={PaginatedProjectResults}
+        infoPanel={infoPanel}
+        layers={[layer]}
+        hoverTooltip={hoverInfoComponent}
+        viewState={INITIAL_VIEW_STATE_TILTED_EU}
+        isLoading={loading}
+        error={error}
+      />
+    </div>
   );
 }

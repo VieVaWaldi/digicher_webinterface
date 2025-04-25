@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolConfig } from "pg";
 
 function getPool() {
   if (
@@ -10,18 +10,25 @@ function getPool() {
     throw new Error("Missing database configuration");
   }
 
-  return new Pool({
+  const poolConfig: PoolConfig = {
     user: process.env.POSTGRES_USER,
     host: process.env.POSTGRES_HOST,
     database: process.env.POSTGRES_DATABASE,
     password: process.env.POSTGRES_PASSWORD || "",
     port: parseInt(process.env.POSTGRES_PORT),
+  };
 
-    // ToDo IF env.PROD use ssl
-    ssl: {
+  if (
+    process.env.MODE == "PROD" ||
+    process.env.MODE == undefined ||
+    process.env.MODE == null
+  ) {
+    poolConfig.ssl = {
       rejectUnauthorized: true,
-    },
-  });
+    };
+  }
+
+  return new Pool(poolConfig);
 }
 
 let pool: Pool;
