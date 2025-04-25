@@ -243,7 +243,7 @@ export default function CountryFunding() {
         onClick={() => setTooltip({ ...tooltip, visible: false })}
       >
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-x-6 md:space-y-0">
-          <div className="flex w-40 min-w-64 items-center gap-4 md:min-w-96">
+          <div className="flex w-40 items-center gap-4 md:min-w-96">
             <H4 className="text-gray-100">{year}</H4>
             <Slider
               defaultValue={[year]}
