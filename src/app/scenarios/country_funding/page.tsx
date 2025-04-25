@@ -243,14 +243,15 @@ export default function CountryFunding() {
         onClick={() => setTooltip({ ...tooltip, visible: false })}
       >
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-x-6 md:space-y-0">
-          <div className="flex w-40 items-center gap-4 md:min-w-96">
-            <H4 className="text-gray-100">{year}</H4>
+          {/* Increased width from w-40 to w-64 for mobile */}
+          <div className="flex w-64 items-center gap-4 md:min-w-96">
+            <H4 className="whitespace-nowrap text-gray-100">{year}</H4>
             <Slider
               defaultValue={[year]}
               min={2014}
               max={2025}
               step={1}
-              className="flex-grow py-2"
+              className="min-w-32 flex-grow py-2" // Added min-width to prevent disappearing
               onValueCommit={(newValue) => setYear(newValue[0])}
             />
           </div>
