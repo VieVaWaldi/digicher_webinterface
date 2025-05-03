@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { Globe2, Home } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Globe2, Home, InfoIcon } from "lucide-react";
 import { SolidPolygonLayer } from "@deck.gl/layers";
 import { Button } from "shadcn/button";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,10 @@ import {
 } from "datamodel/scenario_points/types";
 import { Slider } from "shadcn/slider";
 import { H4, H5 } from "shadcn/typography";
+import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransformationInstitutionsWithProjects";
+import { useProjectsByKeywords } from "core/hooks/queries/project/useProjectsByKeywords";
+import useDomainFilterSimple from "components/menus/filter/DomainFilter";
+import TopicRankingPanel from "components/menus/TopicPanel";
 
 export default function CountryFunding() {
   const [year, setYear] = useState(2024);
@@ -32,7 +36,13 @@ export default function CountryFunding() {
   });
 
   const router = useRouter();
+
+  // Use useRef to store the maxFundingAll value
+  const maxFundingAllRef = useRef<number>(1);
+
   const MAX_ELEVATION = 5000000;
+
+  // --- Data ------------------------------------------------------------------------------- //
 
   const { data: countryGeoData } = useCountryGeoData();
 
@@ -41,6 +51,37 @@ export default function CountryFunding() {
     loading: isLoading,
     error,
   } = useFundingInstitutionPoints();
+  const { data: transformedInstitutionPoints } =
+    useTransformInstitutionsWithProjects(fundingInstitutionPoints);
+
+  const dataInstitutionPoints =
+    transformedInstitutionPoints ?? fundingInstitutionPoints;
+
+  // --- Filter ----------------------------------------------------------------------------- //
+
+  const { DomainFilter, filterPredicate: filterDomainPredicate } =
+    useDomainFilterSimple({
+      useSearchHook: useProjectsByKeywords,
+      idField: "project_id",
+      idPredicate: "project_id",
+    });
+
+  const filteredAllInstitutions = dataInstitutionPoints?.map((institution) => {
+    const filteredProjects = institution.projects_funding.filter((project) =>
+      filterDomainPredicate(project),
+    );
+    return {
+      ...institution,
+      projects_funding: filteredProjects,
+    } as FundingInstitutionPoint;
+  });
+
+  // --- Reduce Funding ----------------------------------------------------------------------------- //
+
+  // ALSO REDUCE THE TOPICS
+  // MORE ISSUE TO NOTE: what topic level, not all projects with topics
+  // THIS IS PARTIAL FUNDING FROM PROJECT TO TOPIC ... so good? what about summing funding per topic ...
+  // okay, but the ec gave funding to the project with these topics, so only issue is counting same money for different topics in one project
 
   const reduceFundingInstitutionPoints = (
     points: FundingInstitutionPoint[] | undefined,
@@ -78,9 +119,24 @@ export default function CountryFunding() {
   };
 
   const countryFundingMap = reduceFundingInstitutionPoints(
-    fundingInstitutionPoints,
+    filteredAllInstitutions,
     true,
   );
+
+  // Calculate maxFundingAll only once when data is first loaded
+  useEffect(() => {
+    if (fundingInstitutionPoints && fundingInstitutionPoints.length > 0) {
+      // Only calculate this once when we get the initial, unfiltered data
+      const initialCountryFundingMapWithoutYear =
+        reduceFundingInstitutionPoints(fundingInstitutionPoints, false);
+
+      if (Object.values(initialCountryFundingMapWithoutYear).length > 0) {
+        maxFundingAllRef.current = Math.max(
+          ...(Object.values(initialCountryFundingMapWithoutYear) as number[]),
+        );
+      }
+    }
+  });
 
   const getFundingForCountry = (countryCode: string) => {
     if (countryFundingMap[countryCode]) {
@@ -94,18 +150,104 @@ export default function CountryFunding() {
       (country) => getFundingForCountry(country.countryCode) > 0,
     ) || [];
 
+  // --- Reduce Topics ----------------------------------------------------------------------------- //
+
+  // Define the interface for the return type
+  interface TopicFundingByYear {
+    [year: number]: {
+      level2: {
+        [topicName: string]: number; // topicName to ec funding amount
+      };
+      level3: {
+        [topicName: string]: number; // topicName to ec funding amount
+      };
+    };
+  }
+
+  // Function to reduce topic funding by year for levels 2 and 3
+  const reduceTopicFundingByYear = (
+    points: FundingInstitutionPoint[] | undefined,
+  ): TopicFundingByYear => {
+    if (!points || !Array.isArray(points)) return {};
+
+    const result: TopicFundingByYear = {};
+
+    points.forEach((institution) => {
+      if (
+        !institution.projects_funding ||
+        !Array.isArray(institution.projects_funding)
+      ) {
+        return;
+      }
+
+      institution.projects_funding.forEach((project) => {
+        // Skip projects with start_date before 2015
+        if (!project.start_date) return;
+
+        const projectStartDate = new Date(project.start_date);
+        const projectYear = projectStartDate.getFullYear();
+
+        if (projectYear < 2015) return;
+
+        // Initialize year in result if it doesn't exist
+        if (!result[projectYear]) {
+          result[projectYear] = {
+            level2: {},
+            level3: {},
+          };
+        }
+
+        // Get project funding amount
+        const funding = project.ec_contribution || 0;
+        if (funding <= 0) return; // Skip projects with no funding
+
+        // Process topics if they exist
+        if (project.topics && Array.isArray(project.topics)) {
+          project.topics.forEach((topic) => {
+            if (topic.level === 2) {
+              // Handle level 2 topics
+              const topicName = topic.name;
+              result[projectYear].level2[topicName] =
+                (result[projectYear].level2[topicName] || 0) + funding;
+            } else if (topic.level === 3) {
+              // Handle level 3 topics
+              const topicName = topic.name;
+              result[projectYear].level3[topicName] =
+                (result[projectYear].level3[topicName] || 0) + funding;
+            }
+          });
+        }
+      });
+    });
+
+    return result;
+  };
+
+  // Calculate topic funding breakdown
+  const topicFundingByYear = reduceTopicFundingByYear(filteredAllInstitutions);
+
+  // console.log(topicFundingByYear);
+  // log here sorted topic by amount in the year
+
+  // Log sorted level 2 topics for current year
+  // console.log(
+  //   "Sorted Level 2 Topics:",
+  //   Object.entries(topicFundingByYear[year]?.level2 || {})
+  //     .map(([name, amount]) => ({ name, amount }))
+  //     .sort((a, b) => b.amount - a.amount),
+  // );
+
+  // // Log sorted level 3 topics for current year
+  // console.log(
+  //   "Sorted Level 3 Topics:",
+  //   Object.entries(topicFundingByYear[year]?.level3 || {})
+  //     .map(([name, amount]) => ({ name, amount }))
+  //     .sort((a, b) => b.amount - a.amount),
+  // );
+
   // --- HELPER ----------------------------------------------------------------------------- //
 
-  const countryFundingMapWithoutYear = reduceFundingInstitutionPoints(
-    fundingInstitutionPoints,
-    false,
-  );
-
-  const maxFundingAll =
-    Object.values(countryFundingMapWithoutYear).length > 0
-      ? Math.max(...(Object.values(countryFundingMapWithoutYear) as number[]))
-      : 1;
-
+  // For current year filtered view, recalculate max on each render
   const maxFunding =
     Object.values(countryFundingMap).length > 0
       ? Math.max(...(Object.values(countryFundingMap) as number[]))
@@ -150,7 +292,8 @@ export default function CountryFunding() {
             },
             getElevation: (d: ProcessedCountry) => {
               const value = getFundingForCountry(d.countryCode) || 0;
-              return (value / maxFundingAll) * MAX_ELEVATION;
+              // Use maxFundingAllRef.current instead of recalculating maxFundingAll
+              return (value / maxFundingAllRef.current) * MAX_ELEVATION;
             },
             getFillColor: (d: ProcessedCountry) => {
               const value = getFundingForCountry(d.countryCode) || 0;
@@ -193,14 +336,17 @@ export default function CountryFunding() {
     );
   }
 
+  const CSS_BUTTON = "h-10 w-10 rounded-xl bg-white text-orange-500";
+  const STRK_WDTH = 2.2;
+
   const HomeButton = () => {
     return (
       <Button
         variant="secondary"
-        className="h-12 w-12 rounded-lg bg-white text-orange-500 shadow-md"
+        className={CSS_BUTTON}
         onClick={() => router.push("/")}
       >
-        <Home className="h-6 w-6" strokeWidth={2.2} />
+        <Home strokeWidth={STRK_WDTH} style={{ transform: "scale(1.4)" }} />
       </Button>
     );
   };
@@ -209,11 +355,11 @@ export default function CountryFunding() {
     return (
       <Sheet>
         <SheetTrigger asChild>
-          <Button
-            variant="secondary"
-            className="h-12 w-12 rounded-lg bg-white text-orange-500 shadow-md"
-          >
-            <Globe2 className="h-6 w-6" strokeWidth={2.2} />
+          <Button variant="secondary" className={CSS_BUTTON}>
+            <Globe2
+              strokeWidth={STRK_WDTH}
+              style={{ transform: "scale(1.4)" }}
+            />
           </Button>
         </SheetTrigger>
         <SheetContent>
@@ -224,13 +370,22 @@ export default function CountryFunding() {
     );
   };
 
+  const InfoButton = () => {
+    return (
+      <Button variant="secondary" className={CSS_BUTTON} onClick={() => {}}>
+        <InfoIcon strokeWidth={STRK_WDTH} style={{ transform: "scale(1.4)" }} />
+      </Button>
+    );
+  };
+
   const TopLeftMenu = () => {
     return (
       <div
-        className="absolute left-4 top-4 z-10 flex flex-col space-y-2"
-        onClick={() => setTooltip({ ...tooltip, visible: false })}
+        className="absolute left-2 top-2 z-10 flex flex-col space-y-2"
+        // onClick={() => setTooltip({ ...tooltip, visible: false })}
       >
         <HomeButton />
+        <InfoButton />
         <GlobeButton />
       </div>
     );
@@ -239,28 +394,29 @@ export default function CountryFunding() {
   const BottomLeftMenu = () => {
     return (
       <div
-        className="absolute bottom-4 left-4 z-10 rounded-lg bg-black/15 p-4 backdrop-blur-sm"
-        onClick={() => setTooltip({ ...tooltip, visible: false })}
+        className="absolute bottom-0 left-0 w-full rounded-b-xl bg-white/60 p-2 backdrop-blur-md"
+        // onClick={(e) => {
+        //   setTooltip({ ...tooltip, visible: false });
+        // }}
       >
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-x-6 md:space-y-0">
-          {/* Increased width from w-40 to w-64 for mobile */}
-          <div className="flex w-64 items-center gap-4 md:min-w-96">
-            <H4 className="whitespace-nowrap text-gray-100">{year}</H4>
+        <div className="flex flex-row gap-2">
+          <div className="flex items-center gap-4">
             <Slider
               defaultValue={[year]}
               min={2014}
               max={2025}
               step={1}
-              className="min-w-32 flex-grow py-2" // Added min-width to prevent disappearing
+              className="min-w-32 flex-grow py-2"
               onValueCommit={(newValue) => setYear(newValue[0])}
             />
+            <H4 className="whitespace-nowrap text-gray-600">{year}</H4>
           </div>
+          <DomainFilter />
         </div>
       </div>
     );
   };
 
-  // Country Tooltip component that appears when a country is clicked
   const CountryTooltip = () => {
     if (!tooltip.visible) return null;
 
@@ -284,40 +440,41 @@ export default function CountryFunding() {
 
   const Title = () => {
     return (
-      <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 transform rounded-lg bg-white px-4 py-2 text-center shadow-md">
+      <div className="absolute left-1/2 z-10 -translate-x-1/2 rounded-b-xl bg-white px-3 py-2 text-center">
         <H5>
           <span className="text-gray-700">EC Funding in</span>{" "}
           <span className="font-semibold text-orange-400">{year}</span>{" "}
           <span>totaling</span>{" "}
           <span className="font-semibold text-orange-400">
             {formatEuro(getTotalFundingForYear(countryFundingMap))}
-          </span>{" "}
-          <span>for CH*</span>
+          </span>
         </H5>
       </div>
     );
   };
 
   return (
-    <div className="m-0 h-screen w-full overflow-hidden p-0">
-      <div className="relative m-0 h-full w-full p-0">
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border border-gray-200">
-          <Title />
-          <TopLeftMenu />
-          <BaseDeckGLMap
-            id="funding-map"
-            layers={layers}
-            viewState={INITIAL_VIEW_STATE_TILTED_EU}
-            onMapClick={(event) => {
-              // Hide tooltip when clicking on the map (not on a country)
-              if (!event.picked) {
-                setTooltip({ ...tooltip, visible: false });
-              }
-            }}
-          />
-          <BottomLeftMenu />
-          <CountryTooltip />
-        </div>
+    <div className="h-full w-full bg-gray-700">
+      <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white">
+        <Title />
+        <TopLeftMenu />
+        <BaseDeckGLMap
+          id="funding-map"
+          layers={layers}
+          viewState={INITIAL_VIEW_STATE_TILTED_EU}
+          onMapClick={(event) => {
+            if (!event.picked) {
+              setTooltip({ ...tooltip, visible: false });
+            }
+          }}
+        />
+        <BottomLeftMenu />
+        <CountryTooltip />
+        <TopicRankingPanel
+          topicFundingByYear={topicFundingByYear}
+          year={year}
+          formatEuro={formatEuro}
+        />
       </div>
     </div>
   );

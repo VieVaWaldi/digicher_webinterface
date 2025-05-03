@@ -30,8 +30,8 @@ import {
 import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransformationInstitutionsWithProjects";
 import { Button } from "shadcn/button";
 import useSearchComponent from "components/menus/filter/SearchFilter";
-import { useProjectsByTitle } from "core/hooks/queries/project/useProjectsByTitle";
 import { Navigation } from "components/navigation/Navigation";
+import { useProjectsByKeywords } from "core/hooks/queries/project/useProjectsByKeywords";
 
 export default function FundingScenario() {
   const id: string = "funding";
@@ -84,7 +84,7 @@ export default function FundingScenario() {
     PaginatedResults: PaginatedProjectResults,
     searchPredicate: searchProjectPredicate,
   } = useSearchComponent({
-    useSearchHook: useProjectsByTitle,
+    useSearchHook: useProjectsByKeywords,
     idField: "project_id",
     displayField: "title",
     searchLabel: "Project Search",

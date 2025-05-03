@@ -19,7 +19,7 @@ import { useInstitutionById } from "core/hooks/queries/institution/useInstitutio
 import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
 import { useProjectsCoordinatorPoints } from "core/hooks/queries/scenario_points/useProjectsCoordinatorPoints";
 import useSearchComponent from "components/menus/filter/SearchFilter";
-import { useProjectsByTitle } from "core/hooks/queries/project/useProjectsByTitle";
+import { useProjectsByKeywords } from "core/hooks/queries/project/useProjectsByKeywords";
 import { Navigation } from "components/navigation/Navigation";
 
 export default function ProjectScenario() {
@@ -78,7 +78,7 @@ export default function ProjectScenario() {
   const { FundingProgrammeFilter, fundingProgrammePredicate } =
     useFundingProgrammeFilter();
   const { PaginatedResults, searchPredicate } = useSearchComponent({
-    useSearchHook: useProjectsByTitle,
+    useSearchHook: useProjectsByKeywords,
     idField: "project_id",
     displayField: "title",
     searchLabel: "Project Search",

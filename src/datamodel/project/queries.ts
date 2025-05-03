@@ -81,24 +81,68 @@ export async function getProjectsFundingProgrammes(): Promise<
 
 /** Project Search */
 
+// const SELECT_PROJECTS_SEARCH = `
+//   SELECT
+//     id AS project_id,
+//     title
+//   FROM projects
+//   WHERE lower(title) LIKE '%' || $1 || '%'
+//   OR lower(acronym) LIKE '%' || $1 || '%'
+//   OR lower(objective) LIKE '%' || $1 || '%';`;
+
+// export async function searchProjects(
+//   title: string,
+// ): Promise<ProjectSearchResult[]> {
+//   try {
+//     const pool = getConnection();
+//     const result = await pool.query<ProjectSearchResult>(
+//       SELECT_PROJECTS_SEARCH,
+//       [title.toLowerCase()],
+//     );
+//     return result.rows;
+//   } catch (e) {
+//     console.log(e);
+//     throw e;
+//   }
+// }
+
 const SELECT_PROJECTS_SEARCH = `
   SELECT 
     id AS project_id, 
     title
   FROM projects
-  WHERE lower(title) LIKE '%' || $1 || '%'
-  OR lower(acronym) LIKE '%' || $1 || '%'
-  OR lower(objective) LIKE '%' || $1 || '%';`;
+  WHERE 1=1
+  $CONDITIONS;`;
 
 export async function searchProjects(
   title: string,
 ): Promise<ProjectSearchResult[]> {
   try {
     const pool = getConnection();
-    const result = await pool.query<ProjectSearchResult>(
-      SELECT_PROJECTS_SEARCH,
-      [title.toLowerCase()],
-    );
+
+    const searchTerms = title
+      .toLowerCase()
+      .split(" ")
+      .filter((term) => term.trim() !== "");
+
+    let conditions = "";
+    const params: string[] = [];
+
+    if (searchTerms.length > 0) {
+      searchTerms.forEach((term, index) => {
+        params.push(term);
+        conditions += ` AND (
+          lower(title) LIKE '%' || $${index + 1} || '%' OR 
+          lower(acronym) LIKE '%' || $${index + 1} || '%' OR 
+          lower(objective) LIKE '%' || $${index + 1} || '%'
+        )`;
+      });
+    }
+
+    // Replace the placeholder in the query with the conditions
+    const query = SELECT_PROJECTS_SEARCH.replace("$CONDITIONS", conditions);
+
+    const result = await pool.query<ProjectSearchResult>(query, params);
     return result.rows;
   } catch (e) {
     console.log(e);
