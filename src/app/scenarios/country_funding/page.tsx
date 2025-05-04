@@ -26,6 +26,7 @@ import useDomainFilterSimple from "components/menus/filter/DomainFilter";
 import TopicRankingPanel, {
   TopicFundingByYear,
 } from "components/menus/TopicPanel";
+import CountryRankingPanel from "components/menus/CountryRankingPanel";
 
 export default function CountryFunding() {
   const [year, setYear] = useState(2024);
@@ -261,6 +262,7 @@ export default function CountryFunding() {
       ? Object.values(countryFundingMap).reduce((sum, value) => sum + value, 0)
       : 0;
   };
+
   // --- LAYER ----------------------------------------------------------------------------- //
 
   const layers =
@@ -621,6 +623,11 @@ export default function CountryFunding() {
         <CountryTooltip />
         <TopicRankingPanel
           topicFundingByYear={topicFundingByYear}
+          year={year}
+          formatEuro={formatEuro}
+        />
+        <CountryRankingPanel
+          countryFundingMap={countryFundingMap}
           year={year}
           formatEuro={formatEuro}
         />
