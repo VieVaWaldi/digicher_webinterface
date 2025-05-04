@@ -4,7 +4,7 @@ import {
   Coins,
   Handshake,
   LucideIcon,
-  HandCoins,
+  TrendingUp,
 } from "lucide-react";
 
 interface Scenario {
@@ -16,11 +16,11 @@ interface Scenario {
 
 export const scenarios: Scenario[] = [
   {
-    title: "EC Country Funding",
+    title: "EC Funding Trends",
     href: "/scenarios/country_funding",
-    icon: HandCoins,
+    icon: TrendingUp,
     description:
-      "Visualized the EC contribution per country over time for CH projects",
+      "Visualizes the EC contribution per country and europe wide for domains/ fields/ topics over time for CH projects",
   },
   {
     title: "Funding",
