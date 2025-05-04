@@ -95,7 +95,7 @@ const TopicRankingPanel: React.FC<TopicPanelProps> = ({
   return (
     <div className="absolute right-2 top-2 z-20 w-80 rounded-xl border border-gray-200 bg-white/90 shadow-lg backdrop-blur-md">
       <div className="flex items-center justify-between border-b border-gray-200 p-3">
-        <H4 className="text-gray-700">Topic Rankings</H4>
+        <H4 className="text-gray-700">Trends</H4>
         <Button
           variant="ghost"
           size="sm"

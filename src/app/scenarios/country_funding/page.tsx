@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Globe2, Home, InfoIcon } from "lucide-react";
+import { Globe2, Home, InfoIcon, X } from "lucide-react";
 import { SolidPolygonLayer } from "@deck.gl/layers";
 import { Button } from "shadcn/button";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ import {
   InstitutionProjectsFunding,
 } from "datamodel/scenario_points/types";
 import { Slider } from "shadcn/slider";
-import { H4, H5 } from "shadcn/typography";
+import { H2, H4, H5 } from "shadcn/typography";
 import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransformationInstitutionsWithProjects";
 import { useProjectsByKeywords } from "core/hooks/queries/project/useProjectsByKeywords";
 import useDomainFilterSimple from "components/menus/filter/DomainFilter";
@@ -27,6 +27,7 @@ import TopicRankingPanel from "components/menus/TopicPanel";
 
 export default function CountryFunding() {
   const [year, setYear] = useState(2024);
+  const [showInfoBox, setShowInfoBox] = useState(false);
   const [tooltip, setTooltip] = useState({
     visible: false,
     x: 0,
@@ -370,9 +371,140 @@ export default function CountryFunding() {
     );
   };
 
+  const InfoBox = () => {
+    if (!showInfoBox) return null;
+
+    return (
+      <div
+        className="absolute inset-0 z-20 flex items-center justify-center"
+        onClick={() => setShowInfoBox(false)}
+      >
+        <div className="relative max-h-[80vh] w-11/12 max-w-2xl overflow-y-auto rounded-xl bg-white/60 p-6 backdrop-blur-md">
+          <div className="flex flex-row justify-between">
+            <H2 className="text-xl font-semibold text-gray-800">
+              About This Visualization
+            </H2>
+            <button
+              className="-mt-3 mb-3 text-gray-500 hover:text-gray-700"
+              onClick={() => setShowInfoBox(false)}
+            >
+              <X className="text-gray-500" />
+            </button>
+          </div>
+          <div className="mb-4 h-px w-full bg-gray-300" />
+
+          <div className="space-y-4 text-gray-700">
+            <section>
+              <h3 className="font-semibold text-gray-800">Data Source</h3>
+              <p>
+                All displayed data is sourced from CORDIS (Community Research
+                and Development Information Service). The main unit of analysis
+                is research institutions with their associated funded projects.
+              </p>
+              <p>
+                Each country is extruded based on the total funding received by
+                all institutions in that country for projects in the selected
+                year.
+              </p>
+              <p>
+                To see the <b> individual projects and institutions </b> please
+                refer to
+                <a
+                  href="/scenarios/funding"
+                  className="ml-1 text-orange-600 hover:underline"
+                >
+                  the Funding Scenario
+                </a>
+                , which uses the same data.
+              </p>
+            </section>
+
+            <section>
+              <h3 className="font-semibold text-gray-800">
+                Topic Classification
+              </h3>
+              <p>
+                Each project is classified using EuroSciVoc topics which has a 6
+                level hierarchy. The Top Right Trend Tab displays:
+              </p>
+              <ul className="ml-6 list-disc">
+                <li>Level 2: Subfields</li>
+                <li>Levels 3-6: Specific topics</li>
+              </ul>
+              <p>
+                Learn more about EuroSciVoc:
+                <a
+                  href="https://op.europa.eu/en/web/eu-vocabularies/concept-scheme/-/resource?uri=http://data.europa.eu/8mn/euroscivoc/40c0f173-baa3-48a3-9fe6-d6e8fb366a00"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1 text-orange-600 hover:underline"
+                >
+                  European Science Vocabulary
+                </a>
+              </p>
+            </section>
+
+            <section>
+              <h3 className="font-semibold text-gray-800">
+                Topic Funding Calculation
+              </h3>
+              <p>
+                The funding amounts shown in the Topic Trends panel are based
+                on:
+              </p>
+              <ul className="ml-6 list-disc">
+                <li>
+                  Total EC contribution to projects associated with each topic
+                </li>
+                <li>
+                  When projects have multiple topics, the full funding amount is
+                  attributed to each topic
+                </li>
+              </ul>
+              <p className="text-sm italic">
+                Note: This approach provides a broad view of EC funding
+                priorities but may overrepresent funding for topics in
+                multi-topic projects.
+              </p>
+            </section>
+
+            <section>
+              <h3 className="font-semibold text-gray-800">Field Filters</h3>
+              <p>
+                The field filter at the bottom applies keyword-based criteria:
+              </p>
+              <ul className="ml-6 list-disc">
+                <li>
+                  <strong>All:</strong> Base data, all projects matching
+                  &quot;(cultural OR heritage)&quot;
+                </li>
+                <li>
+                  <strong>Cultural Heritage:</strong> Projects with
+                  &quot;(cultural AND heritage)&quot; in title or objective
+                </li>
+                <li>
+                  <strong>Digital Heritage:</strong> Projects with
+                  &quot;(digital AND heritage)&quot; in title or objective
+                </li>
+              </ul>
+              <p className="text-sm italic">
+                Note: These filters provide an approximation of field-specific
+                projects based on keyword matching.
+              </p>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const InfoButton = () => {
     return (
-      <Button variant="secondary" className={CSS_BUTTON} onClick={() => {}}>
+      <Button
+        variant="secondary"
+        className={CSS_BUTTON}
+        onClick={() => setShowInfoBox(true)}
+      >
         <InfoIcon strokeWidth={STRK_WDTH} style={{ transform: "scale(1.4)" }} />
       </Button>
     );
@@ -399,7 +531,7 @@ export default function CountryFunding() {
         //   setTooltip({ ...tooltip, visible: false });
         // }}
       >
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-col items-center justify-center gap-2 gap-x-12 md:flex-row">
           <div className="flex items-center gap-4">
             <Slider
               defaultValue={[year]}
@@ -444,7 +576,7 @@ export default function CountryFunding() {
         <H5>
           <span className="text-gray-700">EC Funding in</span>{" "}
           <span className="font-semibold text-orange-400">{year}</span>{" "}
-          <span>totaling</span>{" "}
+          <span className="text-gray-700">totaling</span>{" "}
           <span className="font-semibold text-orange-400">
             {formatEuro(getTotalFundingForYear(countryFundingMap))}
           </span>
@@ -458,6 +590,7 @@ export default function CountryFunding() {
       <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white">
         <Title />
         <TopLeftMenu />
+        <InfoBox />
         <BaseDeckGLMap
           id="funding-map"
           layers={layers}
