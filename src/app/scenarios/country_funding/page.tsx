@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { Globe2, Home, InfoIcon, X } from "lucide-react";
+import { Download, Globe2, Home, InfoIcon, X } from "lucide-react";
 import { SolidPolygonLayer } from "@deck.gl/layers";
 import { Button } from "shadcn/button";
 import { useRouter } from "next/navigation";
@@ -495,6 +495,36 @@ export default function CountryFunding() {
     );
   };
 
+  const downloadAsJson = (data: any, filename: string) => {
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const DownloadButton = () => {
+    return (
+      <Button
+        variant="secondary"
+        className={CSS_BUTTON}
+        onClick={() =>
+          downloadAsJson(
+            filteredAllInstitutions,
+            `filtered-institutions-${year}.json`,
+          )
+        }
+      >
+        <Download strokeWidth={STRK_WDTH} style={{ transform: "scale(1.4)" }} />
+      </Button>
+    );
+  };
+
   const TopLeftMenu = () => {
     return (
       <div
@@ -503,6 +533,7 @@ export default function CountryFunding() {
       >
         <HomeButton />
         <InfoButton />
+        <DownloadButton />
         <GlobeButton />
       </div>
     );
