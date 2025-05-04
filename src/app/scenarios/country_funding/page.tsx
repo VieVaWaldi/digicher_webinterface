@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Globe2, Home, InfoIcon, X } from "lucide-react";
 import { SolidPolygonLayer } from "@deck.gl/layers";
 import { Button } from "shadcn/button";
@@ -23,7 +23,9 @@ import { H2, H4, H5 } from "shadcn/typography";
 import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransformationInstitutionsWithProjects";
 import { useProjectsByKeywords } from "core/hooks/queries/project/useProjectsByKeywords";
 import useDomainFilterSimple from "components/menus/filter/DomainFilter";
-import TopicRankingPanel from "components/menus/TopicPanel";
+import TopicRankingPanel, {
+  TopicFundingByYear,
+} from "components/menus/TopicPanel";
 
 export default function CountryFunding() {
   const [year, setYear] = useState(2024);
@@ -37,10 +39,7 @@ export default function CountryFunding() {
   });
 
   const router = useRouter();
-
-  // Use useRef to store the maxFundingAll value
   const maxFundingAllRef = useRef<number>(1);
-
   const MAX_ELEVATION = 5000000;
 
   // --- Data ------------------------------------------------------------------------------- //
@@ -48,10 +47,23 @@ export default function CountryFunding() {
   const { data: countryGeoData } = useCountryGeoData();
 
   const {
-    data: fundingInstitutionPoints,
+    data: tmpData,
     loading: isLoading,
     error,
   } = useFundingInstitutionPoints();
+
+  const fundingInstitutionPoints = useMemo(() => {
+    return tmpData?.filter((i) => {
+      const filteredProjects = i.projects_funding.filter(
+        (p) =>
+          p !== null &&
+          p.start_date &&
+          new Date(p.start_date).getFullYear() > 2014,
+      );
+
+      return filteredProjects.length > 0;
+    });
+  }, [tmpData]);
   const { data: transformedInstitutionPoints } =
     useTransformInstitutionsWithProjects(fundingInstitutionPoints);
 
@@ -100,7 +112,7 @@ export default function CountryFunding() {
           (sum: number, p: InstitutionProjectsFunding) => {
             // If we're not filtering by year, include all projects with contributions
             if (!useYear) {
-              return sum + (p.ec_contribution || 0);
+              return sum + (p.ec_contribution || p.net_ec_contribution || 0);
             }
 
             // If we are filtering by year, only include projects with matching year
@@ -109,7 +121,10 @@ export default function CountryFunding() {
             }
             const projectStartYear = new Date(p.start_date).getFullYear();
             return (
-              sum + (projectStartYear === year ? p.ec_contribution || 0 : 0)
+              sum +
+              (projectStartYear === year
+                ? p.ec_contribution || p.net_ec_contribution || 0
+                : 0)
             );
           },
           0,
@@ -153,19 +168,6 @@ export default function CountryFunding() {
 
   // --- Reduce Topics ----------------------------------------------------------------------------- //
 
-  // Define the interface for the return type
-  interface TopicFundingByYear {
-    [year: number]: {
-      level2: {
-        [topicName: string]: number; // topicName to ec funding amount
-      };
-      level3: {
-        [topicName: string]: number; // topicName to ec funding amount
-      };
-    };
-  }
-
-  // Function to reduce topic funding by year for levels 2 and 3
   const reduceTopicFundingByYear = (
     points: FundingInstitutionPoint[] | undefined,
   ): TopicFundingByYear => {
@@ -182,39 +184,39 @@ export default function CountryFunding() {
       }
 
       institution.projects_funding.forEach((project) => {
-        // Skip projects with start_date before 2015
         if (!project.start_date) return;
-
         const projectStartDate = new Date(project.start_date);
         const projectYear = projectStartDate.getFullYear();
-
         if (projectYear < 2015) return;
 
-        // Initialize year in result if it doesn't exist
         if (!result[projectYear]) {
           result[projectYear] = {
+            level1: {},
             level2: {},
-            level3: {},
+            level3p: {},
           };
         }
 
-        // Get project funding amount
-        const funding = project.ec_contribution || 0;
-        if (funding <= 0) return; // Skip projects with no funding
+        const funding =
+          project.ec_contribution || project.net_ec_contribution || 0;
+        if (funding <= 0) return;
 
-        // Process topics if they exist
         if (project.topics && Array.isArray(project.topics)) {
           project.topics.forEach((topic) => {
-            if (topic.level === 2) {
+            if (topic.level === 1) {
+              const topicName = topic.name;
+              result[projectYear].level1[topicName] =
+                (result[projectYear].level1[topicName] || 0) + funding;
+            } else if (topic.level === 2) {
               // Handle level 2 topics
               const topicName = topic.name;
               result[projectYear].level2[topicName] =
                 (result[projectYear].level2[topicName] || 0) + funding;
-            } else if (topic.level === 3) {
+            } else if (topic.level >= 3) {
               // Handle level 3 topics
               const topicName = topic.name;
-              result[projectYear].level3[topicName] =
-                (result[projectYear].level3[topicName] || 0) + funding;
+              result[projectYear].level3p[topicName] =
+                (result[projectYear].level3p[topicName] || 0) + funding;
             }
           });
         }
@@ -226,25 +228,6 @@ export default function CountryFunding() {
 
   // Calculate topic funding breakdown
   const topicFundingByYear = reduceTopicFundingByYear(filteredAllInstitutions);
-
-  // console.log(topicFundingByYear);
-  // log here sorted topic by amount in the year
-
-  // Log sorted level 2 topics for current year
-  // console.log(
-  //   "Sorted Level 2 Topics:",
-  //   Object.entries(topicFundingByYear[year]?.level2 || {})
-  //     .map(([name, amount]) => ({ name, amount }))
-  //     .sort((a, b) => b.amount - a.amount),
-  // );
-
-  // // Log sorted level 3 topics for current year
-  // console.log(
-  //   "Sorted Level 3 Topics:",
-  //   Object.entries(topicFundingByYear[year]?.level3 || {})
-  //     .map(([name, amount]) => ({ name, amount }))
-  //     .sort((a, b) => b.amount - a.amount),
-  // );
 
   // --- HELPER ----------------------------------------------------------------------------- //
 
@@ -424,12 +407,14 @@ export default function CountryFunding() {
                 Topic Classification
               </h3>
               <p>
-                Each project is classified using EuroSciVoc topics which has a 6
-                level hierarchy. The Top Right Trend Tab displays:
+                Each project in Cordis is classified using EuroSciVoc topics
+                which has a 6 level hierarchy. The Top Right Trend Tab maps them
+                in the following way:
               </p>
               <ul className="ml-6 list-disc">
-                <li>Level 2: Subfields</li>
-                <li>Levels 3-6: Specific topics</li>
+                <li>Level 2: Field</li>
+                <li>Level 3: Subfield</li>
+                <li>Levels 4-6: Specific topics</li>
               </ul>
               <p>
                 Learn more about EuroSciVoc:
@@ -535,7 +520,7 @@ export default function CountryFunding() {
           <div className="flex items-center gap-4">
             <Slider
               defaultValue={[year]}
-              min={2014}
+              min={2015}
               max={2025}
               step={1}
               className="min-w-32 flex-grow py-2"
@@ -586,7 +571,7 @@ export default function CountryFunding() {
   };
 
   return (
-    <div className="h-full w-full bg-gray-700">
+    <div className="h-full w-full bg-gray-100">
       <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white">
         <Title />
         <TopLeftMenu />

@@ -3,18 +3,8 @@ import { BarChart3, X } from "lucide-react";
 import { Button } from "shadcn/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "shadcn/tabs";
 import { H4 } from "shadcn/typography";
-
-// Define types
-interface TopicFundingByYear {
-  [year: number]: {
-    level2: {
-      [topicName: string]: number;
-    };
-    level3: {
-      [topicName: string]: number;
-    };
-  };
-}
+import { Label } from "shadcn/label";
+import { RadioGroup, RadioGroupItem } from "shadcn/radio-group";
 
 interface TopicRankingData {
   name: string;
@@ -23,11 +13,28 @@ interface TopicRankingData {
   rank: number;
 }
 
+export interface TopicFundingByYear {
+  [year: number]: {
+    level1: {
+      [topicName: string]: number; // topicName to ec funding amount
+    };
+    level2: {
+      [topicName: string]: number; // topicName to ec funding amount
+    };
+    level3p: {
+      [topicName: string]: number; // topicName to ec funding amount
+    };
+  };
+}
+
 interface TopicPanelProps {
   topicFundingByYear: TopicFundingByYear;
   year: number;
   formatEuro: (value: number) => string;
 }
+
+// Update the active tab type to include all three levels
+type TopicLevel = "level1" | "level2" | "level3p";
 
 const TopicRankingPanel: React.FC<TopicPanelProps> = ({
   topicFundingByYear,
@@ -35,13 +42,14 @@ const TopicRankingPanel: React.FC<TopicPanelProps> = ({
   formatEuro,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"level2" | "level3">("level2");
+  const [activeTab, setActiveTab] = useState<TopicLevel>("level1");
+  const [maxItems, setMaxItems] = useState<string>("10");
 
   // Calculate topic rankings for current year only
   const rankings = useMemo(() => {
     // Helper function to calculate rankings for a specific level and year
     const getRankingsForLevel = (
-      level: "level2" | "level3",
+      level: TopicLevel,
       currentYear: number,
     ): TopicRankingData[] => {
       if (
@@ -72,13 +80,29 @@ const TopicRankingPanel: React.FC<TopicPanelProps> = ({
     };
 
     return {
+      level1: getRankingsForLevel("level1", year),
       level2: getRankingsForLevel("level2", year),
-      level3: getRankingsForLevel("level3", year),
+      level3p: getRankingsForLevel("level3p", year),
     };
   }, [topicFundingByYear, year, formatEuro]);
 
+  // Filter rankings based on maxItems
+  const filteredRankings = useMemo(() => {
+    const limit = maxItems === "All" ? Infinity : parseInt(maxItems);
+    return {
+      level1: rankings.level1.slice(0, limit),
+      level2: rankings.level2.slice(0, limit),
+      level3p: rankings.level3p.slice(0, limit),
+    };
+  }, [rankings, maxItems]);
+
   // Determine table label based on active tab
-  const tableLabel = activeTab === "level2" ? "Subfields" : "Topics";
+  const tableLabel =
+    activeTab === "level1"
+      ? "Field"
+      : activeTab === "level2"
+        ? "Subfield"
+        : "Topic";
 
   if (!isOpen) {
     return (
@@ -108,28 +132,57 @@ const TopicRankingPanel: React.FC<TopicPanelProps> = ({
 
       <Tabs
         value={activeTab}
-        onValueChange={(value) => setActiveTab(value as "level2" | "level3")}
+        onValueChange={(value) => setActiveTab(value as TopicLevel)}
       >
         <div className="px-3 pt-2">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="level1">Fields</TabsTrigger>
             <TabsTrigger value="level2">Subfields</TabsTrigger>
-            <TabsTrigger value="level3">Topics</TabsTrigger>
+            <TabsTrigger value="level3p">Topics</TabsTrigger>
           </TabsList>
         </div>
 
+        <div className="border-b border-gray-200 p-3">
+          <RadioGroup
+            defaultValue="10"
+            value={maxItems}
+            onValueChange={setMaxItems}
+            className="flex items-center gap-4 justify-center"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="10" id="max-10" />
+              <Label htmlFor="max-10" className="text-sm">
+                Top 10
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="25" id="max-25" />
+              <Label htmlFor="max-25" className="text-sm">
+                Top 25
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="All" id="max-all" />
+              <Label htmlFor="max-all" className="text-sm">
+                All
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
         <div className="max-h-96 overflow-y-auto p-3">
-          <TabsContent value="level2" className="mt-0">
-            {rankings.level2.length > 0 ? (
+          <TabsContent value="level1" className="mt-0">
+            {filteredRankings.level1.length > 0 ? (
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 text-sm text-gray-600">
                     <th className="pb-2 text-left font-medium">Rank</th>
-                    <th className="pb-2 text-left font-medium">Subfield</th>
+                    <th className="pb-2 text-left font-medium">Field</th>
                     <th className="pb-2 text-right font-medium">Funding</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rankings.level2.map((topic) => (
+                  {filteredRankings.level1.map((topic) => (
                     <tr
                       key={topic.name}
                       className="border-b border-gray-100 text-sm"
@@ -152,8 +205,42 @@ const TopicRankingPanel: React.FC<TopicPanelProps> = ({
             )}
           </TabsContent>
 
-          <TabsContent value="level3" className="mt-0">
-            {rankings.level3.length > 0 ? (
+          <TabsContent value="level2" className="mt-0">
+            {filteredRankings.level2.length > 0 ? (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 text-sm text-gray-600">
+                    <th className="pb-2 text-left font-medium">Rank</th>
+                    <th className="pb-2 text-left font-medium">Subfield</th>
+                    <th className="pb-2 text-right font-medium">Funding</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRankings.level2.map((topic) => (
+                    <tr
+                      key={topic.name}
+                      className="border-b border-gray-100 text-sm"
+                    >
+                      <td className="py-2 text-gray-600">{topic.rank}</td>
+                      <td className="py-2 font-medium text-gray-800">
+                        {topic.name}
+                      </td>
+                      <td className="py-2 text-right text-orange-500">
+                        {topic.formattedAmount}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="py-6 text-center text-gray-500">
+                No data available for {year}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="level3p" className="mt-0">
+            {filteredRankings.level3p.length > 0 ? (
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 text-sm text-gray-600">
@@ -163,7 +250,7 @@ const TopicRankingPanel: React.FC<TopicPanelProps> = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {rankings.level3.map((topic) => (
+                  {filteredRankings.level3p.map((topic) => (
                     <tr
                       key={topic.name}
                       className="border-b border-gray-100 text-sm"
