@@ -150,6 +150,7 @@ export default function ProjectScenario() {
       <ScenarioTemplate
         id={id}
         title="Project Map"
+        description="Each dot represents a project with its coordinating institution from our dataset. Click on the project for more information. Projects can be filtered by keyword."
         statsCard={
           <span>
             Displaying{" "}
@@ -169,53 +170,3 @@ export default function ProjectScenario() {
     </div>
   );
 }
-
-// const layer = new ScatterplotLayer({
-//   ...baseLayerProps,
-//   id: `scatter-${id}`,
-//   data: filterdDataPoints,
-//   filled: true,
-//   stroked: true,
-
-//   radiusScale: 12,
-//   radiusMinPixels: 12,
-//   radiusMaxPixels: 1000,
-//   lineWidthMinPixels: 1,
-//   opacity: 0.7,
-
-//   getFillColor: [255, 140, 0],
-//   getPosition: (d: ProjectCoordinatorPoint) => [
-//     d.geolocation[1],
-//     d.geolocation[0],
-//   ],
-//   onClick: (info) => {
-//     if (info.object) {
-//       setSelectedProject(info.object as ProjectCoordinatorPoint);
-//     }
-//   },
-// });
-
-// function calculatePointDensity(
-//   coordinate: number[],
-//   allPoints: BasePoint[],
-//   radiusThreshold: number = 0.01,
-// ): number {
-//   return allPoints.filter((p) => {
-//     const distance = Math.sqrt(
-//       Math.pow(coordinate[1] - p.geolocation[1], 2) +
-//         Math.pow(coordinate[0] - p.geolocation[0], 2),
-//     );
-//     return distance < radiusThreshold;
-//   }).length;
-// }
-
-// // Helper function to get color based on density
-// function getColorByDensity(density: number): [number, number, number] {
-//   const baseColor = [255, 140, 0]; // Your original orange color
-//   const intensity = Math.min(density / 5, 1); // Adjust divisor based on your data
-//   return [
-//     baseColor[0],
-//     Math.floor(baseColor[1] * (1 - intensity * 0.5)),
-//     baseColor[2],
-//   ];
-// }

@@ -269,8 +269,12 @@ export default function CollaborationScenario() {
       <Navigation />
       <ScenarioTemplate
         id={id}
-        title="Collaboration Map"
-        description="Number of total collaborators does not change with the filters!"
+        title="Collaboration Map WIP"
+        description="This scenario depicts each institution as a bar. 
+          The height of the bar indicates the number of project partners.
+          This number is calculated given all unique partners over all projects
+          of an institution. Click on an institution to display the partners.
+          The number of total collaborators does not change with the filters!"
         statsCard={
           <span>
             Displaying{" "}

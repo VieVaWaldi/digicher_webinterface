@@ -107,6 +107,7 @@ export default function InstitutionScenario() {
       <ScenarioTemplate
         id={id}
         title="Institution Map"
+        description="Each dot represents an institution from our dataset. Click on the institution for more information."
         statsCard={
           <span>
             Displaying{" "}

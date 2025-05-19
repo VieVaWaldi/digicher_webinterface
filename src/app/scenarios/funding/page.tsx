@@ -40,9 +40,9 @@ export default function FundingScenario() {
   const { isGlobe } = useSettings();
   const [visibleMode, setvisibleMode] = useState<boolean>(false);
   const COLOR_GAMMA = 0.7;
-  const MAX_HEIGHT = isGlobe ? 5_000_000 : 800_000;
+  const MAX_HEIGHT = isGlobe ? 5_000_000 : 1_200_000;
   let BAR_RADIUS = isGlobe ? 2_500 : 1_200;
-  if (visibleMode) BAR_RADIUS *= 3;
+  if (visibleMode) BAR_RADIUS *= 2;
 
   const [hoverInfo, setHoverInfo] = useState<{
     x: number;
@@ -227,14 +227,13 @@ export default function FundingScenario() {
       getElevation: (d) => {
         const funding = getFunding(d);
         const ratio = funding / MAX_TOTAL_COST;
-        if (visibleMode) return ratio * MAX_HEIGHT * 24;
+        if (visibleMode) return ratio * MAX_HEIGHT * 8;
         else return ratio * MAX_HEIGHT;
       },
       getFillColor: (d) => {
         const funding = getFunding(d);
         const normalizedFunding = funding / MAX_TOTAL_COST;
         const adjustedValue = Math.pow(normalizedFunding, COLOR_GAMMA);
-        if (visibleMode) return [255, 15, 15];
 
         return [
           50 + (255 - 50) * adjustedValue,
@@ -372,10 +371,13 @@ export default function FundingScenario() {
       <ScenarioTemplate
         id={id}
         title="Funding Map"
-        description="You may toggle between Projects and Institutions. Projects are geographically placed given their coordinators geolocation.
-      Institutions have all their projects listed, the funding amount is in regard to the part of the project funding they received.  
-      About a quarter of the projects dont list the funding amount for individual institutions especially a couple big ones like ALTER-NET or SUNLIQUID).
-      The search only works for projects. When toggled to institutions this filters the projects of the institution."
+        description="This scenario depicts institutitions as bars.
+          You may toggle between Projects and Institutions. When Institutions is selected,
+          the bar displays all funding this institution received given all of its projects.
+          When Projects is selected the bars represent the coordinator institutions
+          and display the projects total funding.
+          About a quarter of the projects do not list the funding amount for individual institutions especially a couple big ones like ALTER-NET or SUNLIQUID).
+          When toggled to institutions this filters the projects of the institution."
         statsCard={
           <span>
             Displaying {dataLength}{" "}
