@@ -27,7 +27,7 @@ export default function DIGICHerLinks() {
 
       <div className="mt-6">
         <Link
-          href="https://github.com/VieVaWaldi/DIGICHer_Pipeline"
+          href="https://github.com/VieVaWaldi/dh_pipeline"
           className="group block"
           target="_blank"
           rel="noopener noreferrer"
