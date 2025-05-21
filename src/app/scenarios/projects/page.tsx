@@ -150,7 +150,7 @@ export default function ProjectScenario() {
       <ScenarioTemplate
         id={id}
         title="Project Map"
-        description="Each dot represents a project with its coordinating institution from our dataset. Click on the project for more information. Projects can be filtered by keyword."
+        description="Each dot represents a project with its coordinating institution from the aggregated dataset. Click on any project to view detailed information including title, objective, funding amount and call information. Use the search box above to filter projects by keyword."
         statsCard={
           <span>
             Displaying{" "}

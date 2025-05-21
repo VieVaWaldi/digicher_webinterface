@@ -2,7 +2,6 @@
 
 import { BasePoint } from "datamodel/scenario_points/types";
 import { FC, useState } from "react";
-import { H4 } from "shadcn/typography";
 import { RadioGroup, RadioGroupItem } from "shadcn/radio-group";
 import { Label } from "shadcn/label";
 
@@ -52,34 +51,31 @@ export default function useDomainFilterSimple<T>({
 
   // Define the DomainFilter as a proper function component
   const DomainFilter: FC = () => (
-    <div className="flex flex-col space-y-2">
-      {/* <H4 className="mb-1 text-sm text-gray-100">Domain Filter</H4> */}
-      <RadioGroup
-        defaultValue="all"
-        value={selectedDomain}
-        onValueChange={(value) => setSelectedDomain(value as DomainOption)}
-        className="flex flex-row space-x-4"
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="all" id="domain-all" />
-          <Label htmlFor="domain-all" className="text-gray-600">
-            All
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="cultural" id="domain-cultural" />
-          <Label htmlFor="domain-cultural" className="text-gray-600">
-            Cultural Heritage
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="digital" id="domain-digital" />
-          <Label htmlFor="domain-digital" className="text-gray-600">
-            Digital Heritage
-          </Label>
-        </div>
-      </RadioGroup>
-    </div>
+    <RadioGroup
+      defaultValue="all"
+      value={selectedDomain}
+      onValueChange={(value) => setSelectedDomain(value as DomainOption)}
+      className="flex flex-row space-x-4"
+    >
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem value="all" id="domain-all" />
+        <Label htmlFor="domain-all" className="text-gray-600 md:text-xl">
+          All
+        </Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem value="cultural" id="domain-cultural" />
+        <Label htmlFor="domain-cultural" className="text-gray-600 md:text-xl">
+          Cultural Heritage
+        </Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem value="digital" id="domain-digital" />
+        <Label htmlFor="domain-digital" className="text-gray-600 md:text-xl">
+          Digital Heritage
+        </Label>
+      </div>
+    </RadioGroup>
   );
 
   // Create the predicate function for filtering

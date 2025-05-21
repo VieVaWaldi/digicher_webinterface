@@ -17,7 +17,7 @@ export default function DIGICHerLinks() {
           DIGICHer project
         </Link>
         . The project aims to develop a framework for equitable, diverse, and
-        inclusive practices in digitizing minorities&apos; cultural heritage.
+        inclusive practices in digitising minorities&apos; cultural heritage.
         The project focuses on three representative minority groups in Europe:
         the Sámi, the Jewish people, and the Ladin people. Through co-creation
         activities and user-centric approaches, DIGICHer seeks to support the
@@ -39,7 +39,7 @@ export default function DIGICHerLinks() {
                 <span>Powered by the</span>
               </div>
               <span className="mx-1 font-medium text-orange-500">
-                Humanities Data Pipeline
+                Digital Humanities Data Pipeline
               </span>
             </div>
           </div>

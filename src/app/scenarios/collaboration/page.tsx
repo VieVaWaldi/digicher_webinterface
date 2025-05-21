@@ -270,11 +270,7 @@ export default function CollaborationScenario() {
       <ScenarioTemplate
         id={id}
         title="Collaboration Map WIP"
-        description="This scenario depicts each institution as a bar. 
-          The height of the bar indicates the number of project partners.
-          This number is calculated given all unique partners over all projects
-          of an institution. Click on an institution to display the partners.
-          The number of total collaborators does not change with the filters!"
+        description="This scenario depicts each institution as a bar, with height indicating the total number of unique project partners across all projects. When you click on an institution, its network of partners is displayed. While filters affect which connections are visible in the current view, the bar heights always represent the institution's complete collaboration count regardless of filters. The 'Displaying X Institutions with Y connections' counter shows only the currently visible subset based on applied filters."
         statsCard={
           <span>
             Displaying{" "}

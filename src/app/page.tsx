@@ -21,22 +21,21 @@ export default function Home() {
       <Navigation />
       {/* md:pt-24 to offset the nav ... */}
       <main className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 md:gap-4 md:pt-24">
-        <H2 className="text-center">
-          Exploring European Cultural Heritage Research
-        </H2>
+        <H2 className="text-center">Exploring European Cultural Heritage</H2>
 
-        <P className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
-          This interactive platform visualizes over €23 billion in funding
-          across Cultural and Digital Heritage fields from 1957 to 2030.
+        <P className="mx-auto mb-6 max-w-2xl text-center text-muted-foreground">
+          This interactive platform visualises over €23 billion in funding
+          across Cultural and Digital Heritage (CH/DH) fields from 1957 to 2030.
           Navigate through more than 26,000 institutions and over 10,000
           research projects to discover geographical distributions,
           collaboration networks, and funding patterns across Europe. Use
           interactive maps and filters to explore how heritage research has
           evolved over the decades, identify key institutional partnerships, and
-          analyze funding allocations by country, topic, and time period.
-          Whether you are a researcher seeking collaboration opportunities or a
-          policy maker tracking investment trends, this tool provides visual
-          insights into the European heritage research landscape.
+          analyse funding allocations by country, topic, and time period.
+          Whether you are a researcher seeking collaboration opportunities, a
+          policy maker tracking investment trends, or an interested citizen
+          looking to stay informed, this tool provides visual insights into the
+          European heritage research landscape.
         </P>
 
         <Card className="mx-auto mb-8 max-w-2xl border border-border/40 p-6 shadow-lg">
@@ -50,7 +49,7 @@ export default function Home() {
                   className="block"
                   passHref
                 >
-                  <div className="flex h-full flex-col rounded-md border border-orange-500/40 transition-colors hover:bg-secondary/80">
+                  <div className="flex h-full flex-col rounded-md border border-orange-500/40 transition-all hover:scale-105 hover:bg-secondary/80">
                     <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
                       <Icon
                         size={48}
@@ -72,6 +71,13 @@ export default function Home() {
             })}
           </div>
         </Card>
+
+        <P className="mx-auto max-w-2xl text-center text-sm text-muted-foreground">
+          This visualisation is itself an EU-funded project 🇪🇺 and primarily
+          showcases EU-funded research initiatives, including collaborations
+          with international partners. The European focus reflects the structure
+          and priorities of our funding source.
+        </P>
 
         <ResourcesList />
       </main>

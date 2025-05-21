@@ -20,33 +20,34 @@ export const scenarios: Scenario[] = [
     href: "/scenarios/country_funding",
     icon: TrendingUp,
     description:
-      "Visualizes the EC contribution per country and europe wide for domains/ fields/ topics over time for CH projects",
+      "Visualises the EC contribution per country and Europe-wide for domains/fields/topics over time for CH projects",
   },
   {
     title: "Funding",
     href: "/scenarios/funding",
     icon: Coins,
-    description: "Analyze funding distribution and financial patterns",
+    description:
+      "Presents funding distribution and financial patterns across projects and institutions",
   },
   {
     title: "Institutions",
     href: "/scenarios/institutions",
     icon: Building2,
-    description: "Explore cultural heritage institutions across Europe",
+    description: "Shows CH institutions and their activities across Europe",
   },
   {
     title: "Projects",
     href: "/scenarios/projects",
     icon: Lightbulb,
     description:
-      "Discover project locations and their geographical distribution",
+      "Displays project locations and their geographical distribution throughout the continent",
   },
-
   {
     title: "Collaboration",
     href: "/scenarios/collaboration",
     icon: Handshake,
-    description: "Visualize collaboration networks between institutions",
+    description:
+      "Illustrates collaboration networks and partnerships between institutions",
   },
 ];
 

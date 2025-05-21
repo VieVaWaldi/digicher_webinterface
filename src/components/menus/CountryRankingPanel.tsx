@@ -5,12 +5,12 @@ import { H4 } from "shadcn/typography";
 import { Label } from "shadcn/label";
 import { RadioGroup, RadioGroupItem } from "shadcn/radio-group";
 
-interface CountryRankingData {
-  countryCode: string;
-  amount: number;
-  formattedAmount: string;
-  rank: number;
-}
+// interface CountryRankingData {
+//   countryCode: string;
+//   amount: number;
+//   formattedAmount: string;
+//   rank: number;
+// }
 
 interface CountryPanelProps {
   countryFundingMap: Record<string, number>;

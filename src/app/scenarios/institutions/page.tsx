@@ -107,7 +107,7 @@ export default function InstitutionScenario() {
       <ScenarioTemplate
         id={id}
         title="Institution Map"
-        description="Each dot represents an institution from our dataset. Click on the institution for more information."
+        description="Blue dots indicate Small and Medium-sized Enterprises (SMEs), while orange dots represent all other institution types. Use the filters at the top to refine results by institution type, country, and other parameters. Click on any institution for more detailed information."
         statsCard={
           <span>
             Displaying{" "}

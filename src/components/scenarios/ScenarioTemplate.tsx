@@ -100,7 +100,7 @@ export default function ScenarioTemplate({
             <Button
               variant="secondary"
               className={cn(
-                "h-12 w-12 rounded-lg bg-white text-orange-500 shadow-md",
+                "animate-pulse-scale h-12 w-12 rounded-lg bg-white text-orange-500 shadow-md",
                 isLeftPanelOpen && "pointer-events-none opacity-0",
               )}
               onClick={() => setLeftPanelOpen(true)}

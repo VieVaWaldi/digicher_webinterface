@@ -371,13 +371,16 @@ export default function FundingScenario() {
       <ScenarioTemplate
         id={id}
         title="Funding Map"
-        description="This scenario depicts institutitions as bars.
-          You may toggle between Projects and Institutions. When Institutions is selected,
-          the bar displays all funding this institution received given all of its projects.
-          When Projects is selected the bars represent the coordinator institutions
-          and display the projects total funding.
-          About a quarter of the projects do not list the funding amount for individual institutions especially a couple big ones like ALTER-NET or SUNLIQUID).
-          When toggled to institutions this filters the projects of the institution."
+        description="
+          This scenario displays funding data as geographical bars on the map. 
+          Toggle between two views: 'Institutions' shows all institutions with bar heights 
+          representing their total received funding. Click on an institution to view its 
+          associated projects (demo limited to first 10 projects). 'Projects' displays 
+          project locations based on their coordinator institution, with bar heights 
+          showing each project's total funding. Click on any project for detailed 
+          information. Note that approximately 25% of projects (including major ones 
+          like ALTER-NET and SUNLIQUID) do not specify individual institutional funding 
+          amounts and are not listed in the 'Institutions' view."
         statsCard={
           <span>
             Displaying {dataLength}{" "}

@@ -27,6 +27,8 @@ import TopicRankingPanel, {
   TopicFundingByYear,
 } from "components/menus/TopicPanel";
 import CountryRankingPanel from "components/menus/CountryRankingPanel";
+import { Spinner } from "shadcn/spinner";
+import FundingLegend from "components/infoPanels/FundingLegend";
 
 export default function CountryFunding() {
   const [year, setYear] = useState(2024);
@@ -309,7 +311,7 @@ export default function CountryFunding() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        Loading map data...
+        <Spinner />
       </div>
     );
   }
@@ -367,7 +369,7 @@ export default function CountryFunding() {
         <div className="relative max-h-[80vh] w-11/12 max-w-2xl overflow-y-auto rounded-xl bg-white/60 p-6 backdrop-blur-md">
           <div className="flex flex-row justify-between">
             <H2 className="text-xl font-semibold text-gray-800">
-              About This Visualization
+              About This Visualisation
             </H2>
             <button
               className="-mt-3 mb-3 text-gray-500 hover:text-gray-700"
@@ -630,6 +632,11 @@ export default function CountryFunding() {
           countryFundingMap={countryFundingMap}
           year={year}
           formatEuro={formatEuro}
+        />
+        <FundingLegend
+          maxFunding={maxFunding}
+          getColorForValue={getColorForValue}
+          className="absolute right-0 top-1/2 z-10 -translate-y-1/2"
         />
       </div>
     </div>
