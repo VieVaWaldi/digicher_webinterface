@@ -36,6 +36,10 @@ function fixCountryCode(countryCode: string, countryName: string): string {
     return "UK";
   }
 
+  if (countryCode === "GR") {
+    return "EL";
+  }
+
   if (countryCode !== "-99") {
     return countryCode;
   }
