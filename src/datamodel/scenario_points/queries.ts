@@ -15,11 +15,11 @@ import {
 const SELECT_INSTITUTION_POINTS = `
   SELECT 
       id as institution_id, 
-      address_geolocation as geolocation,
+      geolocation,
       sme as is_sme,
-      address_country as country_code
-  FROM institutions
-  WHERE address_geolocation IS NOT NULL;`;
+      country as country_code
+  FROM core.institution
+  WHERE geolocation IS NOT NULL;`;
 
 export async function getInstitutionPoints(): Promise<InstitutionPoint[]> {
   const pool = getConnection();
@@ -35,10 +35,10 @@ const SELECT_PROJECTS_COORDINATOR = `
     coordinator_id as institution_id,
     start_date,
     end_date,
-    address_geolocation as geolocation,
-    address_country as country_code
-  FROM mat_projects_coordinator
-  WHERE address_geolocation IS NOT NULL;
+    geolocation,
+    country as country_code
+  FROM core_mats.mat_projects_coordinator
+  WHERE geolocation IS NOT NULL;
 `;
 
 export async function getProjectsCoordinatorPoints(): Promise<
@@ -56,11 +56,11 @@ export async function getProjectsCoordinatorPoints(): Promise<
 const SELECT_FUNDING_INSTITUTIONS = `
   SELECT 
     id as institution_id,
-    address_geolocation as geolocation,
-    address_country as country_code,
+    geolocation,
+    country as country_code,
     projects_funding
-  FROM mat_institution_funding
-  WHERE address_geolocation IS NOT NULL;
+  FROM core_mats.mat_institution_funding
+  WHERE geolocation IS NOT NULL;
 `;
 
 export async function getFundingInstitutionPoints(): Promise<
@@ -81,11 +81,11 @@ const SELECT_FUNDING_PROJECTS = `
   SELECT 
     project_id,
     coordinator_id as institution_id,
-    address_geolocation as geolocation,
-    address_country as country_code,
+    geolocation,
+    country as country_code,
     total_cost 
-  FROM mat_projects_coordinator
-  WHERE address_geolocation IS NOT NULL;
+  FROM core_mats.mat_projects_coordinator
+  WHERE geolocation IS NOT NULL;
 `;
 
 export async function getFundingProjectPoints(): Promise<
@@ -101,10 +101,10 @@ export async function getFundingProjectPoints(): Promise<
 const SELECT_INSTITUTION_COLLABORATION_WEIGHTS = `
   SELECT
     institution_id,
-    address_geolocation as geolocation,
-    address_country as country_code,
+    geolocation,
+    country as country_code,
     collaboration_weight
-  FROM mat_institutions_collaboration_weights;
+  FROM core_mats.mat_institutions_collaboration_weights;
 `;
 
 export async function getInstitutionCollaborationWeightPoints(): Promise<
@@ -120,9 +120,9 @@ export async function getInstitutionCollaborationWeightPoints(): Promise<
 const SELECT_INSTITUTION_COLLABORATORS = `
   SELECT
     institution_id,
-    address_geolocation as geolocation,
-    address_country as country_code
-  FROM get_institution_collaborators($1);
+    geolocation,
+    country as country_code
+  FROM core_mats.get_institution_collaborators($1);
 `;
 
 export async function getInstititutionCollaborators(
@@ -163,7 +163,7 @@ function parseProjectsFunding(
       ec_contribution: parseInt(entries[1]) || null,
       net_ec_contribution: parseInt(entries[2]) || null,
       total_cost: parseInt(entries[3]) || null,
-      start_date: new Date(entries[4])
+      start_date: new Date(entries[4]),
     });
   });
 

@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 import Link from "next/link";
 import { Card } from "shadcn/card";
 import { H2, Lead, P } from "shadcn/typography";
@@ -12,9 +10,9 @@ import { Navigation } from "components/navigation/Navigation";
 import { Footer } from "components/navigation/Footer";
 
 export default function Home() {
-  useEffect(() => {
-    fetch("/api/wakeup_neon");
-  }, []);
+  // useEffect(() => {
+  //   fetch("/api/wakeup_neon");
+  // }, []);
 
   return (
     <>

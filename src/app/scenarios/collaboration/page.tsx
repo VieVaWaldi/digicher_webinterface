@@ -19,7 +19,7 @@ import { useSettings } from "core/context/SettingsContext";
 import { PickingInfo } from "deck.gl";
 import { H3 } from "shadcn/typography";
 import { useInstitutionsByIds } from "core/hooks/queries/institution/useInstitutionsByIds";
-import useSearchComponent from "components/menus/filter/SearchFilter";
+import useSearchComponent from "components/menus/filter/SearchFilterPaginated";
 import { useInstitutionsByName } from "core/hooks/queries/institution/useInstitutionByName";
 import { Navigation } from "components/navigation/Navigation";
 

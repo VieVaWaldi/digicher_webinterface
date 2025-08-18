@@ -11,7 +11,7 @@ import {
 
 const SELECT_PROJECT_BY_ID = `
   SELECT *
-  FROM Projects
+  FROM core.project
   WHERE id = $1;
 `;
 
@@ -24,7 +24,7 @@ export async function getProjectById(id: number): Promise<Project> {
 function SELECT_PROJECTS_BY_IDS(ids: string): string {
   return `
   SELECT *
-  FROM Projects
+  FROM core.project
   WHERE id IN (${ids});`;
 }
 
@@ -45,9 +45,9 @@ const SELECT_PROJECTS_TOPICS = `
   SELECT 
     p.id as project_id,
     array_agg(DISTINCT t.id) as topic_ids
-  FROM projects AS p
-  LEFT JOIN projects_topics AS pt ON pt.project_id = p.id
-  LEFT JOIN topics AS t ON pt.topic_id = t.id
+  FROM core.project AS p
+  LEFT JOIN core.j_project_topic AS pt ON pt.project_id = p.id
+  LEFT JOIN core.topic AS t ON pt.topic_id = t.id
   GROUP BY p.id;
 `;
 
@@ -63,9 +63,9 @@ const SELECT_PROJECT_FUNDING_PROGRAMME = `
   SELECT 
     p.id as project_id,
     array_agg(DISTINCT f.id) as funding_ids
-  FROM projects AS p
-  LEFT JOIN projects_fundingprogrammes AS pf ON pf.project_id = p.id
-  LEFT JOIN fundingprogrammes AS f ON pf.fundingprogramme_id = f.id
+  FROM core.project AS p
+  LEFT JOIN core.j_project_fundingprogramme AS pf ON pf.project_id = p.id
+  LEFT JOIN core.fundingprogramme AS f ON pf.fundingprogramme_id = f.id
   GROUP BY p.id;
 `;
 
@@ -81,36 +81,11 @@ export async function getProjectsFundingProgrammes(): Promise<
 
 /** Project Search */
 
-// const SELECT_PROJECTS_SEARCH = `
-//   SELECT
-//     id AS project_id,
-//     title
-//   FROM projects
-//   WHERE lower(title) LIKE '%' || $1 || '%'
-//   OR lower(acronym) LIKE '%' || $1 || '%'
-//   OR lower(objective) LIKE '%' || $1 || '%';`;
-
-// export async function searchProjects(
-//   title: string,
-// ): Promise<ProjectSearchResult[]> {
-//   try {
-//     const pool = getConnection();
-//     const result = await pool.query<ProjectSearchResult>(
-//       SELECT_PROJECTS_SEARCH,
-//       [title.toLowerCase()],
-//     );
-//     return result.rows;
-//   } catch (e) {
-//     console.log(e);
-//     throw e;
-//   }
-// }
-
 const SELECT_PROJECTS_SEARCH = `
   SELECT 
     id AS project_id, 
     title
-  FROM projects
+  FROM core.project
   WHERE 1=1
   $CONDITIONS;`;
 

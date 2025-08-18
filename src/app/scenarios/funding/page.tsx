@@ -29,7 +29,7 @@ import {
 } from "datamodel/scenario_points/types";
 import useTransformInstitutionsWithProjects from "core/hooks/transform/useTransformationInstitutionsWithProjects";
 import { Button } from "shadcn/button";
-import useSearchComponent from "components/menus/filter/SearchFilter";
+import useSearchComponent from "components/menus/filter/SearchFilterPaginated";
 import { Navigation } from "components/navigation/Navigation";
 import { useProjectsByKeywords } from "core/hooks/queries/project/useProjectsByKeywords";
 

@@ -16,7 +16,7 @@ import { useInstitutionById } from "core/hooks/queries/institution/useInstitutio
 import useFundingProgrammeFilter from "components/menus/filter/FundingProgrammeFilter";
 import { useInstitutionPoints } from "core/hooks/queries/scenario_points/useInstitutionPoints";
 import { useInstitutionsByName } from "core/hooks/queries/institution/useInstitutionByName";
-import useSearchComponent from "components/menus/filter/SearchFilter";
+import useSearchComponent from "components/menus/filter/SearchFilterPaginated";
 import { Navigation } from "components/navigation/Navigation";
 
 const SME_FILTERS = ["All", "SME", "Non-SME"] as const;

@@ -4,7 +4,7 @@ import { FundingProgramme } from "./types";
 
 const SELECT_FUNDING_PROGRAMME = `
   SELECT id, code, framework_programme
-  FROM fundingprogrammes
+  FROM core.fundingprogramme
   ORDER BY framework_programme, code;`;
 
 export async function getFundingProgrammes(): Promise<FundingProgramme[]> {

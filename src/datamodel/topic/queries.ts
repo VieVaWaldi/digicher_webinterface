@@ -4,7 +4,7 @@ import { Topic } from "./types";
 
 const SELECT_TOPIC = `
   SELECT id, name, level 
-  FROM topics
+  FROM core.topic
   ORDER BY level, id;`;
 
 export async function getTopics(): Promise<Topic[]> {
