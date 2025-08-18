@@ -78,7 +78,7 @@ export default function InstitutionScenario() {
     id: `scatter-${id}`,
     data: filteredDataPoints,
 
-    getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
+    getPosition: (d) => [d.geolocation[0], d.geolocation[1]],
     getFillColor: (d) => (d.is_sme ? [6, 77, 135] : [255, 140, 0]),
     onClick: (info) => {
       if (info.object) {

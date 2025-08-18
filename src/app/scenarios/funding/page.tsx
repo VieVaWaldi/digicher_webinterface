@@ -262,7 +262,7 @@ export default function FundingScenario() {
       ...baseLayerProps,
       diskResolution: 32,
       radius: BAR_RADIUS,
-      getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
+      getPosition: (d) => [d.geolocation[0], d.geolocation[1]],
       extruded: true,
       material: {
         ambient: 0.64,

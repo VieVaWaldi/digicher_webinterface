@@ -131,7 +131,7 @@ export default function CollaborationScenario() {
 
     return filteredCollaboratorPartners.map((partner) => ({
       sourcePosition: selectedInstitutionLocation,
-      targetPosition: [partner.geolocation[1], partner.geolocation[0]],
+      targetPosition: [partner.geolocation[0], partner.geolocation[1]],
       partner: partner,
     }));
   }, [selectedInstitutionLocation, filteredCollaboratorPartners]);
@@ -151,7 +151,7 @@ export default function CollaborationScenario() {
     data: filteredDataPoints || [],
     diskResolution: 32,
     radius: BAR_RADIUS,
-    getPosition: (d) => [d.geolocation[1], d.geolocation[0]],
+    getPosition: (d) => [d.geolocation[0], d.geolocation[1]],
     getElevation: (d) => {
       return (d.collaboration_weight / MAX_COLLAB_WEIGHT) * MAX_HEIGHT;
     },
@@ -179,8 +179,8 @@ export default function CollaborationScenario() {
       if (info.object) {
         setSelectedInstitutionId(object.institution_id);
         setSelectedInstitutionLocation([
-          object.geolocation[1],
           object.geolocation[0],
+          object.geolocation[1],
         ]);
       }
     },

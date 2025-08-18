@@ -10,7 +10,7 @@ import { Topic } from "datamodel/topic/types";
 
 export interface BasePoint {
   institution_id: number;
-  project_id?: number;
+  project_id?: string;
   geolocation: number[];
   country_code: string | null;
   topics?: Topic[];

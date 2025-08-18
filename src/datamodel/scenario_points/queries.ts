@@ -159,7 +159,7 @@ function parseProjectsFunding(
       institution_id: 0,
       geolocation: [0, 0],
       country_code: "",
-      project_id: parseInt(entries[0]),
+      project_id: entries[0],
       ec_contribution: parseInt(entries[1]) || null,
       net_ec_contribution: parseInt(entries[2]) || null,
       total_cost: parseInt(entries[3]) || null,
