@@ -1,5 +1,5 @@
 export interface Project {
-  id: number;
+  id: string;
   id_original: string;
   doi_id: number | null;
   acronym: string | null;
@@ -17,16 +17,16 @@ export interface Project {
 }
 
 export interface ProjectTopics {
-  project_id: number;
+  project_id: string;
   topic_ids: number[];
 }
 
 export interface ProjectFundingProgrammes {
-  project_id: number;
+  project_id: string;
   funding_ids: number[];
 }
 
 export interface ProjectSearchResult {
-  project_id: number;
+  project_id: string;
   title: string;
 }

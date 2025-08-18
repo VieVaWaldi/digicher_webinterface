@@ -15,23 +15,27 @@ const SELECT_PROJECT_BY_ID = `
   WHERE id = $1;
 `;
 
-export async function getProjectById(id: number): Promise<Project> {
+export async function getProjectById(id: string): Promise<Project> {
   const pool = getConnection();
   const result = await pool.query<Project>(SELECT_PROJECT_BY_ID, [id]);
   return result.rows[0];
 }
 
-function SELECT_PROJECTS_BY_IDS(ids: string): string {
-  return `
-  SELECT *
-  FROM core.project
-  WHERE id IN (${ids});`;
-}
+// function SELECT_PROJECTS_BY_IDS(ids: string): string {
+//   return `
+//   SELECT *
+//   FROM core.project
+//   WHERE id IN (${ids});`;
+// }
 
 export async function getProjectsByIds(ids: string): Promise<Project[]> {
+  console.log(ids);
   try {
     const pool = getConnection();
-    const result = await pool.query<Project>(SELECT_PROJECTS_BY_IDS(ids));
+    const idArray = ids.split(",");
+    const placeholders = idArray.map((_, index) => `$${index + 1}`).join(",");
+    const query = `SELECT * FROM core.project WHERE id IN (${placeholders})`;
+    const result = await pool.query<Project>(query, idArray);
     return result.rows;
   } catch (e) {
     console.log(e);
