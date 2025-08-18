@@ -233,7 +233,7 @@ export default function ProjectScenario() {
           <DualRangeSlider
             key={`slider-${MIN_YEAR}-${MAX_YEAR}`} // Stable key based on range
             className="pt-10 md:pt-8"
-            label={(value: number) => value}
+            label={(value: number | undefined) => value}
             value={years}
             onValueChange={handleYearsChange}
             min={MIN_YEAR}
