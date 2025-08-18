@@ -3,7 +3,10 @@ import { useMemo } from "react";
 import { Topic } from "datamodel/topic/types";
 import { BasePoint } from "datamodel/scenario_points/types";
 import { FundingProgramme } from "datamodel/fundingprogramme/types";
-import { ProjectFundingProgrammes, ProjectTopics } from "datamodel/project/types";
+import {
+  ProjectFundingProgrammes,
+  ProjectTopics,
+} from "datamodel/project/types";
 
 import { useTopics } from "../queries/topic/useTopics";
 import { useProjectsTopics } from "../queries/project/useProjectsTopics";
@@ -55,8 +58,8 @@ function createFundingMap(
 }
 
 function getTopicsForProject(
-  projectId: number | undefined,
-  topicsLookup: Record<number, number[]>,
+  projectId: string | undefined,
+  topicsLookup: Record<string, number[]>,
   topicsMap: Record<number, Topic>,
 ): Topic[] {
   if (!projectId) return [];
@@ -65,8 +68,8 @@ function getTopicsForProject(
 }
 
 function getFundingForProject(
-  projectId: number | undefined,
-  fundingLookup: Record<number, number[]>,
+  projectId: string | undefined,
+  fundingLookup: Record<string, number[]>,
   fundingMap: Record<number, FundingProgramme>,
 ): FundingProgramme[] {
   if (!projectId) return [];

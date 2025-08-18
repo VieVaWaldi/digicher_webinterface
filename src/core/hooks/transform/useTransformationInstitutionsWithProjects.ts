@@ -61,8 +61,8 @@ function createFundingMap(
 }
 
 function getTopicsForProject(
-  projectId: number,
-  topicsLookup: Record<number, number[]>,
+  projectId: string,
+  topicsLookup: Record<string, number[]>,
   topicsMap: Record<number, Topic>,
 ): Topic[] {
   const topicIds = topicsLookup[projectId] || [];
@@ -70,8 +70,8 @@ function getTopicsForProject(
 }
 
 function getFundingForProject(
-  projectId: number,
-  fundingLookup: Record<number, number[]>,
+  projectId: string,
+  fundingLookup: Record<string, number[]>,
   fundingMap: Record<number, FundingProgramme>,
 ): FundingProgramme[] {
   const fundingIds = fundingLookup[projectId] || [];

@@ -148,19 +148,23 @@ export default function FundingScenario() {
     : [];
 
   const { data: institutionProjects } = useProjectsByIds(
-    projectIds.slice(0, 10),
+    projectIds
+      .filter((id): id is string => typeof id === "string")
+      .slice(0, 10),
   );
 
   /**  State Selected Project */
 
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null,
   );
   const selectedProject = selectedProjectId
     ? filterdProjectPoints?.find((p) => p.project_id === selectedProjectId) ||
       null
     : null;
-  const { data: project } = useProjectById(selectedProject?.project_id ?? -1);
+  const { data: project } = useProjectById(
+    selectedProject?.project_id ? Number(selectedProject.project_id) : -1,
+  );
   const { data: coordinator } = useInstitutionById(
     selectedProject?.institution_id ?? -1,
   );
@@ -286,7 +290,7 @@ export default function FundingScenario() {
     filterdProjectPoints,
     getProjectFunding,
     (object) =>
-      !showInstitutions && setSelectedProjectId(object.project_id ?? -1),
+      !showInstitutions && setSelectedProjectId(object.project_id ?? ""),
   );
 
   const layer = showInstitutions ? layerInst : layerPrj;

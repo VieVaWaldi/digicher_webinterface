@@ -34,7 +34,9 @@ export default function ProjectScenario() {
   );
   const [selectedProject, setSelectedProject] =
     useState<ProjectCoordinatorPoint | null>(null);
-  const { data: project } = useProjectById(selectedProject?.project_id ?? -1);
+  const { data: project } = useProjectById(
+    selectedProject?.project_id ? Number(selectedProject.project_id) : -1,
+  );
   const { data: coordinator } = useInstitutionById(
     selectedProject?.institution_id ?? -1,
   );

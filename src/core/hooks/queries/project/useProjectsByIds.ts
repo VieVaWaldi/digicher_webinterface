@@ -1,7 +1,7 @@
 import { useFetch } from "core/hooks/useFetch";
 import { Project } from "datamodel/project/types";
 
-export function useProjectsByIds(ids: number[]) {
+export function useProjectsByIds(ids: string[]) {
   let param_ids: string = "";
   ids.map((id) => (param_ids += `${id},`));
   if (param_ids.slice(-1) === ",") {
