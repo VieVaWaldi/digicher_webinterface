@@ -25,7 +25,7 @@ const SELECT_INSTITUTION_BY_ID = `
   WHERE id = $1 AND
   geolocation IS NOT NULL;`;
 
-export async function getInstitutionById(id: number): Promise<Institution> {
+export async function getInstitutionById(id: string): Promise<Institution> {
   const pool = getConnection();
   const result = await pool.query<Institution>(SELECT_INSTITUTION_BY_ID, [id]);
   return result.rows[0];

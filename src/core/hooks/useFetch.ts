@@ -58,8 +58,14 @@ export function useFetch<T>(
           });
           return;
         }
+        if (route == "/api/scenario_points/project_coordinator_points") {
+          console.log(`${route}${queryParams}`);
+        }
 
         const response = await fetch(`${route}${queryParams}`);
+        if (route == "/api/scenario_points/project_coordinator_points") {
+          console.log(response);
+        }
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

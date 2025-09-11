@@ -44,6 +44,7 @@ const SELECT_PROJECTS_COORDINATOR = `
 export async function getProjectsCoordinatorPoints(): Promise<
   ProjectCoordinatorPoint[]
 > {
+  console.log("this never shows up");
   const pool = getConnection();
   const result = await pool.query<ProjectCoordinatorPoint>(
     SELECT_PROJECTS_COORDINATOR,
@@ -156,7 +157,7 @@ function parseProjectsFunding(
     const entries = entry.split(",");
     projects_funding.push({
       type: "institution_projects",
-      institution_id: 0,
+      institution_id: "",
       geolocation: [0, 0],
       country_code: "",
       project_id: entries[0],

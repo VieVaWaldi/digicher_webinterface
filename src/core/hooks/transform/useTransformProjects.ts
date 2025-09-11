@@ -13,13 +13,13 @@ import { useProjectsTopics } from "../queries/project/useProjectsTopics";
 import { useFundingProgrammes } from "../queries/fundingprogramme/useFundingProgrammes";
 import { useProjectsFundingProgrammes } from "../queries/project/useProjectsFundingProgrammes";
 
-function createTopicsLookup(data: ProjectTopics[]): Record<number, number[]> {
+function createTopicsLookup(data: ProjectTopics[]): Record<string, number[]> {
   return data.reduce(
     (acc, item) => {
       acc[item.project_id] = item.topic_ids;
       return acc;
     },
-    {} as Record<number, number[]>,
+    {} as Record<string, number[]>,
   );
 }
 
@@ -35,13 +35,13 @@ function createTopicsMap(topics: Topic[]): Record<number, Topic> {
 
 function createFundingLookup(
   data: ProjectFundingProgrammes[],
-): Record<number, number[]> {
+): Record<string, number[]> {
   return data.reduce(
     (acc, item) => {
       acc[item.project_id] = item.funding_ids;
       return acc;
     },
-    {} as Record<number, number[]>,
+    {} as Record<string, number[]>,
   );
 }
 

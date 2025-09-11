@@ -62,6 +62,14 @@ export function H5({ children, className }: TypographyProps) {
   );
 }
 
+export function H6({ children, className }: TypographyProps) {
+  return (
+    <h3 className={cn("text-1xl scroll-m-20 first:mt-0", className)}>
+      {children}
+    </h3>
+  );
+}
+
 export function P({ children, className }: TypographyProps) {
   return (
     <p
@@ -94,5 +102,13 @@ export function BlockQuote({ children, className }: TypographyProps) {
     <blockquote className={cn("mt-6 border-l-2 pl-6 italic", className)}>
       {children}
     </blockquote>
+  );
+}
+
+export function Small({ children, className }: TypographyProps) {
+  return (
+    <small className={cn("text-sm font-medium leading-none", className)}>
+      {children}
+    </small>
   );
 }

@@ -1,14 +1,11 @@
 import { Metadata } from "next";
-
-// import { Footer } from "components/navigation/Footer";
-import { SettingsProvider } from "core/context/SettingsContext";
-// import { Navigation } from "components/navigation/Navigation";
-
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "DIGICHER Map",
-  description: "Digitial Cultural Heritage Map",
+  title: "Heritage Monitor",
+  description:
+    "Visualize and predict the evolution of cultural heritage research across Europe",
 };
 
 export default function RootLayout({
@@ -19,12 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="flex h-[100dvh] flex-col">
-        <SettingsProvider>
-          {/* <Navigation /> */}
-          {/* md:pt-12 */}
+        <Providers>
           <main className="flex-1">{children}</main>
-          {/* <Footer /> */}
-        </SettingsProvider>
+        </Providers>
       </body>
     </html>
   );

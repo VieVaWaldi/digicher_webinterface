@@ -12,12 +12,16 @@ import { COORDINATE_SYSTEM, LayersList } from "@deck.gl/core";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@deck.gl/widgets/stylesheet.css";
+import { Spinner } from "shadcn/spinner";
 
 interface UnifiedDeckMapProps {
   id: string;
-  layers: LayersList;
+  layers: LayersList | null;
   viewState: ViewState;
   onMapClick: (info: PickingInfo) => void;
+  onEmptyMapClick?: () => void;
+  loading?: boolean;
+  error: Error | null;
 }
 
 export default function BaseDeckGLMap({
@@ -25,6 +29,9 @@ export default function BaseDeckGLMap({
   layers,
   viewState,
   onMapClick,
+  onEmptyMapClick,
+  loading = false,
+  error = null,
 }: UnifiedDeckMapProps) {
   const { mapBoxStyle, isGlobe } = useSettings();
   const mapStyle = "mapbox://styles/" + mapBoxStyle;
@@ -53,6 +60,14 @@ export default function BaseDeckGLMap({
     }),
   ];
 
+  const handleClick = (info: PickingInfo) => {
+    if (info.object) {
+      onMapClick(info);
+    } else if (onEmptyMapClick) {
+      onEmptyMapClick();
+    }
+  };
+
   const view = isGlobe
     ? new GlobeView({ id: "globe" })
     : new MapView({
@@ -60,36 +75,61 @@ export default function BaseDeckGLMap({
         controller: true,
       });
 
-  const activeLayers = isGlobe ? [backgroundLayers, ...layers] : layers;
+  const activeLayers = isGlobe
+    ? [backgroundLayers, ...(layers || [])]
+    : layers || [];
 
   return (
-    <DeckGL
-      id={`deck-id-${id}`}
-      key={`deck-key-${id}`}
-      initialViewState={viewState}
-      views={view}
-      layers={activeLayers}
-      controller={true}
-      onClick={onMapClick}
-      getCursor={({ isDragging, isHovering }) => {
-        if (isDragging) return "grabbing";
-        if (isHovering) return "pointer";
-        return "grab";
-      }}
-      widgets={[
-        new FullscreenWidget({
-          id: "fullscreen",
-          placement: "bottom-right",
-        }),
-      ]}
-    >
-      {!isGlobe && (
-        <Map
-          mapStyle={mapStyle}
-          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
-          projection={{ name: "mercator" }}
-        />
+    <>
+      <DeckGL
+        id={`deck-id-${id}`}
+        key={`deck-key-${id}`}
+        initialViewState={viewState}
+        views={view}
+        layers={activeLayers}
+        controller={true}
+        onClick={handleClick}
+        getCursor={({ isDragging, isHovering }) => {
+          if (isDragging) return "grabbing";
+          if (isHovering) return "pointer";
+          return "grab";
+        }}
+        widgets={[
+          new FullscreenWidget({
+            id: "fullscreen",
+            placement: "bottom-right",
+          }),
+        ]}
+      >
+        {!isGlobe && (
+          <Map
+            mapStyle={mapStyle}
+            mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+            projection={{ name: "mercator" }}
+          />
+        )}
+      </DeckGL>
+
+      {/* Loading overlay */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
+          <div className="rounded-lg bg-white p-4 shadow-lg">
+            <Spinner />
+            <p className="mt-2 text-sm text-gray-600">Loading ...</p>
+          </div>
+        </div>
       )}
-    </DeckGL>
+
+      {/* Error overlay */}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
+          <div className="rounded-lg bg-white p-4 shadow-lg">
+            <p className="text-red-600">
+              Something went wrong, this is still the alpha version though
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -1,5 +1,5 @@
 export interface Institution {
-  institution_id: number;
+  institution_id: string;
   name: string;
   is_sme: boolean | null;
   street: string | null;
@@ -13,16 +13,16 @@ export interface Institution {
 }
 
 export interface InstitutionTopics {
-  institution_id: number;
+  institution_id: string;
   topic_ids: number[];
 }
 
 export interface InstitutionFundingProgrammes {
-  institution_id: number;
+  institution_id: string;
   funding_ids: number[];
 }
 
 export interface InstitutionSearchResult {
-  institution_id: number;
+  institution_id: string;
   name: string;
 }

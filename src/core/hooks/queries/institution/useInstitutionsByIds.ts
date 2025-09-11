@@ -1,7 +1,7 @@
 import { useFetch } from "core/hooks/useFetch";
 import { Institution } from "datamodel/institution/types";
 
-export function useInstitutionsByIds(ids: number[]) {
+export function useInstitutionsByIds(ids: string[]) {
   let param_ids: string = "";
   ids.map((id) => (param_ids += `${id},`));
   if (param_ids.slice(-1) === ",") {

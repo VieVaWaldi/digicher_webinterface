@@ -3,7 +3,10 @@ import { useMemo } from "react";
 import { Topic } from "datamodel/topic/types";
 import { BasePoint } from "datamodel/scenario_points/types";
 import { FundingProgramme } from "datamodel/fundingprogramme/types";
-import { InstitutionFundingProgrammes, InstitutionTopics } from "datamodel/institution/types";
+import {
+  InstitutionFundingProgrammes,
+  InstitutionTopics,
+} from "datamodel/institution/types";
 
 import { useTopics } from "../queries/topic/useTopics";
 import { useInstitutionsTopics } from "../queries/institution/useInstitutionsTopics";
@@ -12,13 +15,13 @@ import { useInstitutionFundingProgrammes } from "../queries/institution/useInsti
 
 function createTopicsLookup(
   data: InstitutionTopics[],
-): Record<number, number[]> {
+): Record<string, number[]> {
   return data.reduce(
     (acc, item) => {
       acc[item.institution_id] = item.topic_ids;
       return acc;
     },
-    {} as Record<number, number[]>,
+    {} as Record<string, number[]>,
   );
 }
 
@@ -34,13 +37,13 @@ function createTopicsMap(topics: Topic[]): Record<number, Topic> {
 
 function createFundingLookup(
   data: InstitutionFundingProgrammes[],
-): Record<number, number[]> {
+): Record<string, number[]> {
   return data.reduce(
     (acc, item) => {
       acc[item.institution_id] = item.funding_ids;
       return acc;
     },
-    {} as Record<number, number[]>,
+    {} as Record<string, number[]>,
   );
 }
 
@@ -57,8 +60,8 @@ function createFundingMap(
 }
 
 function getTopicsForInstitution(
-  institutionId: number,
-  topicsLookup: Record<number, number[]>,
+  institutionId: string,
+  topicsLookup: Record<string, number[]>,
   topicsMap: Record<number, Topic>,
 ): Topic[] {
   const topicIds = topicsLookup[institutionId] || [];
@@ -66,8 +69,8 @@ function getTopicsForInstitution(
 }
 
 function getFundingForInstitution(
-  institutionId: number,
-  fundingLookup: Record<number, number[]>,
+  institutionId: string,
+  fundingLookup: Record<string, number[]>,
   fundingMap: Record<number, FundingProgramme>,
 ): FundingProgramme[] {
   const fundingIds = fundingLookup[institutionId] || [];

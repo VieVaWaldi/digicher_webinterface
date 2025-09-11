@@ -23,7 +23,8 @@
       "@/*": ["./src/*"],
       "@/core/*": ["./src/core/*"],
       "@/datamodel/*": ["./src/datamodel/*"],
-      "@/features/*": ["./src/features/*"]
+      "@/features/*": ["./src/features/*"],
+      "@/db/*": ["./src/db/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

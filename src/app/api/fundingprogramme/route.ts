@@ -1,8 +1,11 @@
-import { createApiHandler } from "core/api/response";
-import { getFundingProgrammes } from "datamodel/fundingprogramme/queries";
+import { withApiWrapper } from "app/api/apiClient";
+import { apiSuccess } from "app/api/response";
+import { db } from "db/client";
+import { fundingprogramme } from "db/schema";
 
-export const GET = createApiHandler({
-  handler: async () => {
-    return await getFundingProgrammes();
-  },
-});
+async function projectSearchHandler() {
+  const data = await db.select().from(fundingprogramme);
+  return apiSuccess(data);
+}
+
+export const GET = withApiWrapper(projectSearchHandler);
