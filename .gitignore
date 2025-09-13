@@ -2,6 +2,7 @@
 
 ### CUSTOM ###
 
+ecosystem.config.js
 .vscode/*
 /.vscode/
 
