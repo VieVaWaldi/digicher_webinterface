@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+import {
+  InstitutionType,
+  ProjectType,
+  ResearchOutputType,
+} from "db/schemas/core";
 import {
   Award,
   Banknote,
@@ -15,12 +19,8 @@ import {
   Target,
   Users,
 } from "lucide-react";
+import React, { useState } from "react";
 import { H6, Lead, Small } from "shadcn/typography";
-import {
-  InstitutionType,
-  ProjectType,
-  ResearchOutputType,
-} from "db/schemas/core";
 import ResearchOutputPagination from "./ResesearchOutputPagination";
 
 interface ProjectViewInfoPanelProps {

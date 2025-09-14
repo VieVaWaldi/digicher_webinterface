@@ -1,17 +1,15 @@
-import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import {
   CheckIcon,
-  XCircle,
   ChevronDown,
-  XIcon,
   WandSparkles,
+  XCircle,
+  XIcon,
 } from "lucide-react";
+import * as React from "react";
 
-import { Separator } from "shadcn/separator";
-import { Button } from "shadcn/button";
 import { Badge } from "shadcn/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "shadcn/popover";
+import { Button } from "shadcn/button";
 import {
   Command,
   CommandEmpty,
@@ -21,6 +19,8 @@ import {
   CommandList,
   CommandSeparator,
 } from "shadcn/command";
+import { Popover, PopoverContent, PopoverTrigger } from "shadcn/popover";
+import { Separator } from "shadcn/separator";
 import { cn } from "./utils/shadcn-utils";
 
 /**

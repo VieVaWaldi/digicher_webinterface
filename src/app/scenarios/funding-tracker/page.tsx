@@ -8,10 +8,11 @@ import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgramme
 import useInstitutionSearchFilter from "components/filter/useInstitutionSearchFilter";
 import useNutsFilter from "components/filter/useNutsFilter";
 import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
+import { useTopicFilter } from "components/filter/useTopicFilter";
 import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import ProjectViewInfoPanel from "components/infoPanels/ProjectViewInfoPanel";
-import { useSettings } from "core/context/SettingsContext";
+import { useSettings } from "context/SettingsContext";
 import { ColumnLayer, PickingInfo } from "deck.gl";
 import { baseLayerProps } from "deckgl/baseLayerProps";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
@@ -22,7 +23,6 @@ import { useInstitutionView } from "hooks/queries/views/project/useInstitutionVi
 import { useProjectView } from "hooks/queries/views/project/useProjectView";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { FundingInfoBox, FundingTitle } from "./content";
-import { useTopicFilter } from "components/filter/useTopicFilter";
 
 export default function FundingScenario() {
   /** Main Data */

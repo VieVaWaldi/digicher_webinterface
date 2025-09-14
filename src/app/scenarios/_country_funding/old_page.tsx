@@ -8,8 +8,8 @@
 // import {
 //   ProcessedCountry,
 //   useCountryGeoData,
-// } from "core/hooks/queries/countrygeodata/useCountryGeoData";
-// import BaseDeckGLMap from "components/scenarios/BaseDeckGLMap";
+// } from "components/menus/useCountryGeoData";
+// import BaseDeckGLMap from "components/baseui/BaseDeckGLMap";
 // import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
 // import { useFundingInstitutionPoints } from "core/hooks/queries/scenario_points/useFundingInstitutionPoints";
 // import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "shadcn/sheet";

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 type MapBoxStyle = "mapbox/standard" | "mapbox/light-v11" | "mapbox/dark-v11";
 

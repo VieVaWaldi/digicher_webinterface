@@ -1,12 +1,12 @@
 "use client";
 
 import { useProjectTopicsEnriched } from "hooks/queries/topic/useProjectTopicsEnriched";
-import { useState, useCallback, useMemo, ReactNode } from "react";
+import { ChevronDown, ChevronRight, Search } from "lucide-react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
+import { Button } from "shadcn/button";
+import { Checkbox } from "shadcn/checkbox";
 import { Input } from "shadcn/input";
 import { H6 } from "shadcn/typography";
-import { ChevronDown, ChevronRight, Search } from "lucide-react";
-import { Checkbox } from "shadcn/checkbox";
-import { Button } from "shadcn/button";
 
 interface TopicTreeNode {
   id: string;

@@ -7,6 +7,7 @@ import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgramme
 import useInstitutionSearchFilter from "components/filter/useInstitutionSearchFilter";
 import useNutsFilter from "components/filter/useNutsFilter";
 import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
+import { useTopicFilter } from "components/filter/useTopicFilter";
 import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import ProjectViewInfoPanel from "components/infoPanels/ProjectViewInfoPanel";
@@ -19,7 +20,6 @@ import { useProjectYearRange } from "hooks/queries/project/useProjectYearRange";
 import { useProjectView } from "hooks/queries/views/project/useProjectView";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { InfoBox, Title } from "./content";
-import { useTopicFilter } from "components/filter/useTopicFilter";
 
 export default function CHProjectScenario() {
   /** Main Data */

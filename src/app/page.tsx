@@ -1,12 +1,12 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, ChevronDown, Github, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { dataTypes, scenarios } from "./scenarios";
-import { useQueryClient } from "@tanstack/react-query";
 
 const HeritageMonitor = () => {
   const [scrollY, setScrollY] = useState(0);

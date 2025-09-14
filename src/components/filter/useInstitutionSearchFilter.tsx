@@ -1,8 +1,8 @@
-import { ReactNode, useState, useCallback, useMemo } from "react";
-import { Input } from "shadcn/input";
-import { H6 } from "shadcn/typography";
 import { useInstitutionSearchByName } from "hooks/queries/institution/useInstitutionSearchByName";
+import { ReactNode, useCallback, useMemo, useState } from "react";
+import { Input } from "shadcn/input";
 import { Spinner } from "shadcn/spinner";
+import { H6 } from "shadcn/typography";
 
 interface InstitutionSearchFilterResult {
   InstitutionSearchFilter: ReactNode;

@@ -1,9 +1,9 @@
+import { withApiWrapper } from "app/api/apiClient";
 import { apiError, apiSuccess } from "app/api/response";
 import { db } from "db/client";
-import { sql } from "drizzle-orm";
-import { withApiWrapper } from "app/api/apiClient";
-import { NextRequest } from "next/server";
 import { GetInstitutionCollaboratorsType } from "db/schema";
+import { sql } from "drizzle-orm";
+import { NextRequest } from "next/server";
 
 async function institutionCollaboratorsHandler(request: NextRequest) {
   const url = new URL(request.url);

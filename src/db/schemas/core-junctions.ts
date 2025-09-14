@@ -1,13 +1,11 @@
 import {
   doublePrecision,
   integer,
-  pgSchema,
   primaryKey,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-
-export const coreSchema = pgSchema("core");
+import { coreSchema } from "./core";
 
 /* j Project RO */
 

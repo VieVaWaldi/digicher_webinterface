@@ -1,17 +1,14 @@
-import React from "react";
-
-import Map, { ViewState } from "react-map-gl";
 import { BitmapLayer, FullscreenWidget, TileLayer } from "deck.gl";
+import Map, { ViewState } from "react-map-gl";
 
+import { _GlobeView as GlobeView, MapView, PickingInfo } from "@deck.gl/core";
 import DeckGL from "@deck.gl/react";
-import { MapView } from "@deck.gl/core";
-import { PickingInfo } from "@deck.gl/core";
-import { _GlobeView as GlobeView } from "@deck.gl/core";
-import { useSettings } from "core/context/SettingsContext";
+
 import { COORDINATE_SYSTEM, LayersList } from "@deck.gl/core";
 
-import "mapbox-gl/dist/mapbox-gl.css";
 import "@deck.gl/widgets/stylesheet.css";
+import { useSettings } from "context/SettingsContext";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { Spinner } from "shadcn/spinner";
 
 interface UnifiedDeckMapProps {

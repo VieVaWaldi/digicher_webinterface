@@ -1,9 +1,7 @@
-import React from "react";
-
+import { MapBoxStyle, useSettings } from "context/SettingsContext";
 import Image from "next/image";
 import { Card } from "shadcn/card";
 import { H5 } from "shadcn/typography";
-import { MapBoxStyle, useSettings } from "core/context/SettingsContext";
 import { ViewToggle } from "../buttons/toggle";
 
 const SettingsMenu = () => {

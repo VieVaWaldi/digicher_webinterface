@@ -1,7 +1,7 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "shadcn/tabs";
 import { X } from "lucide-react";
 import { ReactNode, useCallback, useState } from "react";
 import { Button } from "shadcn/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "shadcn/tabs";
 
 interface RightSideMenuProps {
   rightPanelTabs?: Array<{
@@ -32,7 +32,7 @@ export default function RightSideMenu({
 
   const panel = (
     <div
-      className={`absolute right-0 top-0 z-10 h-full w-80 bg-white/60 backdrop-blur-md transition-transform duration-200 ${
+      className={`border-grey-300 absolute right-0 top-0 z-10 h-full w-1/2 border-l-2 bg-white/60 backdrop-blur-md transition-transform duration-200 ${
         isRightPanelOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >

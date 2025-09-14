@@ -1,8 +1,8 @@
+import { withApiWrapper } from "app/api/apiClient";
 import { apiError, apiSuccess } from "app/api/response";
 import { db } from "db/client";
 import { project } from "db/schemas/core";
 import { eq } from "drizzle-orm";
-import { withApiWrapper } from "app/api/apiClient";
 import { NextRequest } from "next/server";
 
 async function projectByIdHandler(request: NextRequest) {

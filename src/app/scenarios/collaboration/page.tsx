@@ -3,7 +3,7 @@
 import { ArcLayer, ColumnLayer } from "@deck.gl/layers";
 import BaseUI from "components/baseui/BaseUI";
 import RightSideMenu from "components/baseui/RightSideMenu";
-import { useSettings } from "core/context/SettingsContext";
+import { useSettings } from "context/SettingsContext";
 import { PickingInfo } from "deck.gl";
 import { baseLayerProps } from "deckgl/baseLayerProps";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";

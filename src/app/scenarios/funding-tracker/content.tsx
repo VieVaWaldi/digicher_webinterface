@@ -1,5 +1,3 @@
-import { H4 } from "shadcn/typography";
-
 interface FundingInfoBoxProps {
   count: number;
   totalFunding: number;

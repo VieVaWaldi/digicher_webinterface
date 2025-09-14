@@ -1,6 +1,6 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SettingsProvider } from "core/context/SettingsContext";
+import { SettingsProvider } from "context/SettingsContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {

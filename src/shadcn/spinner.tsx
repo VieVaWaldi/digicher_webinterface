@@ -1,6 +1,6 @@
-import React from "react";
 import { VariantProps, cva } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
+import React from "react";
 import { cn } from "shadcn/utils/shadcn-utils";
 
 const spinnerVariants = cva("flex-col items-center justify-center", {
