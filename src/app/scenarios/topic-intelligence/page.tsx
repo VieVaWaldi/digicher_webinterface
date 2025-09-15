@@ -25,6 +25,8 @@ export default function TopicIntelligenceScenario() {
         titleContent={<p>WIP: Topic Intelligence</p>}
         infoBoxContent={null}
         rightSideMenu={null}
+        scenarioName="topic-intelligence"
+        scenarioTitle="Topic Intelligence"
         toggleRightSideMenu={() => console.log("jo")}
         error={null}
       />
