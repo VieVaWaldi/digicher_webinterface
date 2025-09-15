@@ -26,7 +26,7 @@ export const projectView = coreMatsSchema
     nuts_1: text("nuts_1"),
     nuts_2: text("nuts_2"),
     nuts_3: text("nuts_3"),
-    framework_programme: text("framework_programme"),
+    framework_programmes: text("framework_programmes").array(),
   })
   .existing();
 
@@ -47,7 +47,7 @@ export const institutionView = coreMatsSchema
     nuts_1: text("nuts_1"),
     nuts_2: text("nuts_2"),
     nuts_3: text("nuts_3"),
-    framework_programme: text("framework_programme"),
+    framework_programmes: text("framework_programmes").array(),
   })
   .existing();
 

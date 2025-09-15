@@ -81,7 +81,7 @@ export default function CHProjectScenario() {
         topicPredicate(p.project_id) &&
         institutionSearchPredicate(p.institution_id) &&
         projectSearchPredicate(p.project_id) &&
-        frameworkProgrammePredicate(p.framework_programme) &&
+        frameworkProgrammePredicate(p.framework_programmes) &&
         yearRangePredicate(p.start_date, p.end_date) &&
         countryPredicate(p.country_code) &&
         typeAndSmePredicate(p.type, p.sme) &&
@@ -149,7 +149,9 @@ export default function CHProjectScenario() {
     });
   }
 
-  const { panel, togglePanel } = RightSideMenu({ rightPanelTabs });
+  const { panel, togglePanel, isOpen, activeTabId } = RightSideMenu({
+    rightPanelTabs,
+  });
 
   /** Event Handlers */
   const handleMapOnClick = useCallback(
@@ -189,7 +191,8 @@ export default function CHProjectScenario() {
       infoBoxContent={<InfoBox />}
       rightSideMenu={panel}
       toggleRightSideMenu={togglePanel}
-      // onDownloadAction={handleDownload}
+      isRightMenuOpen={isOpen}
+      activeRightMenuTab={activeTabId}
       loading={isPending}
       error={error}
       scenarioName="projects"

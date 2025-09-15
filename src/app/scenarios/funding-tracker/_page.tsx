@@ -4,6 +4,14 @@
 // import { LayerSwitcher } from "components/baseui/LayerSwitcher";
 // import RightSideMenu from "components/baseui/RightSideMenu";
 // import { ScopeToggle } from "components/buttons/toggle";
+// import useCountryFilter from "components/filter/useCountryFilter";
+// import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
+// import useInstitutionSearchFilter from "components/filter/useInstitutionSearchFilter";
+// import useNutsFilter from "components/filter/useNutsFilter";
+// import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
+// import { useTopicFilter } from "components/filter/useTopicFilter";
+// import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
+// import useYearRangeFilter from "components/filter/useYearRangeFilter";
 // import ProjectViewInfoPanel from "components/infoPanels/ProjectViewInfoPanel";
 // import { PickingInfo } from "deck.gl";
 // import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
@@ -66,33 +74,44 @@
 //   } | null>(null);
 
 //   /** Filters - Commented out as requested */
-//   // const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
-//   //   years: years,
-//   //   handleYearsChange: setYears,
-//   //   minStartDate: minStartDate,
-//   //   maxEndDate: maxEndDate,
-//   // });
-//   // const { CountryFilter, countryPredicate } = useCountryFilter();
-//   // const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter();
-//   // const { NutsFilter, nutsPredicate } = useNutsFilter(dataView);
-//   // const { InstitutionSearchFilter, institutionSearchPredicate } =
-//   //   useInstitutionSearchFilter();
-//   // const { ProjectSearchFilter, projectSearchPredicate } =
-//   //   useProjectSearchFilter();
-//   // const { FrameworkProgrammeFilter, frameworkProgrammePredicate } =
-//   //   useFrameworkProgrammeFilter();
-//   // const { TopicFilter, topicPredicate } = useTopicFilter();
+//   const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
+//     years: years,
+//     handleYearsChange: setYears,
+//     minStartDate: minStartDate,
+//     maxEndDate: maxEndDate,
+//   });
+//   const { CountryFilter, countryPredicate } = useCountryFilter();
+//   const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter();
+//   const { NutsFilter, nutsPredicate } = useNutsFilter(dataView);
+//   const { InstitutionSearchFilter, institutionSearchPredicate } =
+//     useInstitutionSearchFilter();
+//   const { ProjectSearchFilter, projectSearchPredicate } =
+//     useProjectSearchFilter();
+//   const { FrameworkProgrammeFilter, frameworkProgrammePredicate } =
+//     useFrameworkProgrammeFilter();
+//   const { TopicFilter, topicPredicate } = useTopicFilter();
 
 //   /** Apply Filters - Using unfiltered data for now */
 //   const filteredDataView = useMemo(() => {
 //     if (!dataView?.length) return [];
 
-//     // For demonstration, return raw data without filters
-//     // You can uncomment the filter logic above when needed
+//     const filtered = dataView.filter((p) => {
+//       return (
+//         topicPredicate(p.project_id) &&
+//         institutionSearchPredicate(p.institution_id) &&
+//         projectSearchPredicate(p.project_id) &&
+//         frameworkProgrammePredicate(p.framework_programmes) &&
+//         yearRangePredicate(p.start_date, p.end_date) &&
+//         countryPredicate(p.country_code) &&
+//         typeAndSmePredicate(p.type, p.sme) &&
+//         nutsPredicate(p.nuts_0, p.nuts_1, p.nuts_2, p.nuts_3)
+//       );
+//     });
+
 //     if (showInstitutions) {
 //       const institutionMap = new Map();
 
-//       dataView.forEach((row) => {
+//       filtered.forEach((row) => {
 //         const existing = institutionMap.get(row.institution_id);
 //         if (existing) {
 //           existing.total_cost += row.total_cost || 0;
@@ -111,8 +130,19 @@
 //       return Array.from(institutionMap.values());
 //     }
 
-//     return dataView;
-//   }, [dataView, showInstitutions]);
+//     return filtered;
+//   }, [
+//     dataView,
+//     showInstitutions,
+//     institutionSearchPredicate,
+//     projectSearchPredicate,
+//     frameworkProgrammePredicate,
+//     yearRangePredicate,
+//     countryPredicate,
+//     typeAndSmePredicate,
+//     nutsPredicate,
+//     topicPredicate,
+//   ]);
 
 //   /** Calculations */
 //   const maxTotalCost = useMemo(() => {
@@ -121,47 +151,6 @@
 //       return Math.max(max, cost);
 //     }, 0);
 //   }, [filteredDataView]);
-
-//   const totalFunding = useMemo(() => {
-//     return filteredDataView.reduce((sum, p) => sum + (p.total_cost || 0), 0);
-//   }, [filteredDataView]);
-
-//   /** Event Handlers */
-//   const handleMapOnClick = useCallback(
-//     (info: PickingInfo) => {
-//       if (showInstitutions && info.object?.institution_id) {
-//         setSelectedInstitutionId(info.object.institution_id);
-//         console.log(info.object);
-//         togglePanel("institution-view");
-//       } else if (!showInstitutions && info.object?.project_id) {
-//         setSelectedProjectId(info.object.project_id);
-//         setSelectedInstitutionId(info.object.institution_id);
-//         togglePanel("project-view");
-//       }
-//     },
-//     [showInstitutions],
-//   );
-
-//   const handleHover = useCallback((info: PickingInfo) => {
-//     if (info.object) {
-//       setHoverInfo({
-//         x: info.x,
-//         y: info.y,
-//         funding: info.object.total_cost || 0,
-//         object: info.object,
-//       });
-//     } else {
-//       setHoverInfo(null);
-//     }
-//   }, []);
-
-//   /** Layer Switcher */
-//   const { layer, layerSwitcherUI } = LayerSwitcher({
-//     data: filteredDataView,
-//     maxTotalCost,
-//     onMapClick: handleMapOnClick,
-//     onHover: handleHover,
-//   });
 
 //   /** UI Components - Filters commented out */
 //   const filters: ReactNode = (
@@ -172,7 +161,7 @@
 //           onChange={setShowInstitutions}
 //         />
 //       </div>
-//       {/*
+
 //       {YearRangeFilter}
 //       {TypeAndSmeFilter}
 //       {InstitutionSearchFilter}
@@ -181,13 +170,12 @@
 //       {FrameworkProgrammeFilter}
 //       {TopicFilter}
 //       {NutsFilter}
-//       */}
-//       <div className="p-4 text-center text-gray-500">
-//         <p>Filters temporarily disabled</p>
-//         <p>Enable layer switching functionality first</p>
-//       </div>
 //     </div>
 //   );
+
+//   const totalFunding = useMemo(() => {
+//     return filteredDataView.reduce((sum, p) => sum + (p.total_cost || 0), 0);
+//   }, [filteredDataView]);
 
 //   const rightPanelTabs = [
 //     {
@@ -227,6 +215,43 @@
 //   }
 
 //   const { panel, togglePanel } = RightSideMenu({ rightPanelTabs });
+
+//   /** Event Handlers */
+//   const handleMapOnClick = useCallback(
+//     (info: PickingInfo) => {
+//       if (showInstitutions && info.object?.institution_id) {
+//         setSelectedInstitutionId(info.object.institution_id);
+//         console.log(info.object);
+//         togglePanel("institution-view");
+//       } else if (!showInstitutions && info.object?.project_id) {
+//         setSelectedProjectId(info.object.project_id);
+//         setSelectedInstitutionId(info.object.institution_id);
+//         togglePanel("project-view");
+//       }
+//     },
+//     [showInstitutions, togglePanel],
+//   );
+
+//   const handleHover = useCallback((info: PickingInfo) => {
+//     if (info.object) {
+//       setHoverInfo({
+//         x: info.x,
+//         y: info.y,
+//         funding: info.object.total_cost || 0,
+//         object: info.object,
+//       });
+//     } else {
+//       setHoverInfo(null);
+//     }
+//   }, []);
+
+//   /** Layer Switcher */
+//   const { layer, layerSwitcherUI } = LayerSwitcher({
+//     data: filteredDataView,
+//     maxTotalCost,
+//     onMapClick: handleMapOnClick,
+//     onHover: handleHover,
+//   });
 
 //   /** Hover Tooltip */
 //   const hoverTooltip = hoverInfo && (

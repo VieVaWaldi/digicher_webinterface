@@ -206,7 +206,9 @@ export default function CollaborationScenario() {
   //   });
   // }
 
-  const { panel, togglePanel } = RightSideMenu({ rightPanelTabs });
+  const { panel, togglePanel, isOpen, activeTabId } = RightSideMenu({
+    rightPanelTabs,
+  });
 
   /** Title Content */
   const titleContent = (
@@ -274,6 +276,8 @@ export default function CollaborationScenario() {
         infoBoxContent={infoBoxContent}
         rightSideMenu={panel}
         toggleRightSideMenu={() => togglePanel("institution-details")}
+        isRightMenuOpen={isOpen}
+        activeRightMenuTab={activeTabId}
         onEmptyMapClick={handleEmptyMapClick}
         loading={isPending}
         error={error}

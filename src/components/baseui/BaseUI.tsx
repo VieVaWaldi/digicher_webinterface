@@ -14,6 +14,8 @@ interface BaseUIProps {
 
   rightSideMenu: ReactNode;
   toggleRightSideMenu: (tabdId: string) => void;
+  isRightMenuOpen?: boolean;
+  activeRightMenuTab?: string;
 
   onDownloadAction?: () => void;
   onMapClick?: (info: PickingInfo) => void;
@@ -33,6 +35,8 @@ export default function BaseUI({
   infoBoxContent,
   rightSideMenu,
   toggleRightSideMenu,
+  isRightMenuOpen,
+  activeRightMenuTab,
   onDownloadAction,
   onEmptyMapClick,
   scenarioName,
@@ -59,10 +63,26 @@ export default function BaseUI({
     setShowInfoBox(false);
   };
 
+  const getTitlePosition = (isOpen: boolean, activeTabId: string) => {
+    if (!isOpen) return "left-1/2 -translate-x-1/2";
+
+    if (activeTabId === "filters") {
+      return "left-[35%] -translate-x-1/2";
+    }
+    return "left-1/4 -translate-x-1/2";
+  };
+
   return (
     <div className="h-full w-full bg-gray-100">
       <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white">
-        <Title loading={loading} titleContent={titleContent} />
+        <Title
+          loading={loading}
+          titleContent={titleContent}
+          centerOffset={getTitlePosition(
+            isRightMenuOpen || false,
+            activeRightMenuTab || "",
+          )}
+        />
 
         <TopLeftMenu
           showNavigation={showNavigation}

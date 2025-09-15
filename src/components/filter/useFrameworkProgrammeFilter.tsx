@@ -31,7 +31,9 @@ const frameworkProgrammeOptions = [
 
 interface FrameworkProgrammeFilterResult {
   FrameworkProgrammeFilter: ReactNode;
-  frameworkProgrammePredicate: (frameworkProgramme: string | null) => boolean;
+  frameworkProgrammePredicate: (
+    frameworkProgrammes: string[] | null,
+  ) => boolean;
 }
 
 export default function useFrameworkProgrammeFilter(): FrameworkProgrammeFilterResult {
@@ -60,18 +62,19 @@ export default function useFrameworkProgrammeFilter(): FrameworkProgrammeFilterR
 
   const frameworkProgrammePredicate = useMemo(
     () =>
-      (frameworkProgramme: string | null): boolean => {
+      (frameworkProgrammes: string[] | null): boolean => {
         if (selectedFrameworkSet.size === 0) {
           return true;
         }
 
-        if (frameworkProgramme === null) {
+        if (!frameworkProgrammes || frameworkProgrammes.length === 0) {
           return (
             selectedFrameworkSet.has("null") || selectedFrameworkSet.size === 0
           );
         }
 
-        return selectedFrameworkSet.has(frameworkProgramme);
+        // Check if any of the project's framework programmes match our selection
+        return frameworkProgrammes.some((fp) => selectedFrameworkSet.has(fp));
       },
     [selectedFrameworkSet],
   );

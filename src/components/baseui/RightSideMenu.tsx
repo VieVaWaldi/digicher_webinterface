@@ -30,9 +30,16 @@ export default function RightSideMenu({
     setActiveTabId(tabId);
   }, []);
 
+  const getWidthClass = () => {
+    if (activeTabId === "filters") {
+      return "w-[85%] md:w-[30%]";
+    }
+    return "w-[85%] md:w-1/2";
+  };
+
   const panel = (
     <div
-      className={`border-grey-300 absolute right-0 top-0 z-10 h-full w-1/2 border-l-2 bg-white/60 backdrop-blur-md transition-transform duration-200 ${
+      className={`border-grey-300 absolute right-0 top-0 z-10 h-full border-l bg-white/70 backdrop-blur-lg transition-transform duration-200 ${getWidthClass()} ${
         isRightPanelOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
@@ -70,5 +77,6 @@ export default function RightSideMenu({
     panel: panel,
     togglePanel,
     isOpen: isRightPanelOpen,
+    activeTabId: activeTabId,
   };
 }

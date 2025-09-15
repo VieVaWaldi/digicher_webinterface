@@ -31,27 +31,22 @@ interface TopicFilterResult {
 export const useTopicFilter = (): TopicFilterResult => {
   const enrichedData = useProjectTopicsEnriched();
 
-  // Selection states
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [selectedSubfields, setSelectedSubfields] = useState<string[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
 
-  // UI states
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
-  // Build optimized lookup maps for O(1) performance
   const { treeData, lookupMaps } = useMemo(() => {
     if (!enrichedData?.length) return { treeData: [], lookupMaps: null };
 
-    // Project lookup maps for fast filtering
     const projectDomainMap = new Map<string, string>();
     const projectFieldMap = new Map<string, string>();
     const projectSubfieldMap = new Map<string, string>();
     const projectTopicMap = new Map<string, number>();
 
-    // Tree building maps
     const domainMap = new Map<string, TopicTreeNode>();
     const fieldMap = new Map<string, TopicTreeNode>();
     const subfieldMap = new Map<string, TopicTreeNode>();
@@ -60,13 +55,11 @@ export const useTopicFilter = (): TopicFilterResult => {
     enrichedData.forEach(({ project_id, topic }) => {
       if (!topic) return;
 
-      // Build lookup maps for fast project filtering
       projectDomainMap.set(project_id, topic.domain_id);
       projectFieldMap.set(project_id, topic.field_id);
       projectSubfieldMap.set(project_id, topic.subfield_id);
       projectTopicMap.set(project_id, topic.id);
 
-      // Create domain node
       if (!domainMap.has(topic.domain_id)) {
         domainMap.set(topic.domain_id, {
           id: topic.domain_id,
@@ -76,7 +69,6 @@ export const useTopicFilter = (): TopicFilterResult => {
         });
       }
 
-      // Create field node
       const fieldKey = `${topic.domain_id}-${topic.field_id}`;
       if (!fieldMap.has(fieldKey)) {
         const fieldNode: TopicTreeNode = {
@@ -89,7 +81,6 @@ export const useTopicFilter = (): TopicFilterResult => {
         domainMap.get(topic.domain_id)!.children!.push(fieldNode);
       }
 
-      // Create subfield node
       const subfieldKey = `${topic.field_id}-${topic.subfield_id}`;
       if (!subfieldMap.has(subfieldKey)) {
         const subfieldNode: TopicTreeNode = {
@@ -102,7 +93,6 @@ export const useTopicFilter = (): TopicFilterResult => {
         fieldMap.get(fieldKey)!.children!.push(subfieldNode);
       }
 
-      // Create topic node (with deduplication)
       const topicKey = `${topic.subfield_id}-${topic.id}`;
       if (!topicMap.has(topicKey)) {
         const topicNode: TopicTreeNode = {
@@ -130,7 +120,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     };
   }, [enrichedData]);
 
-  // Convert selected arrays to Sets for O(1) lookup
   const selectedSets = useMemo(
     () => ({
       domains: new Set(selectedDomains),
@@ -141,7 +130,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     [selectedDomains, selectedFields, selectedSubfields, selectedTopics],
   );
 
-  // Filter tree based on search query
   const filteredTreeData = useMemo(() => {
     if (!searchQuery.trim()) return treeData;
 
@@ -149,7 +137,7 @@ export const useTopicFilter = (): TopicFilterResult => {
 
     const filterNode = (node: TopicTreeNode): TopicTreeNode | null => {
       const nameMatches = node.name.toLowerCase().includes(searchLower);
-      // TODO: Add summary and keywords to search later
+      // ToDo: Add summary and keywords to search
 
       const filteredChildren =
         (node.children?.map(filterNode).filter(Boolean) as TopicTreeNode[]) ||
@@ -168,7 +156,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     return treeData.map(filterNode).filter(Boolean) as TopicTreeNode[];
   }, [treeData, searchQuery]);
 
-  // Selection handlers
   const handleDomainToggle = useCallback((domainId: string) => {
     setSelectedDomains((prev) =>
       prev.includes(domainId)
@@ -412,7 +399,7 @@ export const useTopicFilter = (): TopicFilterResult => {
       </div>
 
       {/* Tree view */}
-      <div className="max-h-96 overflow-y-auto rounded-md border bg-white dark:bg-gray-900">
+      <div className="max-h-96 overflow-y-auto rounded-md border dark:bg-gray-900">
         {filteredTreeData.length === 0 ? (
           <div className="p-4 text-center text-sm text-gray-500">
             {searchQuery ? "No matching topics found" : "No topics available"}

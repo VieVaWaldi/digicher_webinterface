@@ -20,23 +20,28 @@ const CSS_BUTTON = "h-10 w-10 rounded-xl bg-white text-orange-500";
 const STRK_WDTH = 2.2;
 const BTN_SCALE = 1.5;
 
-// Title Component
 interface TitleProps {
   loading: boolean;
   titleContent: ReactNode;
+  centerOffset?: string;
 }
 
-export const Title = ({ loading, titleContent }: TitleProps) => {
+export const Title = ({
+  loading,
+  titleContent,
+  centerOffset = "left-1/2 -translate-x-1/2",
+}: TitleProps) => {
   return (
-    <div className="absolute left-1/2 z-10 -translate-x-1/2 rounded-b-xl bg-white px-3 py-2 text-center">
-      <div className="flex h-6 items-center justify-center">
+    <div
+      className={`absolute ${centerOffset} z-10 rounded-b-xl bg-white px-3 py-2 text-center`}
+    >
+      <div className="flex min-h-6 items-center justify-center">
         {loading ? <Spinner className="h-8 w-8" /> : <H5>{titleContent}</H5>}
       </div>
     </div>
   );
 };
 
-// Navigation Button Component
 interface NavigationButtonProps {
   showNavigation: boolean;
   onToggle: () => void;
@@ -63,7 +68,6 @@ export const NavigationButton = ({
   );
 };
 
-// Navigation Slide Menu Component
 interface NavigationSlideMenuProps {
   showNavigation: boolean;
   onNavigate: () => void;
@@ -117,7 +121,6 @@ export const NavigationSlideMenu = ({
   );
 };
 
-// Filter Button Component
 interface FilterButtonProps {
   onToggleRightSideMenu: (tabId: string) => void;
 }
@@ -137,7 +140,6 @@ export const FilterButton = ({ onToggleRightSideMenu }: FilterButtonProps) => {
   );
 };
 
-// Settings Button Component
 export const SettingsButton = () => {
   return (
     <Sheet>
@@ -157,7 +159,6 @@ export const SettingsButton = () => {
   );
 };
 
-// Info Button Component
 interface InfoButtonProps {
   onShowInfoBox: () => void;
 }
@@ -173,7 +174,6 @@ export const InfoButton = ({ onShowInfoBox }: InfoButtonProps) => {
   );
 };
 
-// Download Button Component
 interface DownloadButtonProps {
   onDownloadAction?: () => void;
 }
@@ -195,7 +195,6 @@ export const DownloadButton = ({ onDownloadAction }: DownloadButtonProps) => {
   );
 };
 
-// Top Left Menu Component
 interface TopLeftMenuProps {
   showNavigation: boolean;
   onToggleNavigation: () => void;
@@ -231,7 +230,6 @@ export const TopLeftMenu = ({
   );
 };
 
-// Info Box Component
 interface InfoBoxProps {
   showInfoBox: boolean;
   onHideInfoBox: () => void;

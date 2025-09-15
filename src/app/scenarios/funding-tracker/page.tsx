@@ -125,13 +125,12 @@ export default function FundingScenario() {
   const filteredDataView = useMemo(() => {
     if (!dataView?.length) return [];
 
-    // Step 1: Always filter at the project level first
     const filtered = dataView.filter((p) => {
       return (
         topicPredicate(p.project_id) &&
         institutionSearchPredicate(p.institution_id) &&
         projectSearchPredicate(p.project_id) &&
-        frameworkProgrammePredicate(p.framework_programme) &&
+        frameworkProgrammePredicate(p.framework_programmes) &&
         yearRangePredicate(p.start_date, p.end_date) &&
         countryPredicate(p.country_code) &&
         typeAndSmePredicate(p.type, p.sme) &&
@@ -139,7 +138,6 @@ export default function FundingScenario() {
       );
     });
 
-    // Step 2: Return aggregated data for institutions, raw data for projects
     if (showInstitutions) {
       const institutionMap = new Map();
 
@@ -166,7 +164,7 @@ export default function FundingScenario() {
     return filtered;
   }, [
     dataView,
-    showInstitutions, // Add this dependency!
+    showInstitutions,
     institutionSearchPredicate,
     projectSearchPredicate,
     frameworkProgrammePredicate,
@@ -246,7 +244,9 @@ export default function FundingScenario() {
     });
   }
 
-  const { panel, togglePanel } = RightSideMenu({ rightPanelTabs });
+  const { panel, togglePanel, isOpen, activeTabId } = RightSideMenu({
+    rightPanelTabs,
+  });
 
   /** Hover Tooltip */
   const hoverTooltip = hoverInfo && (
@@ -372,6 +372,8 @@ export default function FundingScenario() {
         }
         rightSideMenu={panel}
         toggleRightSideMenu={togglePanel}
+        isRightMenuOpen={isOpen}
+        activeRightMenuTab={activeTabId}
         scenarioName="funding-tracker"
         scenarioTitle="Funding Tracker"
         loading={showInstitutions ? isPendingInstitutionView : isPending}

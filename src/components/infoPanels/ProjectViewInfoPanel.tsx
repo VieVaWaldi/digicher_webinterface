@@ -37,17 +37,14 @@ const Spinner = () => (
 );
 
 const LoadingState = () => (
-  //   <div className="flex items-center justify-center p-8">
   <div className="rounded-lg bg-white p-4 shadow-lg">
     <Spinner />
-    {/* </div> */}
   </div>
 );
 
 const ProjectViewInfoPanel: React.FC<ProjectViewInfoPanelProps> = ({
   institution,
   project,
-  researchOutputs = [],
   isPendingInstitution = false,
   isPendingProject = false,
   className = "",
