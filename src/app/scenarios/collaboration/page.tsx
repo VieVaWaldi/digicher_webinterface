@@ -277,6 +277,8 @@ export default function CollaborationScenario() {
         onEmptyMapClick={handleEmptyMapClick}
         loading={isPending}
         error={error}
+        scenarioName="collaboration"
+        scenarioTitle="Collaboration"
       />
       {hoverTooltip}
     </>

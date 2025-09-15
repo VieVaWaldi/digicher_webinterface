@@ -27,6 +27,8 @@ export default function CollaborationScenario() {
         rightSideMenu={null}
         toggleRightSideMenu={() => console.log("jo")}
         error={null}
+        scenarioName="minority"
+        scenarioTitle="To be removed soon"
       />
       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
         <div className="rounded-lg bg-white p-4 shadow-lg">

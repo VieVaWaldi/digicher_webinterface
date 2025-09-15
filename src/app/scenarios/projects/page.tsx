@@ -192,6 +192,8 @@ export default function CHProjectScenario() {
       // onDownloadAction={handleDownload}
       loading={isPending}
       error={error}
+      scenarioName="projects"
+      scenarioTitle="Projects"
     />
   );
 }

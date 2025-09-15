@@ -1,0 +1,270 @@
+import { scenarios } from "app/scenarios";
+import SettingsMenu from "components/menus/SettingsMenu";
+import {
+  Download,
+  Filter,
+  Home,
+  InfoIcon,
+  Menu,
+  Settings,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ReactNode } from "react";
+import { Button } from "shadcn/button";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "shadcn/sheet";
+import { Spinner } from "shadcn/spinner";
+import { H2, H5 } from "shadcn/typography";
+
+const CSS_BUTTON = "h-10 w-10 rounded-xl bg-white text-orange-500";
+const STRK_WDTH = 2.2;
+const BTN_SCALE = 1.5;
+
+// Title Component
+interface TitleProps {
+  loading: boolean;
+  titleContent: ReactNode;
+}
+
+export const Title = ({ loading, titleContent }: TitleProps) => {
+  return (
+    <div className="absolute left-1/2 z-10 -translate-x-1/2 rounded-b-xl bg-white px-3 py-2 text-center">
+      <div className="flex h-6 items-center justify-center">
+        {loading ? <Spinner className="h-8 w-8" /> : <H5>{titleContent}</H5>}
+      </div>
+    </div>
+  );
+};
+
+// Navigation Button Component
+interface NavigationButtonProps {
+  showNavigation: boolean;
+  onToggle: () => void;
+}
+
+export const NavigationButton = ({
+  showNavigation,
+  onToggle,
+}: NavigationButtonProps) => {
+  return (
+    <Button variant="secondary" className={CSS_BUTTON} onClick={onToggle}>
+      {showNavigation ? (
+        <X
+          strokeWidth={STRK_WDTH}
+          style={{ transform: `scale(${BTN_SCALE})` }}
+        />
+      ) : (
+        <Menu
+          strokeWidth={STRK_WDTH}
+          style={{ transform: `scale(${BTN_SCALE})` }}
+        />
+      )}
+    </Button>
+  );
+};
+
+// Navigation Slide Menu Component
+interface NavigationSlideMenuProps {
+  showNavigation: boolean;
+  onNavigate: () => void;
+}
+
+export const NavigationSlideMenu = ({
+  showNavigation,
+  onNavigate,
+}: NavigationSlideMenuProps) => {
+  const router = useRouter();
+
+  if (!showNavigation) return null;
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+    onNavigate();
+  };
+
+  return (
+    <div className="flex flex-row space-x-2 duration-300 animate-in slide-in-from-left">
+      {/* Home button as first item */}
+      <Button
+        variant="secondary"
+        className="flex h-10 items-center space-x-2 rounded-xl bg-white px-3 text-orange-500"
+        onClick={() => handleNavigation("/")}
+      >
+        <Home
+          strokeWidth={STRK_WDTH}
+          style={{ transform: `scale(${BTN_SCALE})` }}
+        />
+      </Button>
+
+      {/* Scenario buttons */}
+      {scenarios.map((scenario) => {
+        const IconComponent = scenario.icon;
+        return (
+          <Button
+            key={scenario.id}
+            variant="secondary"
+            className="flex h-10 items-center space-x-2 rounded-xl bg-white px-3 text-orange-500"
+            onClick={() => handleNavigation(scenario.href)}
+          >
+            <IconComponent
+              strokeWidth={STRK_WDTH}
+              style={{ transform: `scale(${BTN_SCALE})` }}
+            />
+          </Button>
+        );
+      })}
+    </div>
+  );
+};
+
+// Filter Button Component
+interface FilterButtonProps {
+  onToggleRightSideMenu: (tabId: string) => void;
+}
+
+export const FilterButton = ({ onToggleRightSideMenu }: FilterButtonProps) => {
+  return (
+    <Button
+      variant="secondary"
+      className={CSS_BUTTON}
+      onClick={() => onToggleRightSideMenu("filters")}
+    >
+      <Filter
+        strokeWidth={STRK_WDTH}
+        style={{ transform: `scale(${BTN_SCALE})` }}
+      />
+    </Button>
+  );
+};
+
+// Settings Button Component
+export const SettingsButton = () => {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="secondary" className={CSS_BUTTON}>
+          <Settings
+            strokeWidth={STRK_WDTH}
+            style={{ transform: `scale(${BTN_SCALE})` }}
+          />
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetTitle>Settings</SheetTitle>
+        <SettingsMenu />
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+// Info Button Component
+interface InfoButtonProps {
+  onShowInfoBox: () => void;
+}
+
+export const InfoButton = ({ onShowInfoBox }: InfoButtonProps) => {
+  return (
+    <Button variant="secondary" className={CSS_BUTTON} onClick={onShowInfoBox}>
+      <InfoIcon
+        strokeWidth={STRK_WDTH}
+        style={{ transform: `scale(${BTN_SCALE})` }}
+      />
+    </Button>
+  );
+};
+
+// Download Button Component
+interface DownloadButtonProps {
+  onDownloadAction?: () => void;
+}
+
+export const DownloadButton = ({ onDownloadAction }: DownloadButtonProps) => {
+  if (!onDownloadAction) return null;
+
+  return (
+    <Button
+      variant="secondary"
+      className={CSS_BUTTON}
+      onClick={onDownloadAction}
+    >
+      <Download
+        strokeWidth={STRK_WDTH}
+        style={{ transform: `scale(${BTN_SCALE})` }}
+      />
+    </Button>
+  );
+};
+
+// Top Left Menu Component
+interface TopLeftMenuProps {
+  showNavigation: boolean;
+  onToggleNavigation: () => void;
+  onNavigate: () => void;
+  onToggleRightSideMenu: (tabId: string) => void;
+  onShowInfoBox: () => void;
+  onDownloadAction?: () => void;
+}
+
+export const TopLeftMenu = ({
+  showNavigation,
+  onToggleNavigation,
+  onNavigate,
+  onToggleRightSideMenu,
+  onShowInfoBox,
+  onDownloadAction,
+}: TopLeftMenuProps) => {
+  return (
+    <div className="absolute left-2 top-2 z-10 flex flex-col space-y-2">
+      <NavigationButton
+        showNavigation={showNavigation}
+        onToggle={onToggleNavigation}
+      />
+      <NavigationSlideMenu
+        showNavigation={showNavigation}
+        onNavigate={onNavigate}
+      />
+      <InfoButton onShowInfoBox={onShowInfoBox} />
+      <FilterButton onToggleRightSideMenu={onToggleRightSideMenu} />
+      <DownloadButton onDownloadAction={onDownloadAction} />
+      <SettingsButton />
+    </div>
+  );
+};
+
+// Info Box Component
+interface InfoBoxProps {
+  showInfoBox: boolean;
+  onHideInfoBox: () => void;
+  infoBoxContent: ReactNode;
+}
+
+export const InfoBox = ({
+  showInfoBox,
+  onHideInfoBox,
+  infoBoxContent,
+}: InfoBoxProps) => {
+  if (!showInfoBox) return null;
+
+  return (
+    <div
+      className="absolute inset-0 z-20 flex items-center justify-center"
+      onClick={onHideInfoBox}
+    >
+      <div className="relative max-h-[80vh] w-11/12 max-w-2xl overflow-y-auto rounded-xl bg-white/60 p-6 backdrop-blur-md">
+        <div className="flex flex-row justify-between">
+          <H2 className="text-xl font-semibold text-gray-800">
+            About This Visualisation
+          </H2>
+          <button
+            className="-mt-3 mb-3 text-gray-500 hover:text-gray-700"
+            onClick={onHideInfoBox}
+          >
+            <X className="text-gray-500" />
+          </button>
+        </div>
+        <div className="mb-4 h-px w-full bg-gray-300" />
+        {infoBoxContent}
+      </div>
+    </div>
+  );
+};
