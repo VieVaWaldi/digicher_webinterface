@@ -70,7 +70,15 @@ const HeritageMonitor = () => {
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-gradient-to-r from-orange-500/20 to-blue-500/20 px-4 py-2">
             <Sparkles className="h-4 w-4 text-orange-400" />
             <span className="text-sm font-medium">
-              Scientometric Intelligence Platform
+              <a
+                href="https://en.wikipedia.org/wiki/Scientometrics"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cursor-pointer underline transition-colors hover:text-orange-400"
+              >
+                Scientometric
+              </a>{" "}
+              Intelligence Platform
             </span>
           </div>
 
@@ -79,12 +87,17 @@ const HeritageMonitor = () => {
           </h1>
 
           <p className="mx-auto mb-8 max-w-3xl text-xl leading-relaxed text-gray-300 md:text-2xl">
-            Visualize and predict
-            <sup className="py-0.5 pl-1 text-[0.6em] font-normal not-italic">
-              wip
-            </sup>{" "}
-            the evolution of cultural heritage research across Europe through
-            advanced scientometric analysis
+            Visualize the evolution of cultural heritage research across Europe
+            through advanced{" "}
+            <a
+              href="https://en.wikipedia.org/wiki/Scientometrics"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cursor-pointer underline transition-colors hover:text-orange-400"
+            >
+              scientometric
+            </a>{" "}
+            analysis
           </p>
 
           <div className="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
@@ -103,7 +116,7 @@ const HeritageMonitor = () => {
               className="rounded-lg border border-white/20 bg-white/10 px-8 py-4 font-semibold backdrop-blur-sm transition-all hover:bg-white/20"
               onClick={() => router.push("/scenarios/funding-tracker")}
             >
-              View Demo
+              Start the Tool
             </button>
           </div>
 
@@ -120,11 +133,18 @@ const HeritageMonitor = () => {
           </div>
         </div>
 
-        <ChevronDown className="absolute bottom-8 left-1/2 h-8 w-8 -translate-x-1/2 transform animate-bounce text-gray-400" />
+        <ChevronDown
+          className="absolute bottom-1 h-12 w-12 transform animate-bounce cursor-pointer text-gray-400 duration-1000 md:h-16 md:w-16"
+          onClick={() =>
+            document
+              .getElementById("brief")
+              ?.scrollIntoView({ behavior: "smooth" })
+          }
+        />
       </section>
 
       {/* What It Does - Brief */}
-      <section className="px-6 py-20">
+      <section id="brief" className="px-6 py-20">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="mb-8 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-4xl font-bold text-transparent">
             Intelligence for Cultural Heritage
@@ -165,11 +185,10 @@ const HeritageMonitor = () => {
       </section>
 
       {/* Scenarios Grid */}
-      {/* Scenarios Grid */}
       <section id="scenarios" className="px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-4 text-center text-4xl font-bold">
-            Six Analytical Scenarios
+            Five Analytical Scenarios
           </h2>
           <p className="mx-auto mb-12 max-w-2xl text-center text-gray-400">
             Each scenario is designed to address specific stakeholder needs
@@ -311,10 +330,16 @@ const HeritageMonitor = () => {
                 </div>
                 <div className="flex-1">
                   <div className="rounded-xl border border-white/10 bg-gradient-to-br from-gray-800 to-gray-900 p-8">
-                    <div className="flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-white/5 to-white/10">
-                      <span className="text-gray-500">
-                        Screenshot Placeholder
-                      </span>
+                    <div className="relative aspect-[4/3] min-h-[200px] overflow-hidden rounded-lg bg-gradient-to-br from-white/5 to-white/10 md:aspect-video md:min-h-[250px]">
+                      <Image
+                        src={scenario.screenshot}
+                        alt={`${scenario.title} screenshot`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        quality={85}
+                        priority={idx < 2}
+                      />
                     </div>
                   </div>
                 </div>
@@ -399,7 +424,6 @@ const HeritageMonitor = () => {
         </div>
       </section>
 
-      {/* Footer */}
       {/* Footer */}
       <footer className="border-t border-white/10 bg-gradient-to-b from-gray-950 to-gray-900 px-6 py-16">
         <div className="mx-auto max-w-6xl">

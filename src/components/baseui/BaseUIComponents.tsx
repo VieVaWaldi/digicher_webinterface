@@ -9,7 +9,7 @@ import {
   Settings,
   X,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ReactNode } from "react";
 import { Button } from "shadcn/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "shadcn/sheet";
@@ -78,6 +78,7 @@ export const NavigationSlideMenu = ({
   onNavigate,
 }: NavigationSlideMenuProps) => {
   const router = useRouter();
+  const pathname = usePathname();
 
   if (!showNavigation) return null;
 
@@ -86,34 +87,44 @@ export const NavigationSlideMenu = ({
     onNavigate();
   };
 
+  const isActive = (href: string) => pathname === href;
+
   return (
-    <div className="flex flex-row space-x-2 duration-300 animate-in slide-in-from-left">
+    <div className="flex flex-row space-x-3 duration-300 animate-in slide-in-from-left">
       {/* Home button as first item */}
       <Button
         variant="secondary"
-        className="flex h-10 items-center space-x-2 rounded-xl bg-white px-3 text-orange-500"
+        className={`flex h-auto flex-col items-center space-y-1 rounded-xl bg-white p-2 text-orange-500 ${
+          isActive("/") ? "border-2 border-orange-500" : ""
+        }`}
         onClick={() => handleNavigation("/")}
       >
         <Home
           strokeWidth={STRK_WDTH}
           style={{ transform: `scale(${BTN_SCALE})` }}
         />
+        <span className="text-xs text-gray-400">Home</span>
       </Button>
 
       {/* Scenario buttons */}
       {scenarios.map((scenario) => {
         const IconComponent = scenario.icon;
+        const active = isActive(scenario.href);
+
         return (
           <Button
             key={scenario.id}
             variant="secondary"
-            className="flex h-10 items-center space-x-2 rounded-xl bg-white px-3 text-orange-500"
+            className={`flex h-auto flex-col items-center rounded-xl bg-white p-2 text-orange-500 ${
+              active ? "border-2 border-orange-500" : ""
+            }`}
             onClick={() => handleNavigation(scenario.href)}
           >
             <IconComponent
               strokeWidth={STRK_WDTH}
               style={{ transform: `scale(${BTN_SCALE})` }}
             />
+            <span className="text-xs text-gray-400">{scenario.titleShort}</span>
           </Button>
         );
       })}

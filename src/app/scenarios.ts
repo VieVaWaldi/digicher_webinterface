@@ -12,6 +12,7 @@ import {
 interface Scenario {
   id: string;
   title: string;
+  titleShort: string;
   href: string;
   icon: LucideIcon;
   color: string;
@@ -29,20 +30,21 @@ interface DataType {
 }
 
 export const scenarios: Scenario[] = [
-  {
-    id: "project",
-    title: "Cultural Heritage Projects",
-    href: "/scenarios/projects",
-    icon: Lightbulb,
-    color: "from-yellow-500 to-orange-500",
-    brief: "Discover and analys projects",
-    description: "...",
-    features: ["...", "...", "..."],
-    screenshot: "/screenshots/funding.png",
-  },
+  // {
+  //   id: "project",
+  //   title: "Cultural Heritage Projects",
+  //   href: "/scenarios/projects",
+  //   icon: Lightbulb,
+  //   color: "from-yellow-500 to-orange-500",
+  //   brief: "Discover and analys projects",
+  //   description: "...",
+  //   features: ["...", "...", "..."],
+  //   screenshot: "/screenshots/funding.png",
+  // },
   {
     id: "funding",
     title: "Funding Tracker",
+    titleShort: "Funding",
     href: "/scenarios/funding-tracker",
     icon: Coins,
     color: "from-green-500 to-emerald-500",
@@ -54,11 +56,12 @@ export const scenarios: Scenario[] = [
       "Geographic distribution analysis",
       "Temporal funding trends",
     ],
-    screenshot: "/screenshots/funding.png",
+    screenshot: "/screenshots/funding-tracker.png",
   },
   {
     id: "collaboration",
     title: "Collaboration Networks (wip)",
+    titleShort: "Collab",
     href: "/scenarios/collaboration",
     icon: GitBranch,
     color: "from-purple-500 to-pink-500",
@@ -75,6 +78,7 @@ export const scenarios: Scenario[] = [
   {
     id: "expert",
     title: "Expert Discovery (coming soon)",
+    titleShort: "Experts",
     href: "/scenarios/expert-discovery",
     icon: Building2,
     color: "from-blue-500 to-cyan-500",
@@ -91,6 +95,7 @@ export const scenarios: Scenario[] = [
   {
     id: "minority",
     title: "Minority Research (coming soon)",
+    titleShort: "Minority",
     href: "/scenarios/minority",
     icon: Globe2,
     color: "from-indigo-500 to-purple-500",
@@ -107,6 +112,7 @@ export const scenarios: Scenario[] = [
   {
     id: "topic",
     title: "Topic Intelligence (coming soon)",
+    titleShort: "Topics",
     href: "/scenarios/topic-intelligence",
     icon: Brain,
     color: "from-orange-500 to-red-500",

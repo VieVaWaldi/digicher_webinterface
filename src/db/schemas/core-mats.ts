@@ -85,3 +85,17 @@ export const getInstitutionCollaborators = coreMatsSchema
 
 export type GetInstitutionCollaboratorsType =
   typeof getInstitutionCollaborators.$inferSelect;
+
+//
+
+export const matInstitutionCollaborations = coreMatsSchema
+  .materializedView("mat_institution_collaborations", {
+    source_institution_id: text("source_institution_id").notNull(),
+    institution_id: text("institution_id").notNull(),
+    geolocation: doublePrecision("geolocation").array(),
+    country: text("country"),
+  })
+  .existing();
+
+export type MatInstitutionCollaborationsType =
+  typeof matInstitutionCollaborations.$inferSelect;
