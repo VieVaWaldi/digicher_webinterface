@@ -3,29 +3,22 @@
 import { MessageCircle, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "shadcn/button";
-import { H2, H5, P, Small, H6 } from "shadcn/typography";
+import { H2, H5, H6, P, Small } from "shadcn/typography";
+import { cn } from "shadcn/utils/shadcn-utils";
 import { submitFeedback } from "utils/feedbackUtils";
+import { BTN_SCALE, CSS_BUTTON, STRK_WDTH } from "./BaseUIComponents";
 
-interface FeedbackProps {
-  scenarioName: string;
-  scenarioTitle?: string;
-  scenarioDescription?: string;
+interface FeedbackButtonProps {
+  showBanner: boolean;
+  setShowBanner: (showBanner: boolean) => void;
+  setShowFeedback: (showFeedback: boolean) => void;
 }
 
-export default function Feedback({
-  scenarioName,
-  scenarioTitle,
-}: FeedbackProps) {
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [showBanner, setShowBanner] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const [isUseful, setIsUseful] = useState<boolean | null>(null);
-  const [usefulnessReason, setUsefulnessReason] = useState("");
-  const [improvementSuggestion, setImprovementSuggestion] = useState("");
-  const [sessionStartTime] = useState(Date.now());
-
+export function FeedbackButton({
+  showBanner,
+  setShowBanner,
+  setShowFeedback,
+}: FeedbackButtonProps) {
   /** Timer - Help us Banner */
   useEffect(() => {
     const initialTimer = setTimeout(() => {
@@ -43,7 +36,58 @@ export default function Feedback({
       clearTimeout(initialTimer);
       clearInterval(recurringTimer);
     };
-  }, []);
+  }, [setShowBanner]);
+  return (
+    <div className="relative">
+      {showBanner && (
+        <div
+          onClick={() => setShowFeedback(true)}
+          className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-lg border-2 border-orange-500 bg-white px-3 py-2 shadow-md duration-300 animate-in"
+        >
+          <H6 className="whitespace-nowrap font-bold text-orange-500">
+            Help us improve c:
+          </H6>
+        </div>
+      )}
+
+      {/* Feedback Button */}
+      <div className="z-10 flex items-center">
+        <Button
+          variant="secondary"
+          className={cn(
+            CSS_BUTTON,
+            "animate-[pulse-scale_3s_ease-in-out_infinite]",
+          )}
+          onClick={() => setShowFeedback(true)}
+        >
+          <MessageCircle strokeWidth={STRK_WDTH} className={BTN_SCALE} />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+interface FeedbackProps {
+  scenarioName: string;
+  scenarioTitle?: string;
+  showFeedback: boolean;
+  setShowFeedback: (showFeedback: boolean) => void;
+  showBanner: boolean;
+}
+
+export default function Feedback({
+  scenarioName,
+  scenarioTitle,
+  showFeedback,
+  setShowFeedback,
+}: FeedbackProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const [isUseful, setIsUseful] = useState<boolean | null>(null);
+  const [usefulnessReason, setUsefulnessReason] = useState("");
+  const [improvementSuggestion, setImprovementSuggestion] = useState("");
+  const [sessionStartTime] = useState(Date.now());
 
   const handleSubmit = useCallback(async () => {
     if (isUseful === null) return;
@@ -79,6 +123,7 @@ export default function Feedback({
       setIsSubmitting(false);
     }
   }, [
+    setShowFeedback,
     scenarioName,
     isUseful,
     usefulnessReason,
@@ -90,30 +135,6 @@ export default function Feedback({
 
   return (
     <>
-      {/* Feedback Button */}
-      <div className="absolute bottom-4 left-4 z-10 flex items-center space-x-3">
-        <Button
-          variant="secondary"
-          className="h-12 w-12 animate-[pulse-scale_3s_ease-in-out_infinite] rounded-xl bg-white text-orange-500 shadow-lg hover:bg-orange-50 md:h-20 md:w-20"
-          onClick={() => setShowFeedback(true)}
-        >
-          <MessageCircle
-            strokeWidth={1.7}
-            className="scale-[1.8] md:scale-[2.8]"
-          />
-        </Button>
-
-        {/* Help Banner */}
-        {showBanner && (
-          <div
-            onClick={() => setShowFeedback(true)}
-            className="rounded-lg border-2 border-orange-500 bg-white px-3 py-2 shadow-md backdrop-blur-sm duration-300 animate-in slide-in-from-right"
-          >
-            <H6 className="font-bold text-orange-500">Help us improve c:</H6>
-          </div>
-        )}
-      </div>
-
       {/* Feedback Modal */}
       {showFeedback && (
         <div

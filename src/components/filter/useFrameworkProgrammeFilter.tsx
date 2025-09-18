@@ -34,6 +34,7 @@ interface FrameworkProgrammeFilterResult {
   frameworkProgrammePredicate: (
     frameworkProgrammes: string[] | null,
   ) => boolean;
+  selectedFrameworkProgrammes: string[];
 }
 
 export default function useFrameworkProgrammeFilter(): FrameworkProgrammeFilterResult {
@@ -79,5 +80,9 @@ export default function useFrameworkProgrammeFilter(): FrameworkProgrammeFilterR
     [selectedFrameworkSet],
   );
 
-  return { FrameworkProgrammeFilter, frameworkProgrammePredicate };
+  return {
+    FrameworkProgrammeFilter,
+    frameworkProgrammePredicate,
+    selectedFrameworkProgrammes,
+  };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import BaseUI from "components/baseui/BaseUI";
-import RightSideMenu from "components/baseui/RightSideMenu";
+import RightSideDataMenu from "components/baseui/RightSideDataMenu";
 import useCountryFilter from "components/filter/useCountryFilter";
 import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
 import useInstitutionSearchFilter from "components/filter/useInstitutionSearchFilter";
@@ -45,22 +45,9 @@ export default function CHProjectScenario() {
       enabled: !!selectedInstitutionId,
     });
 
-  /** Year */
-  const { data: { minStartDate = 1985, maxEndDate = 2035 } = {} } =
-    useProjectYearRange();
-  const [years, setYears] = useState<number[]>(() => [
-    minStartDate,
-    maxEndDate,
-  ]);
-
   /** Filters */
 
-  const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
-    years: years,
-    handleYearsChange: setYears,
-    minStartDate: minStartDate,
-    maxEndDate: maxEndDate,
-  });
+  const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter();
   const { CountryFilter, countryPredicate } = useCountryFilter();
   const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter();
   const { NutsFilter, nutsPredicate } = useNutsFilter(projectView);
@@ -149,23 +136,20 @@ export default function CHProjectScenario() {
     });
   }
 
-  const { panel, togglePanel, isOpen, activeTabId } = RightSideMenu({
-    rightPanelTabs,
-  });
+  // const { panel, togglePanel, isOpen, activeTabId } = RightSideDataMenu({
+  //   rightPanelTabs,
+  // });
 
   /** Event Handlers */
-  const handleMapOnClick = useCallback(
-    (info: any) => {
-      if (info.object.project_id) {
-        setSelectedProjectId(info.object.project_id);
-        togglePanel("project-view");
-      }
-      if (info.object.institution_id) {
-        setSelectedInstitutionId(info.object.institution_id);
-      }
-    },
-    [togglePanel],
-  );
+  const handleMapOnClick = useCallback((info: any) => {
+    if (info.object.project_id) {
+      setSelectedProjectId(info.object.project_id);
+      // togglePanel("project-view");
+    }
+    if (info.object.institution_id) {
+      setSelectedInstitutionId(info.object.institution_id);
+    }
+  }, []);
 
   /** Layer */
   const layer = useMemo(() => {
@@ -189,10 +173,6 @@ export default function CHProjectScenario() {
       viewState={INITIAL_VIEW_STATE_EU}
       titleContent={<Title count={filteredProjectView?.length} />}
       infoBoxContent={<InfoBox />}
-      rightSideMenu={panel}
-      toggleRightSideMenu={togglePanel}
-      isRightMenuOpen={isOpen}
-      activeRightMenuTab={activeTabId}
       loading={isPending}
       error={error}
       scenarioName="projects"

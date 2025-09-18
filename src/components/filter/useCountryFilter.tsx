@@ -35,6 +35,7 @@ const allCountries = Object.entries(countries).map(([code, country]) => ({
 interface CountryFilterResult {
   CountryFilter: ReactNode;
   countryPredicate: (countryCode: string | null) => boolean;
+  selectedCountries: string[];
 }
 
 export default function useCountryFilter(): CountryFilterResult {
@@ -76,5 +77,5 @@ export default function useCountryFilter(): CountryFilterResult {
     [selectedCountrySet],
   );
 
-  return { CountryFilter, countryPredicate };
+  return { CountryFilter, countryPredicate, selectedCountries };
 }

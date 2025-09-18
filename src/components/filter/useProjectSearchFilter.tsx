@@ -7,6 +7,7 @@ import { H6 } from "shadcn/typography";
 interface ProjectSearchFilterResult {
   ProjectSearchFilter: ReactNode;
   projectSearchPredicate: (projectId: string) => boolean;
+  projectSearchQuery: string;
 }
 
 export default function useProjectSearchFilter(): ProjectSearchFilterResult {
@@ -91,5 +92,6 @@ export default function useProjectSearchFilter(): ProjectSearchFilterResult {
   return {
     ProjectSearchFilter: filter,
     projectSearchPredicate: predicate,
+    projectSearchQuery: searchQuery,
   };
 }

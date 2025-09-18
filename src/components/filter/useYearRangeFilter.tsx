@@ -1,26 +1,22 @@
-import { ReactNode, useMemo } from "react";
+import { useProjectYearRange } from "hooks/queries/project/useProjectYearRange";
+import { ReactNode, useMemo, useState } from "react";
 import { DualRangeSlider } from "shadcn/dual-range-slider";
 import { H6 } from "shadcn/typography";
-
-interface YearRangeFilterProps {
-  years: number[];
-  handleYearsChange: (newYears: number[]) => void;
-  minStartDate: number;
-  maxEndDate: number;
-}
 
 interface YearRangeFilterResult {
   YearRangeFilter: ReactNode;
   yearRangePredicate: (startDate: string, endDate: string) => boolean;
+  minYear: number;
+  maxYear: number;
 }
 
-export default function useYearRangeFilter({
-  years,
-  handleYearsChange,
-  minStartDate,
-  maxEndDate,
-}: YearRangeFilterProps): YearRangeFilterResult {
-  // Pre-compute the year range once
+export default function useYearRangeFilter(): YearRangeFilterResult {
+  const { data: { minStartDate = 1985, maxEndDate = 2035 } = {} } =
+    useProjectYearRange();
+  const [years, setYears] = useState<number[]>(() => [
+    minStartDate,
+    maxEndDate,
+  ]);
   const [minYear, maxYear] = useMemo(() => [years[0], years[1]], [years]);
 
   const predicate = useMemo(
@@ -43,7 +39,7 @@ export default function useYearRangeFilter({
         className="mt-8"
         label={(value: number | undefined) => value}
         value={years}
-        onValueChange={handleYearsChange}
+        onValueChange={setYears}
         min={minStartDate}
         max={maxEndDate}
         step={1}
@@ -54,5 +50,7 @@ export default function useYearRangeFilter({
   return {
     YearRangeFilter: filter,
     yearRangePredicate: predicate,
+    minYear,
+    maxYear,
   };
 }

@@ -46,7 +46,6 @@ export function FundingTitle({
   showInstitutions = false,
   totalFunding = 0,
 }: FundingTitleProps) {
-  // return <H4>Funding Map ({count.toLocaleString()})</H4>;
   return (
     <span>
       Displaying {count}{" "}

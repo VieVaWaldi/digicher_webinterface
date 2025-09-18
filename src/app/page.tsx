@@ -71,7 +71,7 @@ const HeritageMonitor = () => {
             <Sparkles className="h-4 w-4 text-orange-400" />
             <span className="text-sm font-medium">
               <a
-                href="https://en.wikipedia.org/wiki/Scientometrics"
+                href="https://lis.academy/informetrics-scientometrics/scientometrics-science-quantitative-analysis/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="cursor-pointer underline transition-colors hover:text-orange-400"
@@ -90,7 +90,7 @@ const HeritageMonitor = () => {
             Visualize the evolution of cultural heritage research across Europe
             through advanced{" "}
             <a
-              href="https://en.wikipedia.org/wiki/Scientometrics"
+              href="https://lis.academy/informetrics-scientometrics/scientometrics-science-quantitative-analysis/"
               target="_blank"
               rel="noopener noreferrer"
               className="cursor-pointer underline transition-colors hover:text-orange-400"

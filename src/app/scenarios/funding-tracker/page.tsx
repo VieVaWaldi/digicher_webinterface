@@ -1,7 +1,9 @@
 "use client";
 
 import BaseUI from "components/baseui/BaseUI";
-import RightSideMenu from "components/baseui/RightSideMenu";
+import LeftSideFilters from "components/baseui/LeftSideFilterMenu";
+import RightSideDataMenu from "components/baseui/RightSideDataMenu";
+import { usePaginatedProjects } from "components/baseui/usePaginatedProjects";
 import { ScopeToggle } from "components/buttons/toggle";
 import useCountryFilter from "components/filter/useCountryFilter";
 import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
@@ -18,14 +20,15 @@ import { baseLayerProps } from "deckgl/baseLayerProps";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
 import { useInstitutionById } from "hooks/queries/institution/useInstitutionById";
 import { useProjectbyId } from "hooks/queries/project/useProjectById";
-import { useProjectYearRange } from "hooks/queries/project/useProjectYearRange";
 import { useInstitutionView } from "hooks/queries/views/project/useInstitutionView";
 import { useProjectView } from "hooks/queries/views/project/useProjectView";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { FundingInfoBox, FundingTitle } from "./content";
+import { X } from "lucide-react";
+import { H2 } from "shadcn/typography";
 
 export default function FundingScenario() {
-  /** Main Data */
+  /** Map Data View */
   const { data: projectView, isPending, error } = useProjectView();
   const {
     data: institutionView,
@@ -38,10 +41,8 @@ export default function FundingScenario() {
 
   const dataView = showInstitutions ? institutionView : projectView;
 
-  /** Constants */
-  const COLOR_GAMMA = 0.5;
-  const MAX_HEIGHT = 1_000_000;
-  const BAR_RADIUS = 2_200;
+  /** UGH selected info */
+  const [showSelectedInfo, setSelectedInfo] = useState(false);
 
   /** Selected Project */
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
@@ -64,64 +65,54 @@ export default function FundingScenario() {
     });
 
   /** Year Range */
-  const { data: { minStartDate = 1985, maxEndDate = 2035 } = {} } =
-    useProjectYearRange();
-  const [years, setYears] = useState<number[]>(() => [
-    minStartDate,
-    maxEndDate,
-  ]);
 
   /** Hover State */
-  const [hoverInfo, setHoverInfo] = useState<{
-    x: number;
-    y: number;
-    funding: number;
-    object: any;
-  } | null>(null);
+  // const [hoverInfo, setHoverInfo] = useState<{
+  //   x: number;
+  //   y: number;
+  //   funding: number;
+  //   object: any;
+  // } | null>(null);
 
   /** Filters */
-  const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
-    years: years,
-    handleYearsChange: setYears,
-    minStartDate: minStartDate,
-    maxEndDate: maxEndDate,
-  });
-  const { CountryFilter, countryPredicate } = useCountryFilter();
+  const { YearRangeFilter, yearRangePredicate, minYear, maxYear } =
+    useYearRangeFilter();
+  const { CountryFilter, countryPredicate, selectedCountries } =
+    useCountryFilter();
   const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter();
   const { NutsFilter, nutsPredicate } = useNutsFilter(dataView);
   const { InstitutionSearchFilter, institutionSearchPredicate } =
     useInstitutionSearchFilter();
-  const { ProjectSearchFilter, projectSearchPredicate } =
+  const { ProjectSearchFilter, projectSearchPredicate, projectSearchQuery } =
     useProjectSearchFilter();
-  const { FrameworkProgrammeFilter, frameworkProgrammePredicate } =
-    useFrameworkProgrammeFilter();
-  const { TopicFilter, topicPredicate } = useTopicFilter();
+  const {
+    FrameworkProgrammeFilter,
+    frameworkProgrammePredicate,
+    selectedFrameworkProgrammes,
+  } = useFrameworkProgrammeFilter();
+  const {
+    TopicFilter,
+    topicPredicate,
+    selectedDomains,
+    selectedFields,
+    selectedSubfields,
+    selectedTopics,
+  } = useTopicFilter();
+
+  /** Table Data View */
+
+  const { ProjectsPaginated } = usePaginatedProjects({
+    minYear,
+    maxYear,
+    projectSearchQuery,
+    selectedFrameworkProgrammes,
+    selectedDomains: selectedDomains,
+    selectedFields: selectedFields,
+    selectedSubfields: selectedSubfields,
+    selectedTopics: selectedTopics,
+  });
 
   /** Apply Filters */
-  // const filteredDataView = useMemo(() => {
-  //   if (!dataView?.length) return [];
-  //   return dataView.filter((p) => {
-  //     return (
-  //       institutionSearchPredicate(p.institution_id) &&
-  //       projectSearchPredicate(p.project_id) &&
-  //       frameworkProgrammePredicate(p.framework_programme) &&
-  //       yearRangePredicate(p.start_date, p.end_date) &&
-  //       countryPredicate(p.country_code) &&
-  //       typeAndSmePredicate(p.type, p.sme) &&
-  //       nutsPredicate(p.nuts_0, p.nuts_1, p.nuts_2, p.nuts_3)
-  //     );
-  //   });
-  // }, [
-  //   dataView,
-  //   institutionSearchPredicate,
-  //   projectSearchPredicate,
-  //   frameworkProgrammePredicate,
-  //   yearRangePredicate,
-  //   countryPredicate,
-  //   typeAndSmePredicate,
-  //   nutsPredicate,
-  // ]);
-
   const filteredDataView = useMemo(() => {
     if (!dataView?.length) return [];
 
@@ -160,7 +151,6 @@ export default function FundingScenario() {
       return Array.from(institutionMap.values());
     }
 
-    // For project view, return the filtered projects as-is
     return filtered;
   }, [
     dataView,
@@ -207,104 +197,111 @@ export default function FundingScenario() {
     </div>
   );
 
-  const rightPanelTabs = [
-    {
-      id: "filters",
-      label: "Filters",
-      content: filters,
-    },
-  ];
+  // Right panel tabs
+  // const rightPanelTabs: Array<{
+  //   id: string;
+  //   label: string;
+  //   content: ReactNode;
+  // }> = [];
 
-  if (project && !showInstitutions) {
-    rightPanelTabs.push({
-      id: "project-view",
-      label: "Details",
-      content: (
-        <ProjectViewInfoPanel
-          institution={institution}
-          project={project}
-          isPendingInstitution={isPendingInstitution}
-          isPendingProject={isPendingProject}
-        />
-      ),
-    });
-  }
+  // if (project && !showInstitutions) {
+  //   rightPanelTabs.push({
+  //     id: "project-details",
+  //     label: "Project Details",
+  //     content: (
+  // <ProjectViewInfoPanel
+  //   institution={institution}
+  //   project={project}
+  //   isPendingInstitution={isPendingInstitution}
+  //   isPendingProject={isPendingProject}
+  // />
+  //     ),
+  //   });
+  // }
 
-  if (showInstitutions) {
-    rightPanelTabs.push({
-      id: "institution-placeholder",
-      label: "Institutions",
-      content: (
-        <div className="p-4 text-center text-gray-500">
-          <p>Institution View</p>
-          <p>Institution functionality not yet implemented.</p>
-          <p>Switch to Projects view to explore project funding data.</p>
-        </div>
-      ),
-    });
-  }
-
-  const { panel, togglePanel, isOpen, activeTabId } = RightSideMenu({
-    rightPanelTabs,
-  });
+  // if (showInstitutions) {
+  //   rightPanelTabs.push({
+  //     id: "institution-details",
+  //     label: "Institution Details",
+  //     content: (
+  //       <div className="p-4 text-center text-gray-500">
+  //         <p>Institution View</p>
+  //         <p>Institution functionality not yet implemented.</p>
+  //         <p>Switch to Projects view to explore project funding data.</p>
+  //       </div>
+  //     ),
+  //   });
+  // }
 
   /** Hover Tooltip */
-  const hoverTooltip = hoverInfo && (
-    <div
-      style={{
-        position: "absolute",
-        pointerEvents: "none",
-        left: hoverInfo.x,
-        top: hoverInfo.y,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        color: "#fff",
-        padding: "8px",
-        borderRadius: "4px",
-        transform: "translate(-50%, -100%)",
-        marginTop: "-15px",
-        zIndex: 1000,
-      }}
-    >
-      <div>
-        Total Cost:{" "}
-        {new Intl.NumberFormat("de-DE", {
-          style: "currency",
-          currency: "EUR",
-        }).format(hoverInfo.funding)}
-      </div>
-    </div>
-  );
+  // const hoverTooltip = hoverInfo && (
+  //   <div
+  //     style={{
+  //       position: "absolute",
+  //       pointerEvents: "none",
+  //       left: hoverInfo.x,
+  //       top: hoverInfo.y,
+  //       backgroundColor: "rgba(0, 0, 0, 0.8)",
+  //       color: "#fff",
+  //       padding: "8px",
+  //       borderRadius: "4px",
+  //       transform: "translate(-50%, -100%)",
+  //       marginTop: "-15px",
+  //       zIndex: 1000,
+  //     }}
+  //   >
+  //     <div>
+  //       Total Cost:{" "}
+  //       {new Intl.NumberFormat("de-DE", {
+  //         style: "currency",
+  //         currency: "EUR",
+  //       }).format(hoverInfo.funding)}
+  //     </div>
+  //   </div>
+  // );
 
   /** Event Handlers */
   const handleMapOnClick = useCallback(
     (info: PickingInfo) => {
       if (showInstitutions && info.object?.institution_id) {
         setSelectedInstitutionId(info.object.institution_id);
-        console.log(info.object);
-        togglePanel("institution-view");
+        setSelectedInfo(true);
       } else if (!showInstitutions && info.object?.project_id) {
         setSelectedProjectId(info.object.project_id);
         setSelectedInstitutionId(info.object.institution_id);
-        togglePanel("project-view");
+        setSelectedInfo(true);
       }
     },
-    [showInstitutions, togglePanel],
+    [showInstitutions],
   );
 
-  const handleHover = useCallback((info: PickingInfo) => {
-    if (info.object) {
-      setHoverInfo({
-        x: info.x,
-        y: info.y,
-        funding: info.object.total_cost || 0,
-        object: info.object,
-      });
-    } else {
-      setHoverInfo(null);
-    }
-  }, []);
+  // const handleHover = useCallback((info: PickingInfo) => {
+  //   if (info.object) {
+  //     setHoverInfo({
+  //       x: info.x,
+  //       y: info.y,
+  //       funding: info.object.total_cost || 0,
+  //       object: info.object,
+  //     });
+  //   } else {
+  //     setHoverInfo(null);
+  //   }
+  // }, []);
+
+  // const handleRightPanelToggle = useCallback((isOpen: boolean) => {
+  //   setIsRightPanelOpen(isOpen);
+  // }, []);
+
+  // const handleRightTabChange = useCallback((tabId: string) => {
+  //   setActiveRightTabId(tabId);
+  // }, []);
 
   /** Layer */
+  /** Constants */
+  const COLOR_GAMMA = 0.5;
+  const MAX_HEIGHT = 1_000_000;
+  const BAR_RADIUS = 2_200;
+
   const { isGlobe } = useSettings();
 
   const layer = useMemo(() => {
@@ -331,7 +328,7 @@ export default function FundingScenario() {
       },
       getPosition: (d) => d.geolocation || [0, 0],
       onClick: handleMapOnClick,
-      onHover: handleHover,
+      // onHover: handleHover,
       radius: isGlobe ? BAR_RADIUS * 2.5 : BAR_RADIUS,
       diskResolution: 32,
       extruded: true,
@@ -347,12 +344,45 @@ export default function FundingScenario() {
     maxTotalCost,
     BAR_RADIUS,
     handleMapOnClick,
-    handleHover,
+    // handleHover,
     isGlobe,
   ]);
 
   return (
-    <>
+    <div onClick={() => setSelectedInfo(false)}>
+      {showSelectedInfo && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center"
+          // onClick={onHideInfoBox}
+        >
+          <div className="relative max-h-[80vh] w-11/12 max-w-2xl overflow-y-auto rounded-xl bg-white/90 p-6 backdrop-blur-md">
+            <div className="flex flex-row justify-between">
+              <H2 className="text-xl font-semibold text-gray-800">Project</H2>
+              <button
+                className="-mt-3 mb-3 text-gray-500 hover:text-gray-700"
+                onClick={() => setSelectedInfo(false)}
+              >
+                <X className="text-gray-500" />
+              </button>
+            </div>
+            <div className="mb-4 h-px w-full bg-gray-300" />
+            {project && !showInstitutions && (
+              <ProjectViewInfoPanel
+                institution={institution}
+                project={project}
+                isPendingInstitution={isPendingInstitution}
+                isPendingProject={isPendingProject}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      <LeftSideFilters>{filters}</LeftSideFilters>
+      <RightSideDataMenu>
+        <ProjectsPaginated />{" "}
+      </RightSideDataMenu>
+
       <BaseUI
         layers={[layer]}
         viewState={INITIAL_VIEW_STATE_TILTED_EU}
@@ -370,16 +400,12 @@ export default function FundingScenario() {
             showInstitutions={showInstitutions}
           />
         }
-        rightSideMenu={panel}
-        toggleRightSideMenu={togglePanel}
-        isRightMenuOpen={isOpen}
-        activeRightMenuTab={activeTabId}
         scenarioName="funding-tracker"
         scenarioTitle="Funding Tracker"
         loading={showInstitutions ? isPendingInstitutionView : isPending}
         error={showInstitutions ? errorInstitutionView : error}
       />
-      {hoverTooltip}
-    </>
+      {/* {hoverTooltip} */}
+    </div>
   );
 }

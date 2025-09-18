@@ -26,6 +26,10 @@ interface SelectedCounts {
 interface TopicFilterResult {
   TopicFilter: ReactNode;
   topicPredicate: (projectId: string) => boolean;
+  selectedDomains: string[];
+  selectedFields: string[];
+  selectedSubfields: string[];
+  selectedTopics: number[];
 }
 
 export const useTopicFilter = (): TopicFilterResult => {
@@ -188,7 +192,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     );
   }, []);
 
-  // Node expansion handlers
   const toggleNodeExpansion = useCallback((nodeKey: string) => {
     setExpandedNodes((prev) => {
       const newSet = new Set(prev);
@@ -201,7 +204,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     });
   }, []);
 
-  // Check if node is selected
   const isNodeSelected = useCallback(
     (node: TopicTreeNode) => {
       switch (node.type) {
@@ -220,7 +222,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     [selectedSets],
   );
 
-  // Calculate selected counts
   const selectedCounts: SelectedCounts = useMemo(
     () => ({
       domains: selectedDomains.length,
@@ -231,7 +232,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     [selectedDomains, selectedFields, selectedSubfields, selectedTopics],
   );
 
-  // Clear all selections
   const clearAllSelections = useCallback(() => {
     setSelectedDomains([]);
     setSelectedFields([]);
@@ -239,7 +239,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     setSelectedTopics([]);
   }, []);
 
-  // Render tree node
   const renderTreeNode = useCallback(
     (node: TopicTreeNode, depth: number = 0, parentKey: string = "") => {
       const nodeKey = `${parentKey}-${node.type}-${node.id}`;
@@ -330,7 +329,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     ],
   );
 
-  // Optimized predicate function with O(1) lookups instead of O(n) filtering
   const topicPredicate = useCallback(
     (projectId: string): boolean => {
       if (
@@ -340,16 +338,14 @@ export const useTopicFilter = (): TopicFilterResult => {
           selectedSets.subfields.size === 0 &&
           selectedSets.topics.size === 0)
       ) {
-        return true; // No filters applied
+        return true;
       }
 
-      // O(1) lookups instead of filtering through enrichedData
       const projectDomain = lookupMaps.projectDomainMap.get(projectId);
       const projectField = lookupMaps.projectFieldMap.get(projectId);
       const projectSubfield = lookupMaps.projectSubfieldMap.get(projectId);
       const projectTopic = lookupMaps.projectTopicMap.get(projectId);
 
-      // Hierarchical filtering: if a parent is selected, include all children
       return !!(
         (projectDomain && selectedSets.domains.has(projectDomain)) ||
         (projectField && selectedSets.fields.has(projectField)) ||
@@ -360,7 +356,6 @@ export const useTopicFilter = (): TopicFilterResult => {
     [lookupMaps, selectedSets],
   );
 
-  // Render the filter UI
   const TopicFilter = (
     <div className="space-y-4">
       <H6 className="text-center">Topics</H6>
@@ -413,5 +408,12 @@ export const useTopicFilter = (): TopicFilterResult => {
     </div>
   );
 
-  return { TopicFilter, topicPredicate };
+  return {
+    TopicFilter,
+    topicPredicate,
+    selectedDomains,
+    selectedFields,
+    selectedSubfields,
+    selectedTopics,
+  };
 };

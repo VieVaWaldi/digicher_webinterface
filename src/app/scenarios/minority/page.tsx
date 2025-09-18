@@ -24,8 +24,6 @@ export default function CollaborationScenario() {
         viewState={INITIAL_VIEW_STATE_TILTED_EU}
         titleContent={<p>WIP: Minority related research</p>}
         infoBoxContent={null}
-        rightSideMenu={null}
-        toggleRightSideMenu={() => console.log("jo")}
         error={null}
         scenarioName="minority"
         scenarioTitle="To be removed soon"

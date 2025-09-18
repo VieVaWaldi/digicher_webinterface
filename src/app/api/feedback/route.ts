@@ -2,7 +2,6 @@ import { withApiWrapper } from "app/api/apiClient";
 import { apiError, apiSuccess } from "app/api/response";
 import { feedbackDb } from "db/feedbackClient";
 import { feedback_v1 } from "db/schemas/feedback";
-import { desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 interface FeedbackRequestBody {

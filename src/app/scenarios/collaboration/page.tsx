@@ -2,7 +2,7 @@
 
 import { ArcLayer, ColumnLayer } from "@deck.gl/layers";
 import BaseUI from "components/baseui/BaseUI";
-import RightSideMenu from "components/baseui/RightSideMenu";
+import RightSideDataMenu from "components/baseui/RightSideDataMenu";
 import { useSettings } from "context/SettingsContext";
 import { PickingInfo } from "deck.gl";
 import { baseLayerProps } from "deckgl/baseLayerProps";
@@ -206,9 +206,9 @@ export default function CollaborationScenario() {
   //   });
   // }
 
-  const { panel, togglePanel, isOpen, activeTabId } = RightSideMenu({
-    rightPanelTabs,
-  });
+  // const { panel, togglePanel, isOpen, activeTabId } = RightSideDataMenu({
+  //   rightPanelTabs,
+  // });
 
   /** Title Content */
   const titleContent = (
@@ -274,10 +274,10 @@ export default function CollaborationScenario() {
         viewState={INITIAL_VIEW_STATE_TILTED_EU}
         titleContent={titleContent}
         infoBoxContent={infoBoxContent}
-        rightSideMenu={panel}
-        toggleRightSideMenu={() => togglePanel("institution-details")}
-        isRightMenuOpen={isOpen}
-        activeRightMenuTab={activeTabId}
+        // rightSideMenu={panel}
+        // toggleRightSideMenu={() => togglePanel("institution-details")}
+        // isRightMenuOpen={isOpen}
+        // activeRightMenuTab={activeTabId}
         onEmptyMapClick={handleEmptyMapClick}
         loading={isPending}
         error={error}

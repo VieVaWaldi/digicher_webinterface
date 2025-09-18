@@ -6,6 +6,7 @@ import {
   serial,
   text,
   timestamp,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 export const coreSchema = pgSchema("core");
@@ -144,3 +145,35 @@ export const topicoa = coreSchema.table("topicoa", {
 });
 
 export type TopicOAType = typeof topicoa.$inferSelect;
+
+/**
+ *
+ *
+ */
+
+// export const coreSchema = pgSchema("core");
+
+export const tableViewProject = coreSchema
+  .view("table_view_project", {
+    id: text("id").notNull(),
+    title: text("title"),
+    start_date: date("start_date"),
+    end_date: date("end_date"),
+    acronym: text("acronym"),
+    objective: text("objective"), // Still needed for FTS, but not selected
+    topic_id: numeric("topic_id"),
+    subfield_id: text("subfield_id"),
+    field_id: text("field_id"),
+    domain_id: text("domain_id"),
+    framework_programmes: text("framework_programmes").array(),
+  })
+  .existing();
+
+// export type TableViewProjectType = {
+//   id: string;
+//   title: string | null;
+//   start_date: string | null;
+//   acronym: string | null;
+// };
+
+export type ProjectTableViewType = typeof tableViewProject.$inferSelect;

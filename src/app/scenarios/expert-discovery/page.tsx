@@ -24,8 +24,6 @@ export default function TopicIntelligenceScenario() {
         viewState={INITIAL_VIEW_STATE_TILTED_EU}
         titleContent={<p>WIP: Expert Discovery</p>}
         infoBoxContent={null}
-        rightSideMenu={null}
-        toggleRightSideMenu={() => console.log("jo")}
         error={null}
         scenarioName="expert-discovery"
         scenarioTitle="Expert Discovery"

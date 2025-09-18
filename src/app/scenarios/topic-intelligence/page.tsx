@@ -24,10 +24,8 @@ export default function TopicIntelligenceScenario() {
         viewState={INITIAL_VIEW_STATE_TILTED_EU}
         titleContent={<p>WIP: Topic Intelligence</p>}
         infoBoxContent={null}
-        rightSideMenu={null}
         scenarioName="topic-intelligence"
         scenarioTitle="Topic Intelligence"
-        toggleRightSideMenu={() => console.log("jo")}
         error={null}
       />
       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
