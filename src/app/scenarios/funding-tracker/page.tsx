@@ -351,11 +351,11 @@ export default function FundingScenario() {
   return (
     <div onClick={() => setSelectedInfo(false)}>
       {showSelectedInfo && (
-        <div
-          className="absolute inset-0 z-20 flex items-center justify-center"
-          // onClick={onHideInfoBox}
-        >
-          <div className="relative max-h-[80vh] w-11/12 max-w-2xl overflow-y-auto rounded-xl bg-white/90 p-6 backdrop-blur-md">
+        <div className="absolute inset-0 z-20 flex items-center justify-center">
+          <div
+            className="relative max-h-[80vh] w-11/12 max-w-2xl overflow-y-auto rounded-xl bg-white/90 p-6 backdrop-blur-md"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex flex-row justify-between">
               <H2 className="text-xl font-semibold text-gray-800">Project</H2>
               <button
