@@ -23,13 +23,14 @@ const HeritageMonitor = () => {
     const prefetchData = async () => {
       await queryClient.prefetchQuery({
         queryKey: ["views-project"],
-        queryFn: () => fetch("/api/views/project").then((res) => res.json()),
+        queryFn: () =>
+          fetch("/api/views/map/project").then((res) => res.json()),
       });
 
       await queryClient.prefetchQuery({
         queryKey: ["views-institution"],
         queryFn: () =>
-          fetch("/api/views/institution").then((res) => res.json()),
+          fetch("/api/views/map/institution").then((res) => res.json()),
       });
 
       await queryClient.prefetchQuery({
@@ -41,6 +42,12 @@ const HeritageMonitor = () => {
       await queryClient.prefetchQuery({
         queryKey: ["topic"],
         queryFn: () => fetch("/api/topic/topics").then((res) => res.json()),
+      });
+
+      await queryClient.prefetchQuery({
+        queryKey: ["topic"],
+        queryFn: () =>
+          fetch("/api/views/collaboration").then((res) => res.json()),
       });
     };
 
