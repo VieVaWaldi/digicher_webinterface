@@ -6,63 +6,20 @@ import { BTN_SCALE, STRK_WDTH } from "./BaseUIComponents";
 
 interface RightSideDataMenuProps {
   children?: ReactNode;
-  // tabs?: Array<{
-  //   id: string;
-  //   label: string;
-  //   content: ReactNode;
-  // }>;
-  // activeTabId?: string;
-  // onTabChange?: (tabId: string) => void;
-  // isOpen?: boolean;
-  // onToggle?: (isOpen: boolean) => void;
 }
 
 export default function RightSideDataMenu({
   children,
 }: RightSideDataMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  // const [internalActiveTabId, setInternalActiveTabId] = useState<string>(
-  //   tabs[0]?.id || "",
-  // );
 
   const toggleOpen = useCallback(() => {
     setIsOpen((prev) => !prev);
   }, []);
 
-  // Use controlled state if provided, otherwise use internal state
-  // const isOpen =
-  //   controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
-  // const activeTab = activeTabId || internalActiveTabId;
-
-  // const toggleMenu = useCallback(() => {
-  //   const newIsOpen = !isOpen;
-  //   if (onToggle) {
-  //     onToggle(newIsOpen);
-  //   } else {
-  //     setInternalIsOpen(newIsOpen);
-  //   }
-  // }, [isOpen, onToggle]);
-
-  // const handleTabChange = useCallback(
-  //   (tabId: string) => {
-  //     if (onTabChange) {
-  //       onTabChange(tabId);
-  //     } else {
-  //       setInternalActiveTabId(tabId);
-  //     }
-  //   },
-  //   [onTabChange],
-  // );
-
   const getWidthClass = () => {
     return "w-[85%] md:w-[30%]";
   };
-
-  // Don't render if no tabs and no children
-  // if (tabs.length === 0 && !children) {
-  //   return null;
-  // }
-
   return (
     <div
       className={`border-grey-300 absolute right-0 top-0 z-20 h-full bg-white/70 backdrop-blur-lg transition-all duration-200 ${

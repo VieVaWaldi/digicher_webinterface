@@ -1,61 +1,46 @@
 import { ColumnDef } from "@tanstack/react-table";
 import {
-  ProjectTableItem,
-  useTableViewProject,
-} from "hooks/queries/views/table/useTableViewProject";
-import { Calendar, Globe, Trophy } from "lucide-react";
+  ResearchOutputTableItem,
+  useTableViewResearchOutput,
+} from "hooks/queries/views/table/useTableViewResearchOutput";
+import { BookOpen, Calendar, FileText, Trophy } from "lucide-react";
 import { ReactNode, useMemo, useState } from "react";
 import { Badge } from "shadcn/badge";
 import { useDebounce } from "use-debounce";
 import { PaginatedTable } from "./PaginatedTableComponent";
 
-interface UsePaginatedProjectsProps {
+interface UsePaginatedResearchOutputsProps {
   icon: ReactNode;
   minYear?: number;
   maxYear?: number;
-  projectSearchQuery?: string;
-  selectedFrameworkProgrammes?: string[];
-  selectedDomains?: string[];
-  selectedFields?: string[];
-  selectedSubfields?: string[];
-  selectedTopics?: number[];
-  onProjectClick?: (project: ProjectTableItem) => void;
+  researchOutputSearchQuery?: string;
+  onResearchOutputClick?: (researchOutput: ResearchOutputTableItem) => void;
 }
 
-interface UsePaginatedProjectsReturn {
-  ProjectsPaginated: React.ComponentType;
+interface UsePaginatedResearchOutputsReturn {
+  ResearchOutputsPaginated: React.ComponentType;
   isLoading: boolean;
   error: any;
   totalCount: number;
 }
 
-export function usePaginatedProjects({
+export function usePaginatedResearchOutputs({
   icon,
   minYear,
   maxYear,
-  projectSearchQuery,
-  selectedFrameworkProgrammes,
-  selectedDomains,
-  selectedFields,
-  selectedSubfields,
-  selectedTopics,
-  onProjectClick,
-}: UsePaginatedProjectsProps): UsePaginatedProjectsReturn {
+  researchOutputSearchQuery,
+  onResearchOutputClick,
+}: UsePaginatedResearchOutputsProps): UsePaginatedResearchOutputsReturn {
   const [page, setPage] = useState(0);
-  const [sortBy, setSortBy] = useState<"title" | "start_date" | "relevance">(
-    "start_date",
-  );
+  const [sortBy, setSortBy] = useState<
+    "title" | "publication_date" | "relevance"
+  >("publication_date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [debouncedFilters] = useDebounce(
     {
       minYear,
       maxYear,
-      projectSearchQuery,
-      selectedFrameworkProgrammes,
-      selectedDomains,
-      selectedFields,
-      selectedSubfields,
-      selectedTopics,
+      researchOutputSearchQuery,
     },
     300,
   );
@@ -64,12 +49,7 @@ export function usePaginatedProjects({
     () => ({
       minYear: debouncedFilters.minYear,
       maxYear: debouncedFilters.maxYear,
-      search: debouncedFilters.projectSearchQuery,
-      frameworkProgrammes: debouncedFilters.selectedFrameworkProgrammes,
-      domainIds: debouncedFilters.selectedDomains,
-      fieldIds: debouncedFilters.selectedFields,
-      subfieldIds: debouncedFilters.selectedSubfields,
-      topicIds: debouncedFilters.selectedTopics?.map((t) => t.toString()),
+      search: debouncedFilters.researchOutputSearchQuery,
       page,
       limit: 25,
       sortBy,
@@ -78,16 +58,16 @@ export function usePaginatedProjects({
     [debouncedFilters, page, sortBy, sortOrder],
   );
 
-  const { data, isPending, error } = useTableViewProject(queryParams);
+  const { data, isPending, error } = useTableViewResearchOutput(queryParams);
 
-  const columns: ColumnDef<ProjectTableItem>[] = useMemo(() => {
-    const baseColumns: ColumnDef<ProjectTableItem>[] = [
+  const columns: ColumnDef<ResearchOutputTableItem>[] = useMemo(() => {
+    const baseColumns: ColumnDef<ResearchOutputTableItem>[] = [
       {
         accessorKey: "title",
         header: ({ column }) => (
           <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4 text-gray-500" />
-            <span>Project Title</span>
+            <BookOpen className="h-4 w-4 text-gray-500" />
+            <span>Title</span>
           </div>
         ),
         cell: ({ row }) => {
@@ -106,19 +86,19 @@ export function usePaginatedProjects({
         size: 400,
       },
       {
-        accessorKey: "start_date",
+        accessorKey: "publication_date",
         header: ({ column }) => (
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-gray-500" />
-            <span>Start Date</span>
+            <span>Publication Date</span>
           </div>
         ),
         cell: ({ row }) => {
-          const startDate = row.getValue("start_date") as string;
-          if (!startDate)
+          const publicationDate = row.getValue("publication_date") as string;
+          if (!publicationDate)
             return <span className="text-sm text-gray-400">N/A</span>;
 
-          const date = new Date(startDate);
+          const date = new Date(publicationDate);
           return (
             <div className="text-sm">
               <div className="font-medium">
@@ -131,11 +111,39 @@ export function usePaginatedProjects({
             </div>
           );
         },
-        size: 120,
+        size: 140,
+      },
+      {
+        accessorKey: "doi",
+        header: ({ column }) => (
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-gray-500" />
+            <span>DOI</span>
+          </div>
+        ),
+        cell: ({ row }) => {
+          const doi = row.getValue("doi") as string;
+          if (!doi) return <span className="text-sm text-gray-400">N/A</span>;
+
+          return (
+            <div className="text-sm">
+              <a
+                href={`https://doi.org/${doi}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-blue-600 hover:text-blue-800 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {doi}
+              </a>
+            </div>
+          );
+        },
+        size: 200,
       },
     ];
 
-    if (sortBy === "relevance" && projectSearchQuery) {
+    if (sortBy === "relevance" && researchOutputSearchQuery) {
       baseColumns.push({
         accessorKey: "rank",
         header: ({ column }) => (
@@ -163,23 +171,23 @@ export function usePaginatedProjects({
     }
 
     return baseColumns;
-  }, [sortBy, projectSearchQuery]);
+  }, [sortBy, researchOutputSearchQuery]);
 
   const sortOptions = useMemo(() => {
     const baseOptions = [
       { value: "title", label: "Title" },
-      { value: "start_date", label: "Start Date" },
+      { value: "publication_date", label: "Publication Date" },
     ];
 
-    if (projectSearchQuery) {
+    if (researchOutputSearchQuery) {
       baseOptions.push({ value: "relevance", label: "Relevance" });
     }
 
     return baseOptions;
-  }, [projectSearchQuery]);
+  }, [researchOutputSearchQuery]);
 
   const handleSortChange = (newSortBy: string) => {
-    setSortBy(newSortBy as "title" | "start_date" | "relevance");
+    setSortBy(newSortBy as "title" | "publication_date" | "relevance");
     setPage(0);
   };
 
@@ -192,8 +200,8 @@ export function usePaginatedProjects({
     setPage(newPage);
   };
 
-  const ProjectsPaginated = () => (
-    <PaginatedTable<ProjectTableItem>
+  const ResearchOutputsPaginated = () => (
+    <PaginatedTable<ResearchOutputTableItem>
       data={data?.data || []}
       columns={columns}
       loading={isPending}
@@ -207,15 +215,15 @@ export function usePaginatedProjects({
       onSortChange={handleSortChange}
       onSortOrderChange={handleSortOrderChange}
       sortOptions={sortOptions}
-      title="Projects"
+      title="Research Outputs"
       icon={<div className="h-5 w-5 text-gray-600">{icon}</div>}
       itemsPerPage={25}
-      onRowClick={onProjectClick}
+      onRowClick={onResearchOutputClick}
     />
   );
 
   return {
-    ProjectsPaginated,
+    ResearchOutputsPaginated,
     isLoading: isPending,
     error,
     totalCount: data?.pagination.total || 0,

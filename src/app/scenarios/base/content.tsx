@@ -1,15 +1,16 @@
 interface TitleProps {
   count: number;
+  name: string;
 }
 
-export function Title({ count }: TitleProps) {
+export function Title({ count, name }: TitleProps) {
   return (
     <>
       <span className="text-gray-700">Displaying</span>{" "}
       <span className="font-semibold text-orange-400">
         {count.toLocaleString() || 0}
       </span>{" "}
-      <span className="text-gray-700">Projects</span>
+      <span className="text-gray-700">{name}</span>
     </>
   );
 }

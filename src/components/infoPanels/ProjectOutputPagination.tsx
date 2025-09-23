@@ -1,4 +1,4 @@
-import { useResearchOutputByProject } from "hooks/queries/researchoutput/useResearchOutputByProject";
+import { useProjectsByInstitution } from "hooks/queries/project/useProjectsByInstitution";
 import {
   Calendar,
   ChevronLeft,
@@ -9,8 +9,8 @@ import {
 import React, { useState } from "react";
 import { H6, Small } from "shadcn/typography";
 
-interface ResearchOutputPaginationProps {
-  projectId: string;
+interface ProjectOutputPaginationProps {
+  institutionId: string;
   className?: string;
 }
 
@@ -24,8 +24,8 @@ const LoadingState = () => (
   </div>
 );
 
-const ResearchOutputPagination: React.FC<ResearchOutputPaginationProps> = ({
-  projectId,
+const ProjectOutputPagination: React.FC<ProjectOutputPaginationProps> = ({
+  institutionId,
   className = "",
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,15 +34,15 @@ const ResearchOutputPagination: React.FC<ResearchOutputPaginationProps> = ({
 
   const {
     data: response,
-    isPending: isPendingRO,
-    error: errorRO,
-  } = useResearchOutputByProject({
-    projectId: projectId || "",
+    isPending: isPendingProjects,
+    error: errorProjects,
+  } = useProjectsByInstitution({
+    institutionId: institutionId || "",
     limit: itemsPerPage,
     offset: offset,
   });
 
-  const researchOutputs = response?.data || [];
+  const projects = response?.data || [];
   const totalCount = response?.totalCount || 0;
   const totalPages = response?.totalPages || 0;
   const hasMore = response?.hasMore || false;
@@ -71,12 +71,12 @@ const ResearchOutputPagination: React.FC<ResearchOutputPaginationProps> = ({
     }
   };
 
-  if (errorRO) {
+  if (errorProjects) {
     return (
       <div className={`space-y-4 ${className}`}>
-        <H6 className="!pb-0">Research Outputs</H6>
+        <H6 className="!pb-0">Projects</H6>
         <div className="py-8 text-center">
-          <Small className="text-red-500">Error loading research outputs</Small>
+          <Small className="text-red-500">Error loading projects</Small>
         </div>
       </div>
     );
@@ -84,9 +84,9 @@ const ResearchOutputPagination: React.FC<ResearchOutputPaginationProps> = ({
 
   return (
     <div className={`space-y-4 overflow-hidden ${className}`}>
-      <H6 className="!pb-0">Research Outputs</H6>
+      <H6 className="!pb-0">Projects</H6>
 
-      {isPendingRO ? (
+      {isPendingProjects ? (
         <LoadingState />
       ) : (
         <>
@@ -130,16 +130,16 @@ const ResearchOutputPagination: React.FC<ResearchOutputPaginationProps> = ({
             </div>
           )}
 
-          {/* Research Output List */}
-          {researchOutputs.length === 0 ? (
+          {/* Projects List */}
+          {projects.length === 0 ? (
             <div className="py-8 text-center">
               <Small className="text-gray-500">
-                No research outputs found for this project
+                No projects found for this institution
               </Small>
             </div>
           ) : (
             <div className="space-y-3">
-              {researchOutputs.map((item, index) => (
+              {projects.map((item, index) => (
                 <div
                   key={`${item.doi || index}`}
                   className="rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
@@ -150,7 +150,7 @@ const ResearchOutputPagination: React.FC<ResearchOutputPaginationProps> = ({
                       <FileText className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
                       <div className="min-w-0 flex-1">
                         <p className="break-words text-sm font-medium text-gray-900">
-                          {item.title || "Untitled Research Output"}
+                          {item.title || "Untitled Project"}
                         </p>
                       </div>
                     </div>
@@ -182,4 +182,4 @@ const ResearchOutputPagination: React.FC<ResearchOutputPaginationProps> = ({
   );
 };
 
-export default ResearchOutputPagination;
+export default ProjectOutputPagination;

@@ -48,6 +48,8 @@ export interface PaginatedTableProps<T> {
   title?: string;
   icon?: ReactNode;
   itemsPerPage?: number;
+
+  onRowClick?: (item: T) => void;
 }
 
 export function PaginatedTable<T>({
@@ -67,6 +69,7 @@ export function PaginatedTable<T>({
   title = "Table",
   icon,
   itemsPerPage = 25,
+  onRowClick,
 }: PaginatedTableProps<T>) {
   const [stableStats, setStableStats] = useState({
     totalCount,
@@ -284,6 +287,10 @@ export function PaginatedTable<T>({
                 <TableRow
                   key={row.id}
                   className="transition-colors hover:bg-gray-50/50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRowClick?.(row.original);
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="py-3">

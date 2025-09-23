@@ -1,8 +1,6 @@
-import {
-  InstitutionType,
-  ProjectType,
-  ResearchOutputType,
-} from "db/schemas/core";
+import { InstitutionType } from "db/schemas/core";
+import { useInstitutionById } from "hooks/queries/institution/useInstitutionById";
+import { useProjectbyId } from "hooks/queries/project/useProjectById";
 import {
   Award,
   Banknote,
@@ -24,12 +22,13 @@ import { H6, Lead, Small } from "shadcn/typography";
 import ResearchOutputPagination from "./ResesearchOutputPagination";
 
 interface ProjectViewInfoPanelProps {
-  institution?: InstitutionType | null;
-  project?: ProjectType | null;
-  researchOutputs?: ResearchOutputType[];
-  isPendingInstitution?: boolean;
-  isPendingProject?: boolean;
-  className?: string;
+  institution_id?: string | null;
+  project_id?: string | null;
+  // institution?: InstitutionType | null;
+  // project?: ProjectType | null;
+  // isPendingInstitution?: boolean;
+  // isPendingProject?: boolean;
+  // className?: string;
 }
 
 const Spinner = () => (
@@ -42,14 +41,23 @@ const LoadingState = () => (
   </div>
 );
 
-const ProjectViewInfoPanel: React.FC<ProjectViewInfoPanelProps> = ({
-  institution,
-  project,
-  isPendingInstitution = false,
-  isPendingProject = false,
-  className = "",
+const ProjectInfoPanel: React.FC<ProjectViewInfoPanelProps> = ({
+  institution_id,
+  project_id,
 }) => {
   const [showProjectDetails, setShowProjectDetails] = useState(false);
+
+  const { data: project, isPending: isPendingProject } = useProjectbyId(
+    project_id || "",
+    {
+      enabled: !!project_id,
+    },
+  );
+
+  const { data: institution, isPending: isPendingInstitution } =
+    useInstitutionById(institution_id || "", {
+      enabled: !!institution_id,
+    });
 
   const formatDate = (date: Date | string | null) => {
     if (!date) return "N/A";
@@ -102,88 +110,89 @@ const ProjectViewInfoPanel: React.FC<ProjectViewInfoPanelProps> = ({
     project?.source_system?.toLowerCase() === "openaire";
 
   return (
-    <div className={`space-y-6 overflow-hidden ${className}`}>
+    <div className={`space-y-6 overflow-hidden`}>
       {/* Institution Section */}
-      <div className="space-y-4">
-        {isPendingInstitution ? (
-          <LoadingState />
-        ) : institution ? (
-          <>
-            <div>
-              <H6 className="!pb-0">
-                {institution.legal_name || "Unknown Institution"}
-              </H6>
-              {institution.alternative_names &&
-                institution.alternative_names.length > 0 && (
-                  <Small className="mt-1 text-gray-500">
-                    Also known as: {institution.alternative_names.join(", ")}
-                  </Small>
-                )}
-            </div>
 
-            <div className="space-y-3">
-              {institution.url && (
-                <div className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 text-gray-400" />
-                  <a
-                    href={institution.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 underline hover:text-blue-800"
-                  >
-                    {institution.url}
-                  </a>
-                </div>
-              )}
-
-              <div className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 text-gray-400" />
-                <div className="text-sm">
-                  <p className="text-gray-500">Address</p>
-                  <p>{formatAddress(institution)}</p>
-                </div>
+      {institution_id && (
+        <div className="space-y-4">
+          {isPendingInstitution ? (
+            <LoadingState />
+          ) : institution ? (
+            <>
+              <div>
+                <H6 className="!pb-0">
+                  {institution.legal_name || "Unknown Institution"}
+                </H6>
+                {institution.alternative_names &&
+                  institution.alternative_names.length > 0 && (
+                    <Small className="mt-1 text-gray-500">
+                      Also known as: {institution.alternative_names.join(", ")}
+                    </Small>
+                  )}
               </div>
 
-              <div className="flex items-center gap-6">
-                {institution.type_title && (
+              <div className="space-y-3">
+                {institution.url && (
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-gray-400" />
-                    <div className="text-sm">
-                      <p className="text-gray-500">Type</p>
-                      <p>{institution.type_title}</p>
-                    </div>
+                    <ExternalLink className="h-4 w-4 text-gray-400" />
+                    <a
+                      href={institution.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 underline hover:text-blue-800"
+                    >
+                      {institution.url}
+                    </a>
                   </div>
                 )}
 
-                {institution.sme !== null && (
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-400" />
-                    <div className="text-sm">
-                      <p className="text-gray-500">SME</p>
-                      <p>{institution.sme ? "Yes" : "No"}</p>
+                <div className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 text-gray-400" />
+                  <div className="text-sm">
+                    <p className="text-gray-500">Address</p>
+                    <p>{formatAddress(institution)}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6">
+                  {institution.type_title && (
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-gray-400" />
+                      <div className="text-sm">
+                        <p className="text-gray-500">Type</p>
+                        <p>{institution.type_title}</p>
+                      </div>
                     </div>
+                  )}
+
+                  {institution.sme !== null && (
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-gray-400" />
+                      <div className="text-sm">
+                        <p className="text-gray-500">SME</p>
+                        <p>{institution.sme ? "Yes" : "No"}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {institution.source_system && (
+                  <div className="text-xs text-gray-400">
+                    Source: {institution.source_system}
                   </div>
                 )}
               </div>
-
-              {institution.source_system && (
-                <div className="text-xs text-gray-400">
-                  Source: {institution.source_system}
-                </div>
-              )}
+            </>
+          ) : (
+            <div className="py-4 text-center">
+              <Small className="text-gray-400">
+                No institution data available
+              </Small>
             </div>
-          </>
-        ) : (
-          <div className="py-4 text-center">
-            <Small className="text-gray-400">
-              No institution data available
-            </Small>
-          </div>
-        )}
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-gray-200" />
+          )}
+          <div className="border-t border-gray-200" />
+        </div>
+      )}
 
       {/* Project Section */}
       <div className="space-y-4">
@@ -504,4 +513,4 @@ const ProjectViewInfoPanel: React.FC<ProjectViewInfoPanelProps> = ({
   );
 };
 
-export default ProjectViewInfoPanel;
+export default ProjectInfoPanel;

@@ -3,13 +3,21 @@ import { apiError, apiSuccess } from "app/api/response";
 import { db } from "db/client";
 import { project, researchoutput } from "db/schemas/core";
 import { j_project_researchoutput } from "db/schemas/core-junctions";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 export type ResearchOutputItem = {
   doi: string | null;
   date: string | null;
   title: string | null;
+};
+
+export type ResearchOutputByProjectResponse = {
+  data: ResearchOutputItem[];
+  totalCount: number;
+  hasMore: boolean;
+  currentPage: number;
+  totalPages: number;
 };
 
 async function researchoutputByProjectHandler(request: NextRequest) {
@@ -22,7 +30,22 @@ async function researchoutputByProjectHandler(request: NextRequest) {
     return apiError("Project ID is required", 400);
   }
 
-  const data = await db
+  const totalCountResult = await db
+    .select({ count: count() })
+    .from(project)
+    .leftJoin(
+      j_project_researchoutput,
+      eq(j_project_researchoutput.project_id, project.id),
+    )
+    .leftJoin(
+      researchoutput,
+      eq(j_project_researchoutput.researchoutput_id, researchoutput.id),
+    )
+    .where(eq(project.id, projectId));
+
+  const totalCount = totalCountResult[0]?.count || 0;
+
+  const rawData = await db
     .select({
       doi: researchoutput.doi,
       date: researchoutput.publication_date,
@@ -41,12 +64,25 @@ async function researchoutputByProjectHandler(request: NextRequest) {
     .limit(limit)
     .offset(offset);
 
-  if (data.length === 0) {
-    return apiError("RO not found", 404);
-  }
+  const data: ResearchOutputItem[] = rawData.map((item) => ({
+    doi: item.doi,
+    date: item.date ? item.date.toISOString() : null,
+    title: item.title,
+  }));
 
-  //   type ResearchOutputWithProject = (typeof data)[0];
+  const currentPage = Math.floor(offset / limit) + 1;
+  const totalPages = Math.ceil(totalCount / limit);
+  const hasMore = offset + limit < totalCount;
 
-  return apiSuccess(data);
+  const response: ResearchOutputByProjectResponse = {
+    data,
+    totalCount,
+    hasMore,
+    currentPage,
+    totalPages,
+  };
+
+  return apiSuccess(response);
 }
+
 export const GET = withApiWrapper(researchoutputByProjectHandler);

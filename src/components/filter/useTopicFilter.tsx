@@ -2,7 +2,7 @@
 
 import { useProjectTopicsEnriched } from "hooks/queries/topic/useProjectTopicsEnriched";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "shadcn/button";
 import { Checkbox } from "shadcn/checkbox";
 import { Input } from "shadcn/input";
@@ -26,13 +26,16 @@ interface SelectedCounts {
 interface TopicFilterResult {
   TopicFilter: ReactNode;
   topicPredicate: (projectId: string) => boolean;
+  getTopicColor: (projectId: string) => [number, number, number, number];
   selectedDomains: string[];
   selectedFields: string[];
   selectedSubfields: string[];
   selectedTopics: number[];
 }
 
-export const useTopicFilter = (): TopicFilterResult => {
+export const useTopicFilter = (
+  defaultOpenSubfieldId: string | null = null,
+): TopicFilterResult => {
   const enrichedData = useProjectTopicsEnriched();
 
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
@@ -123,6 +126,40 @@ export const useTopicFilter = (): TopicFilterResult => {
       },
     };
   }, [enrichedData]);
+
+  useEffect(() => {
+    if (defaultOpenSubfieldId) {
+      setSelectedSubfields((prev) => [...prev, defaultOpenSubfieldId]);
+    }
+
+    if (!defaultOpenSubfieldId || !treeData.length) return;
+
+    const pathToExpand = new Set<string>();
+
+    // Find the path to the subfield
+    const findSubfieldPath = (
+      nodes: TopicTreeNode[],
+      parentKey = "",
+    ): boolean => {
+      for (const node of nodes) {
+        const nodeKey = `${parentKey}-${node.type}-${node.id}`;
+
+        if (node.type === "subfield" && node.id === defaultOpenSubfieldId) {
+          pathToExpand.add(parentKey); // Add parent domain/field keys
+          return true;
+        }
+
+        if (node.children && findSubfieldPath(node.children, nodeKey)) {
+          pathToExpand.add(nodeKey);
+          return true;
+        }
+      }
+      return false;
+    };
+
+    findSubfieldPath(treeData);
+    setExpandedNodes(pathToExpand);
+  }, [defaultOpenSubfieldId, treeData]);
 
   const selectedSets = useMemo(
     () => ({
@@ -239,6 +276,28 @@ export const useTopicFilter = (): TopicFilterResult => {
     setSelectedTopics([]);
   }, []);
 
+  function simpleTopicColor(topicId: number): [number, number, number, number] {
+    // Simple hash to get pseudo-random but consistent colors
+    const hash = topicId * 2654435761; // Large prime for better distribution
+    const r = (hash & 0xff0000) >> 16;
+    const g = (hash & 0x00ff00) >> 8;
+    const b = hash & 0x0000ff;
+
+    return [r, g, b, 140];
+  }
+
+  const getTopicColor = useCallback(
+    (projectId: string): [number, number, number, number] => {
+      if (!lookupMaps) return [0, 0, 0, 140];
+
+      const topicId = lookupMaps.projectTopicMap.get(projectId);
+      if (!topicId) return [0, 0, 0, 140];
+
+      return simpleTopicColor(topicId);
+    },
+    [lookupMaps],
+  );
+
   const renderTreeNode = useCallback(
     (node: TopicTreeNode, depth: number = 0, parentKey: string = "") => {
       const nodeKey = `${parentKey}-${node.type}-${node.id}`;
@@ -296,6 +355,13 @@ export const useTopicFilter = (): TopicFilterResult => {
 
             <span
               className={`flex-1 text-sm ${isSelected ? "font-medium" : ""}`}
+              style={
+                node.type === "topic"
+                  ? {
+                      color: `rgb(${simpleTopicColor(parseInt(node.id))[0]}, ${simpleTopicColor(parseInt(node.id))[1]}, ${simpleTopicColor(parseInt(node.id))[2]})`,
+                    }
+                  : {}
+              }
               onClick={
                 hasChildren ? () => toggleNodeExpansion(nodeKey) : handleToggle
               }
@@ -326,6 +392,7 @@ export const useTopicFilter = (): TopicFilterResult => {
       handleSubfieldToggle,
       handleTopicToggle,
       toggleNodeExpansion,
+      simpleTopicColor,
     ],
   );
 
@@ -411,6 +478,7 @@ export const useTopicFilter = (): TopicFilterResult => {
   return {
     TopicFilter,
     topicPredicate,
+    getTopicColor,
     selectedDomains,
     selectedFields,
     selectedSubfields,

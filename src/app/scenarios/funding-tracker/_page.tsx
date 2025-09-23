@@ -1,8 +1,6 @@
 // "use client";
 
 // import BaseUI from "components/baseui/BaseUI";
-// import { LayerSwitcher } from "components/baseui/LayerSwitcher";
-// import RightSideMenu from "components/baseui/RightSideMenu";
 // import { ScopeToggle } from "components/buttons/toggle";
 // import useCountryFilter from "components/filter/useCountryFilter";
 // import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
@@ -18,19 +16,20 @@
 // import { useInstitutionById } from "hooks/queries/institution/useInstitutionById";
 // import { useProjectbyId } from "hooks/queries/project/useProjectById";
 // import { useProjectYearRange } from "hooks/queries/project/useProjectYearRange";
-// import { useInstitutionView } from "hooks/queries/views/project/useInstitutionView";
-// import { useProjectView } from "hooks/queries/views/project/useProjectView";
 // import { ReactNode, useCallback, useMemo, useState } from "react";
 // import { FundingInfoBox, FundingTitle } from "./content";
+// import { useMapViewProject } from "hooks/queries/views/map/useMapViewProject";
+// import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
+// import { LayerSwitcher } from "components/baseui/LayerSwitcher";
 
 // export default function FundingScenario() {
 //   /** Main Data */
-//   const { data: projectView, isPending, error } = useProjectView();
+//   const { data: projectView, isPending, error } = useMapViewProject();
 //   const {
 //     data: institutionView,
 //     isPending: isPendingInstitutionView,
 //     error: errorInstitutionView,
-//   } = useInstitutionView();
+//   } = useMapViewInstitution();
 
 //   /** View Toggle */
 //   const [showInstitutions, setShowInstitutions] = useState<boolean>(false);
@@ -57,14 +56,6 @@
 //       enabled: !!selectedInstitutionId,
 //     });
 
-//   /** Year Range */
-//   const { data: { minStartDate = 1985, maxEndDate = 2035 } = {} } =
-//     useProjectYearRange();
-//   const [years, setYears] = useState<number[]>(() => [
-//     minStartDate,
-//     maxEndDate,
-//   ]);
-
 //   /** Hover State */
 //   const [hoverInfo, setHoverInfo] = useState<{
 //     x: number;
@@ -74,12 +65,7 @@
 //   } | null>(null);
 
 //   /** Filters - Commented out as requested */
-//   const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
-//     years: years,
-//     handleYearsChange: setYears,
-//     minStartDate: minStartDate,
-//     maxEndDate: maxEndDate,
-//   });
+//   const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter();
 //   const { CountryFilter, countryPredicate } = useCountryFilter();
 //   const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter();
 //   const { NutsFilter, nutsPredicate } = useNutsFilter(dataView);
@@ -214,22 +200,18 @@
 //     });
 //   }
 
-//   const { panel, togglePanel } = RightSideMenu({ rightPanelTabs });
-
 //   /** Event Handlers */
 //   const handleMapOnClick = useCallback(
 //     (info: PickingInfo) => {
 //       if (showInstitutions && info.object?.institution_id) {
 //         setSelectedInstitutionId(info.object.institution_id);
 //         console.log(info.object);
-//         togglePanel("institution-view");
 //       } else if (!showInstitutions && info.object?.project_id) {
 //         setSelectedProjectId(info.object.project_id);
 //         setSelectedInstitutionId(info.object.institution_id);
-//         togglePanel("project-view");
 //       }
 //     },
-//     [showInstitutions, togglePanel],
+//     [showInstitutions],
 //   );
 
 //   const handleHover = useCallback((info: PickingInfo) => {
@@ -299,8 +281,6 @@
 //             showInstitutions={showInstitutions}
 //           />
 //         }
-//         rightSideMenu={panel}
-//         toggleRightSideMenu={togglePanel}
 //         loading={showInstitutions ? isPendingInstitutionView : isPending}
 //         error={showInstitutions ? errorInstitutionView : error}
 //         scenarioName="funding-tracker"

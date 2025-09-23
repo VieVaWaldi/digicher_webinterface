@@ -54,7 +54,7 @@ export default function useProjectSearchFilter(): ProjectSearchFilterResult {
   const filter = useMemo(
     () => (
       <div>
-        <H6 className="text-center">Project Text Search</H6>
+        <H6 className="text-center">Text Search</H6>
         <Input
           type="text"
           placeholder="Search titles & objectives (press Enter)..."

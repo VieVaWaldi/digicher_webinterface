@@ -1,6 +1,14 @@
 import { scenarios } from "app/scenarios";
 import SettingsMenu from "components/menus/SettingsMenu";
-import { Download, Home, InfoIcon, Menu, Settings, X } from "lucide-react";
+import {
+  Download,
+  Home,
+  InfoIcon,
+  Lightbulb,
+  Menu,
+  Settings,
+  X,
+} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode } from "react";
 import { Button } from "shadcn/button";
@@ -114,9 +122,7 @@ export const NavigationMenu = ({
         <div className="absolute bottom-full left-1/2 mb-2 flex -translate-x-1/2 flex-col-reverse space-y-3 space-y-reverse duration-300 animate-in">
           {/* Home button */}
           <div
-            className={`flex cursor-pointer items-center space-x-2 rounded-xl bg-white p-2 text-orange-500 shadow-lg ${
-              isActive("/") ? "border-2 border-orange-500" : ""
-            }`}
+            className="text-grey-100 flex cursor-pointer items-center space-x-2 rounded-xl bg-white p-2 shadow-lg"
             onClick={() => handleNavigation("/")}
           >
             <div className="flex items-center justify-center">
@@ -126,6 +132,22 @@ export const NavigationMenu = ({
               />
             </div>
             <span className="pr-2 text-gray-600">Home</span>
+          </div>
+
+          {/* Base button */}
+          <div
+            className={`text-grey-400 flex cursor-pointer items-center space-x-2 rounded-xl bg-white p-2 shadow-lg ${
+              isActive("/scenarios/base") ? "border-2 border-orange-500" : ""
+            }`}
+            onClick={() => handleNavigation("/scenarios/base")}
+          >
+            <div className="flex items-center justify-center">
+              <Lightbulb
+                strokeWidth={STRK_WDTH}
+                style={{ transform: `scale(${BTN_SCALE})` }}
+              />
+            </div>
+            <span className="pr-2 text-gray-600">Base</span>
           </div>
 
           {/* Scenario buttons */}

@@ -1,8 +1,6 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { ResearchOutputItem } from "app/api/researchoutput/byProject/route";
+import { ResearchOutputByProjectResponse } from "app/api/researchoutput/byProject/route";
 import { createApiFetcher } from "hooks/queries/createQuery";
-
-type ResearchOutputByProjectResponse = ResearchOutputItem[];
 
 interface UseResearchOutputByProjectParams {
   projectId: string;

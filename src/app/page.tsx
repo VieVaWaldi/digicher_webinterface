@@ -114,7 +114,7 @@ const HeritageMonitor = () => {
             </button>
             <button
               className="rounded-lg border border-white/20 bg-white/10 px-8 py-4 font-semibold backdrop-blur-sm transition-all hover:bg-white/20"
-              onClick={() => router.push("/scenarios/funding-tracker")}
+              onClick={() => router.push("/scenarios/base")}
             >
               Start the Tool
             </button>

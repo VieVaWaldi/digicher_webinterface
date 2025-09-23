@@ -2,9 +2,13 @@
 --- Feedback Table
 ----------------------------
 
--- CREATE DATABASE db_digicher_feedback;
+SELECT * FROM feedback.feedback_summary;
 
--- CREATE SCHEMA IF NOT EXISTS feedback;
+SELECT * FROM feedback.feedback_v1;
+
+----------------------------
+--- Feedback Table Create
+----------------------------
 
 CREATE TABLE feedback.feedback_v1 (
     id SERIAL PRIMARY KEY,

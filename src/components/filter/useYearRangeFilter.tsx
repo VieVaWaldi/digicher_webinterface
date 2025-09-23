@@ -3,6 +3,11 @@ import { ReactNode, useMemo, useState } from "react";
 import { DualRangeSlider } from "shadcn/dual-range-slider";
 import { H6 } from "shadcn/typography";
 
+interface YearRangeFilterOptions {
+  defaultMinYear?: number;
+  defaultMaxYear?: number;
+}
+
 interface YearRangeFilterResult {
   YearRangeFilter: ReactNode;
   yearRangePredicate: (startDate: string, endDate: string) => boolean;
@@ -10,23 +15,26 @@ interface YearRangeFilterResult {
   maxYear: number;
 }
 
-export default function useYearRangeFilter(): YearRangeFilterResult {
+export default function useYearRangeFilter(
+  options: YearRangeFilterOptions = {},
+): YearRangeFilterResult {
+  const { defaultMinYear, defaultMaxYear } = options;
+
   const { data: { minStartDate = 1985, maxEndDate = 2035 } = {} } =
     useProjectYearRange();
+
   const [years, setYears] = useState<number[]>(() => [
-    minStartDate,
-    maxEndDate,
+    defaultMinYear ?? minStartDate,
+    defaultMaxYear ?? maxEndDate,
   ]);
+
   const [minYear, maxYear] = useMemo(() => [years[0], years[1]], [years]);
 
   const predicate = useMemo(
     () => (startDate: string, endDate: string) => {
       if (!startDate || !endDate) return false;
-
-      // Extract years directly from ISO strings (faster than new Date())
       const projectStartYear = parseInt(startDate.substring(0, 4), 10);
       const projectEndYear = parseInt(endDate.substring(0, 4), 10);
-
       return maxYear >= projectStartYear && minYear <= projectEndYear;
     },
     [minYear, maxYear],
