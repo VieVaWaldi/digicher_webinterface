@@ -47,7 +47,7 @@ const HeritageMonitor = () => {
       await queryClient.prefetchQuery({
         queryKey: ["topic"],
         queryFn: () =>
-          fetch("/api/views/collaboration").then((res) => res.json()),
+          fetch("/api/views/map/collaboration").then((res) => res.json()),
       });
     };
 
@@ -90,7 +90,7 @@ const HeritageMonitor = () => {
           </div>
 
           <h1 className="mb-4 animate-pulse bg-gradient-to-r from-blue-400 via-purple-400 to-orange-400 bg-clip-text pb-3 text-6xl font-bold text-transparent md:text-8xl">
-            Heritage Monitor<span className="text-2xl">v0.1</span>
+            Heritage Monitor<span className="text-2xl">v0.2</span>
           </h1>
 
           <p className="mx-auto mb-8 max-w-3xl text-xl leading-relaxed text-gray-300 md:text-2xl">
