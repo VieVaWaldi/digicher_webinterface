@@ -17,6 +17,7 @@ import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
 import ProjectInfoPanel from "components/infoPanels/ProjectInfoPanel";
+import ResearchOutputInfoPanel from "components/infoPanels/ResearchOutputInfoPanel";
 import { ScatterplotLayer } from "deck.gl";
 import { baseLayerProps } from "deckgl/baseLayerProps";
 import { INITIAL_VIEW_STATE_EU } from "deckgl/viewports";
@@ -26,7 +27,6 @@ import { FileText, Lightbulb } from "lucide-react";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "shadcn/tabs";
 import { InfoBox, Title } from "./content";
-import ResearchOutputInfoPanel from "components/infoPanels/ResearchOutputInfoPanel";
 
 export default function BaseScenario() {
   /** Map Data View */
@@ -207,22 +207,26 @@ export default function BaseScenario() {
         )}
       </SelectedInfo>
 
-      <LeftSideFilters>{filters}</LeftSideFilters>
+      <div onClick={(e) => e.stopPropagation()}>
+        <LeftSideFilters>{filters}</LeftSideFilters>
 
-      <RightSideDataMenu>
-        <Tabs defaultValue="projects" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 font-bold text-orange-500">
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="research-outputs">Research Outputs</TabsTrigger>
-          </TabsList>
-          <TabsContent value="projects" className="mt-4">
-            <ProjectsPaginated />
-          </TabsContent>
-          <TabsContent value="research-outputs" className="mt-4">
-            <ResearchOutputsPaginated />
-          </TabsContent>
-        </Tabs>
-      </RightSideDataMenu>
+        <RightSideDataMenu>
+          <Tabs defaultValue="projects" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 font-bold text-orange-500">
+              <TabsTrigger value="projects">Projects</TabsTrigger>
+              <TabsTrigger value="research-outputs">
+                Research Outputs
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="projects" className="mt-4">
+              <ProjectsPaginated />
+            </TabsContent>
+            <TabsContent value="research-outputs" className="mt-4">
+              <ResearchOutputsPaginated />
+            </TabsContent>
+          </Tabs>
+        </RightSideDataMenu>
+      </div>
 
       <BaseUI
         layers={[layer]}
