@@ -1,10 +1,11 @@
+import Papa from "papaparse";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   ProjectTableItem,
   useTableViewProject,
 } from "hooks/queries/views/table/useTableViewProject";
 import { Calendar, Globe, Trophy } from "lucide-react";
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Badge } from "shadcn/badge";
 import { useDebounce } from "use-debounce";
 import { PaginatedTable } from "./PaginatedTableComponent";
@@ -59,6 +60,7 @@ export function usePaginatedProjects({
     },
     300,
   );
+  const [shouldDownload, setShouldDownload] = useState<boolean>(false);
 
   const queryParams = useMemo(
     () => ({
@@ -78,7 +80,66 @@ export function usePaginatedProjects({
     [debouncedFilters, page, sortBy, sortOrder],
   );
 
+  const downloadQueryParams = useMemo(
+    () => ({
+      minYear: debouncedFilters.minYear,
+      maxYear: debouncedFilters.maxYear,
+      search: debouncedFilters.projectSearchQuery,
+      frameworkProgrammes: debouncedFilters.selectedFrameworkProgrammes,
+      domainIds: debouncedFilters.selectedDomains,
+      fieldIds: debouncedFilters.selectedFields,
+      subfieldIds: debouncedFilters.selectedSubfields,
+      topicIds: debouncedFilters.selectedTopics?.map((t) => t.toString()),
+      page: 0,
+      limit: 10000,
+      sortBy,
+      sortOrder,
+      download: true,
+    }),
+    [debouncedFilters, sortBy, sortOrder],
+  );
+
   const { data, isPending, error } = useTableViewProject(queryParams);
+  const { data: downloadData, isPending: downloadPending } =
+    useTableViewProject(downloadQueryParams, shouldDownload);
+
+  useEffect(() => {
+    if (shouldDownload && downloadData && !downloadPending) {
+      const cleanedData = downloadData.data.map((row: any) => {
+        const cleanedRow = { ...row };
+        Object.keys(cleanedRow).forEach((key) => {
+          if (typeof cleanedRow[key] === "string") {
+            cleanedRow[key] = cleanedRow[key].replace(/;/g, ",");
+          }
+        });
+        return cleanedRow;
+      });
+
+      const csv = Papa.unparse(cleanedData, {
+        delimiter: ";",
+        header: true,
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `projects_${downloadData.data.length}_data.csv`,
+      );
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setShouldDownload(false);
+    }
+  }, [shouldDownload, downloadData, downloadPending]);
+
+  const onDownload = () => {
+    setShouldDownload(true);
+  };
 
   const columns: ColumnDef<ProjectTableItem>[] = useMemo(() => {
     const baseColumns: ColumnDef<ProjectTableItem>[] = [
@@ -211,6 +272,8 @@ export function usePaginatedProjects({
       icon={<div className="h-5 w-5 text-gray-600">{icon}</div>}
       itemsPerPage={25}
       onRowClick={onProjectClick}
+      onDownload={onDownload}
+      isDownloading={shouldDownload && downloadPending}
     />
   );
 

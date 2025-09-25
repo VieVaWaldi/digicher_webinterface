@@ -219,6 +219,8 @@ export function usePaginatedResearchOutputs({
       icon={<div className="h-5 w-5 text-gray-600">{icon}</div>}
       itemsPerPage={25}
       onRowClick={onResearchOutputClick}
+      onDownload={undefined}
+      isDownloading={false}
     />
   );
 

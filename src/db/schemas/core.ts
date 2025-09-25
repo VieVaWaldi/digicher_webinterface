@@ -157,10 +157,20 @@ export const tableViewProject = coreSchema
   .view("table_view_project", {
     id: text("id").notNull(),
     title: text("title"),
+    acronym: text("acronym"),
+
+    source: text("source_system"),
+    doi: text("doi"),
+
     start_date: date("start_date"),
     end_date: date("end_date"),
-    acronym: text("acronym"),
-    objective: text("objective"), // Still needed for FTS, but not selected
+
+    objective: text("objective"),
+    total_cost: numeric("total_cost"),
+    funded_amount: numeric("funded_amount"),
+    currency: text("currency"),
+    keywords: text("keywords"),
+
     topic_id: numeric("topic_id"),
     subfield_id: text("subfield_id"),
     field_id: text("field_id"),

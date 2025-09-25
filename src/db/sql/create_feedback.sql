@@ -2,6 +2,8 @@
 --- Feedback Table
 ----------------------------
 
+create schema feedback;
+
 SELECT * FROM feedback.feedback_summary;
 
 SELECT * FROM feedback.feedback_v1;
@@ -13,11 +15,9 @@ SELECT * FROM feedback.feedback_v1;
 CREATE TABLE feedback.feedback_v1 (
     id SERIAL PRIMARY KEY,
     scenario_name TEXT NOT NULL,
-    
     is_useful BOOLEAN NOT NULL,
     usefulness_reason TEXT,
     feedback_improvement_suggestion TEXT,
-    
     user_agent TEXT,
     ip_address TEXT, -- Can be anonymized: "192.168.1.xxx"
     screen_resolution TEXT, -- "1920x1080"
@@ -27,7 +27,6 @@ CREATE TABLE feedback.feedback_v1 (
     session_duration_ms INTEGER, -- milliseconds on page
     referrer TEXT, -- where they came from
     page_load_time_ms INTEGER, -- performance metric
-    
     submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

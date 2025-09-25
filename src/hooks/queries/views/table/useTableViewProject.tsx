@@ -53,6 +53,8 @@ function buildQueryString(params: ProjectSearchParams): string {
   if (params.limit) searchParams.append("limit", params.limit.toString());
   if (params.sortBy) searchParams.append("sortBy", params.sortBy);
   if (params.sortOrder) searchParams.append("sortOrder", params.sortOrder);
+  if (params.download)
+    searchParams.append("download", params.download.toString());
 
   return searchParams.toString();
 }
@@ -78,6 +80,7 @@ export const useTableViewProject = (
     params.limit,
     params.sortBy,
     params.sortOrder,
+    params.download,
   ].filter(Boolean);
 
   const fetcher = createApiFetcher<ProjectTableResponse>(endpoint);

@@ -33,6 +33,8 @@ export interface ProjectSearchParams {
 
   sortBy?: "title" | "start_date" | "relevance";
   sortOrder?: "asc" | "desc";
+
+  download?: boolean;
 }
 
 async function tableViewProjectHandler(request: NextRequest) {
@@ -54,9 +56,13 @@ async function tableViewProjectHandler(request: NextRequest) {
     frameworkProgrammes:
       searchParams.get("frameworkProgrammes")?.split(",").filter(Boolean) || [],
     page: parseInt(searchParams.get("page") || "0"),
-    limit: Math.min(parseInt(searchParams.get("limit") || "50"), 100),
+    limit: Math.min(
+      parseInt(searchParams.get("limit") || "50"),
+      searchParams.get("download") === "true" ? 10000 : 100,
+    ),
     sortBy: (searchParams.get("sortBy") as any) || "title",
     sortOrder: (searchParams.get("sortOrder") as any) || "asc",
+    download: searchParams.get("download") === "true" || false,
   };
 
   const whereConditions = [];
@@ -175,6 +181,24 @@ async function tableViewProjectHandler(request: NextRequest) {
         setweight(to_tsvector('english', COALESCE(${tableViewProject.objective}, '')), 'B'),
         to_tsquery('english', ${searchQuery})
       )`.as("rank"),
+    });
+  }
+
+  if (params.download) {
+    querySelect = db.select({
+      id: tableViewProject.id,
+      title: tableViewProject.title,
+      acronym: tableViewProject.acronym,
+      source: tableViewProject.source,
+      doi: tableViewProject.doi,
+      start_date: tableViewProject.start_date,
+      end_date: tableViewProject.end_date,
+      objective: tableViewProject.objective,
+      total_cost: tableViewProject.total_cost,
+      funded_amount: tableViewProject.funded_amount,
+      currency: tableViewProject.currency,
+      keywords: tableViewProject.keywords,
+      framework_programmes: tableViewProject.framework_programmes,
     });
   }
 

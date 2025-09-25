@@ -50,6 +50,9 @@ export interface PaginatedTableProps<T> {
   itemsPerPage?: number;
 
   onRowClick?: (item: T) => void;
+
+  onDownload?: () => void;
+  isDownloading: boolean;
 }
 
 export function PaginatedTable<T>({
@@ -70,6 +73,8 @@ export function PaginatedTable<T>({
   icon,
   itemsPerPage = 25,
   onRowClick,
+  onDownload,
+  isDownloading,
 }: PaginatedTableProps<T>) {
   const [stableStats, setStableStats] = useState({
     totalCount,
@@ -103,7 +108,6 @@ export function PaginatedTable<T>({
     },
   ]);
 
-  // Update internal sorting when external sort changes
   useEffect(() => {
     setSorting([
       {
@@ -180,7 +184,11 @@ export function PaginatedTable<T>({
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent
+              side="bottom"
+              sideOffset={5}
+              onCloseAutoFocus={(e) => e.preventDefault()}
+            >
               {sortOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -214,6 +222,22 @@ export function PaginatedTable<T>({
           )}
         </div>
       </div>
+
+      {onDownload && (
+        <div className="flex">
+          {!loading && (
+            <Button onClick={onDownload} className="" variant="default">
+              Download
+            </Button>
+          )}
+          {isDownloading && (
+            <div className="flex items-center gap-2">
+              <Spinner className="h-4 w-4" />
+              Loading...
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Pagination Navigation */}
       <div className="flex items-center justify-between">
