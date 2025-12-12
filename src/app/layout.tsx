@@ -15,8 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <script>
-        {`
+      <head>
+        <script>
+          {`
             var _paq = window._paq = window._paq || [];
             _paq.push(['trackPageView']);
             _paq.push(['enableLinkTracking']);
@@ -28,7 +29,8 @@ export default function RootLayout({
               g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
             })();
           `}
-      </script>
+        </script>
+      </head>
       <body className="flex h-[100dvh] flex-col">
         <Providers>
           <main className="flex-1">{children}</main>
