@@ -14,6 +14,7 @@ import { useInstitutionById } from "hooks/queries/institution/useInstitutionById
 import { useCollaborationsEnriched } from "hooks/queries/views/map/useMapViewCollaborationsEnriched";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import TitleContent from "./content";
+import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
 
 export default function CollaborationScenario() {
   //   const { isGlobe } = useSettings();
@@ -58,6 +59,8 @@ export default function CollaborationScenario() {
       defaultMinYear: 2020,
       defaultMaxYear: 2025,
     });
+  const { ProjectSearchFilter, projectSearchPredicate, projectSearchQuery } =
+    useProjectSearchFilter();
   const {
     TopicFilter,
     topicPredicate,
@@ -75,7 +78,7 @@ export default function CollaborationScenario() {
       return (
         topicPredicate(p.project_id) &&
         //  institutionSearchPredicate(p.institution_id) &&
-        //  projectSearchPredicate(p.project_id) &&
+        projectSearchPredicate(p.project_id) &&
         //  frameworkProgrammePredicate(p.framework_programmes) &&
         yearRangePredicate(p.start_date, p.end_date)
         //  countryPredicate(p.country_code) &&
@@ -93,7 +96,7 @@ export default function CollaborationScenario() {
     mapViewCollaborations,
     //  showInstitutions,
     //  institutionSearchPredicate,
-    //  projectSearchPredicate,
+    projectSearchPredicate,
     //  frameworkProgrammePredicate,
     yearRangePredicate,
     //  countryPredicate,
@@ -269,10 +272,10 @@ export default function CollaborationScenario() {
   const filters: ReactNode = (
     <div className="space-y-6">
       {YearRangeFilter}
+      {ProjectSearchFilter}
       {TopicFilter}
       {/* {TypeAndSmeFilter}
         {InstitutionSearchFilter}
-        {ProjectSearchFilter}
         {CountryFilter}
         {FrameworkProgrammeFilter}
         {NutsFilter} */}
