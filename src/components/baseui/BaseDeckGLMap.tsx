@@ -1,21 +1,30 @@
 import { BitmapLayer, FullscreenWidget, TileLayer } from "deck.gl";
-import Map, { ViewState } from "react-map-gl";
+import Map, { ViewState } from "react-map-gl/mapbox";
+import { useState } from "react";
 
-import { _GlobeView as GlobeView, MapView, PickingInfo } from "@deck.gl/core";
+import {
+  _GlobeView as GlobeView,
+  COORDINATE_SYSTEM,
+  LayersList,
+  MapView,
+  PickingInfo,
+} from "@deck.gl/core";
 import DeckGL from "@deck.gl/react";
-
-import { COORDINATE_SYSTEM, LayersList } from "@deck.gl/core";
 
 import "@deck.gl/widgets/stylesheet.css";
 import { useSettings } from "context/SettingsContext";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Spinner } from "shadcn/spinner";
+import { useThemeMode } from "@/app/providers";
 
 interface UnifiedDeckMapProps {
   id: string;
   layers: LayersList | null;
-  viewState: ViewState;
-  onMapClick: (info: PickingInfo) => void;
+  defaultViewState: ViewState;
+  commandedViewState: ViewState | undefined;
+  isGlobe: boolean;
+  onViewStateChange: (viewState: ViewState) => void;
+  // onMapClick: (info: PickingInfo) => void;
   onEmptyMapClick?: () => void;
   loading?: boolean;
   error: Error | null;
@@ -24,14 +33,27 @@ interface UnifiedDeckMapProps {
 export default function BaseDeckGLMap({
   id,
   layers,
-  viewState,
-  onMapClick,
+  defaultViewState,
+  commandedViewState,
+  onViewStateChange,
+  isGlobe,
+  // onMapClick,
   onEmptyMapClick,
   loading = false,
   error = null,
 }: UnifiedDeckMapProps) {
-  const { mapBoxStyle, isGlobe } = useSettings();
+  // const { isGlobe } = useSettings();
+  const { resolvedMode } = useThemeMode();
+  const [currentZoom, setCurrentZoom] = useState(defaultViewState.zoom ?? 0);
+
+  const ZOOM_STYLE_THRESHOLD = 13;
+  const selectedMapBoxStyle =
+    resolvedMode === "light" ? "mapbox/light-v11" : "mapbox/dark-v11";
+  const mapBoxStyle =
+    currentZoom > ZOOM_STYLE_THRESHOLD ? "mapbox/standard" : selectedMapBoxStyle;
   const mapStyle = "mapbox://styles/" + mapBoxStyle;
+
+  // const isGlobe = false;
 
   const backgroundLayers = [
     new TileLayer({
@@ -58,19 +80,29 @@ export default function BaseDeckGLMap({
   ];
 
   const handleClick = (info: PickingInfo) => {
-    if (info.object) {
-      onMapClick(info);
-    } else if (onEmptyMapClick) {
+    if (info.object && onEmptyMapClick) {
       onEmptyMapClick();
     }
   };
 
   const view = isGlobe
     ? new GlobeView({ id: "globe" })
-    : new MapView({
-        id: "mercator",
-        controller: true,
-      });
+    : new MapView({ id: "mercator" });
+
+  // Google Maps-like controller config for globe mode:
+  // - dragMode: 'pan' keeps horizontal rotation working
+  // - Vertical drag inverted feel achieved through standard globe controller
+  const controllerConfig = isGlobe
+    ? {
+        inertia: true,
+        scrollZoom: true,
+        doubleClickZoom: true,
+        dragPan: true,
+        dragRotate: false, // Disable pitch/bearing rotation on right-drag
+        touchRotate: false,
+        keyboard: true,
+      }
+    : { inertia: true };
 
   const activeLayers = isGlobe
     ? [backgroundLayers, ...(layers || [])]
@@ -81,22 +113,30 @@ export default function BaseDeckGLMap({
       <DeckGL
         id={`deck-id-${id}`}
         key={`deck-key-${id}`}
-        initialViewState={viewState}
+        initialViewState={defaultViewState}
+        viewState={commandedViewState}
+        onViewStateChange={({ viewState: newViewState }) => {
+          const vs = newViewState as ViewState;
+          setCurrentZoom(vs.zoom ?? 0);
+          onViewStateChange(vs);
+        }}
         views={view}
         layers={activeLayers}
-        controller={true}
+        controller={controllerConfig}
         onClick={handleClick}
         getCursor={({ isDragging, isHovering }) => {
           if (isDragging) return "grabbing";
           if (isHovering) return "pointer";
           return "grab";
         }}
-        widgets={[
-          new FullscreenWidget({
-            id: "fullscreen",
-            placement: "bottom-right",
-          }),
-        ]}
+        widgets={
+          [
+            // new FullscreenWidget({
+            //   id: "fullscreen",
+            //   placement: "bottom-right",
+            // }),
+          ]
+        }
       >
         {!isGlobe && (
           <Map

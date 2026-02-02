@@ -1,10 +1,9 @@
 "use client";
 
 import { ReactNode, useMemo, useState } from "react";
-import { MultiSelect } from "shadcn/multi-select";
-import { H6 } from "shadcn/typography";
+import { MultiSelectDropdown, MultiSelectOption } from "components/mui/MultiSelectDropdown";
 
-const institutionOptions = [
+const institutionOptions: MultiSelectOption[] = [
   {
     value: "Higher or Secondary Education Establishments",
     label: "Higher or Secondary Education",
@@ -41,18 +40,13 @@ export default function useTypeAndSmeFilter(): TypeAndSmeFilterResult {
   }, [selectedInstitutions]);
 
   const TypeAndSmeFilter = (
-    <div>
-      <H6 className="text-center">Institution Type</H6>
-      <MultiSelect
-        options={institutionOptions}
-        value={selectedInstitutions}
-        onValueChange={setSelectedInstitutions}
-        placeholder="Select institution types"
-        variant="default"
-        maxCount={3}
-        className="mt-2 w-full"
-      />
-    </div>
+    <MultiSelectDropdown
+      options={institutionOptions}
+      value={selectedInstitutions}
+      onChange={setSelectedInstitutions}
+      placeholder="Select institution types"
+      maxChips={2}
+    />
   );
 
   const typeAndSmePredicate = useMemo(

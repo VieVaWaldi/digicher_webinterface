@@ -1,11 +1,9 @@
 import { useProjectSearchByName } from "hooks/queries/project/useProjectSearchByName";
 import { ReactNode, useCallback, useMemo, useState } from "react";
-import { Input } from "shadcn/input";
-import { MultiSelect } from "shadcn/multi-select";
-import { Spinner } from "shadcn/spinner";
-import { H6 } from "shadcn/typography";
+import { Box, TextField, Typography, CircularProgress } from "@mui/material";
+import { MultiSelectDropdown, MultiSelectOption } from "components/mui/MultiSelectDropdown";
 
-const minorityGroupOptions = [
+const minorityGroupOptions: MultiSelectOption[] = [
   { value: "ladin", label: "Ladin" },
   { value: "sami", label: "Sámi" },
   { value: "jewish", label: "Jewish" },
@@ -21,6 +19,7 @@ interface ProjectSearchFilterResult {
   ProjectSearchFilter: ReactNode;
   projectSearchPredicate: (projectId: string) => boolean;
   projectSearchQuery: string;
+  MinorityGroupsFilter: ReactNode;
 }
 
 export default function useProjectSearchFilter(): ProjectSearchFilterResult {
@@ -86,9 +85,7 @@ export default function useProjectSearchFilter(): ProjectSearchFilterResult {
       ]
         .filter(Boolean)
         .join(" ");
-      if (newFullQuery) {
-        setActiveQuery(newFullQuery);
-      }
+      setActiveQuery(newFullQuery);
     },
     [searchQuery],
   );
@@ -102,59 +99,65 @@ export default function useProjectSearchFilter(): ProjectSearchFilterResult {
     [activeQuery, projectIdSet],
   );
 
+  const MinorityGroupsFilter = (
+    <MultiSelectDropdown
+      options={minorityGroupOptions}
+      value={selectedMinorityGroups}
+      onChange={handleMinorityGroupsChange}
+      placeholder="Select ethnic groups"
+      maxChips={3}
+    />
+  );
+
   const filter = useMemo(
     () => (
-      <div className="space-y-4">
-        <div>
-          <H6 className="text-center">Minority Groups</H6>
-          <MultiSelect
-            options={minorityGroupOptions}
-            onValueChange={handleMinorityGroupsChange}
-            defaultValue={selectedMinorityGroups}
-            placeholder="Select minority groups"
-            variant="inverted"
-            animation={2}
-            maxCount={3}
-            className="mt-2"
-          />
-        </div>
-
-        <div>
-          <H6 className="text-center">Text Search</H6>
-          <Input
-            type="text"
-            placeholder="Search titles & objectives (press Enter)..."
-            value={searchQuery}
-            onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-            className="mt-2"
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            Words separated by spaces are searched with OR logic
-          </p>
-        </div>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <TextField
+          fullWidth
+          placeholder="Search titles & objectives (press Enter)..."
+          value={searchQuery}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyPress}
+          size="small"
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 1,
+              "& fieldset": {
+                borderColor: "divider",
+              },
+              "&:hover fieldset": {
+                borderColor: "text.secondary",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "primary.main",
+                borderWidth: 1,
+              },
+            },
+          }}
+        />
+        <Typography variant="caption" color="text.secondary">
+          Words separated by spaces are searched with OR logic
+        </Typography>
 
         {activeQuery && (
-          <p className="mt-1 text-sm text-muted-foreground">
+          <Typography variant="body2" color="text.secondary">
             {searchResults.length > 0 ? (
               `Found ${searchResults.length} project(s)`
             ) : isPending ? (
-              <Spinner className="mt-2" />
+              <CircularProgress size={16} />
             ) : (
               "No projects found"
             )}
-          </p>
+          </Typography>
         )}
-      </div>
+      </Box>
     ),
     [
       searchQuery,
       activeQuery,
       searchResults,
-      selectedMinorityGroups,
       handleInputChange,
       handleKeyPress,
-      handleMinorityGroupsChange,
       isPending,
     ],
   );
@@ -163,5 +166,6 @@ export default function useProjectSearchFilter(): ProjectSearchFilterResult {
     ProjectSearchFilter: filter,
     projectSearchPredicate: predicate,
     projectSearchQuery: fullSearchQuery,
+    MinorityGroupsFilter,
   };
 }

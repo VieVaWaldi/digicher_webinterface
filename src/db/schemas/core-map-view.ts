@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   doublePrecision,
+  jsonb,
   pgSchema,
   text,
 } from "drizzle-orm/pg-core";
@@ -32,19 +33,20 @@ export type MapViewProjectType = typeof mapViewProject.$inferSelect;
 export const mapViewInstitution = coreMatsSchema
   .materializedView("institution_view", {
     institution_id: text("institution_id").notNull(),
-    project_id: text("project_id").notNull(),
-    start_date: date("start_date").notNull(),
-    end_date: date("end_date").notNull(),
-    total_cost: doublePrecision("total_cost"),
     geolocation: doublePrecision("geolocation").array(),
     country_code: text("country_code"),
     type: text("type"),
     sme: boolean("sme"),
-    nuts_0: text("nuts_0"),
-    nuts_1: text("nuts_1"),
-    nuts_2: text("nuts_2"),
-    nuts_3: text("nuts_3"),
-    framework_programmes: text("framework_programmes").array(),
+    total_cost: doublePrecision("total_cost"),
+    projects: jsonb("projects").$type<
+      {
+        id: string;
+        start: string;
+        end: string;
+        total_cost: number | null;
+        framework_programmes: string[];
+      }[]
+    >(),
   })
   .existing();
 

@@ -3,8 +3,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cache } from "lib/cache";
-import { compressJson } from "lib/compression";
+import { cache } from "lib/backend/cache";
+import { compressJson } from "lib/backend/compression";
 
 type ApiHandler = (request: NextRequest) => Promise<NextResponse>;
 

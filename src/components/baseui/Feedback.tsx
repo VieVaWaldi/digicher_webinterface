@@ -1,12 +1,31 @@
 "use client";
 
+import {
+  Backdrop,
+  Box,
+  Button,
+  Chip,
+  Divider,
+  IconButton,
+  Paper,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { keyframes } from "@mui/system";
 import { MessageCircle, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "shadcn/button";
-import { H2, H5, H6, P, Small } from "shadcn/typography";
-import { cn } from "shadcn/utils/shadcn-utils";
 import { submitFeedback } from "utils/feedbackUtils";
-import { BTN_SCALE, CSS_BUTTON, STRK_WDTH } from "./BaseUIComponents";
+
+const pulseScale = keyframes`
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+`;
 
 interface FeedbackButtonProps {
   showBanner: boolean;
@@ -25,45 +44,76 @@ export function FeedbackButton({
       setShowBanner(true);
 
       setTimeout(() => setShowBanner(false), 5000);
-    }, 5000); // initial 5 seconds
+    }, 0); // initial 5 seconds 5000
 
     const recurringTimer = setInterval(() => {
       setShowBanner(true);
       setTimeout(() => setShowBanner(false), 5000);
-    }, 120000); // every 2 minutes
+    }, 60000); // every 1 minute
 
     return () => {
       clearTimeout(initialTimer);
       clearInterval(recurringTimer);
     };
   }, [setShowBanner]);
+
   return (
-    <div className="relative">
+    <Box sx={{ display: "flex", alignItems: "center", position: "relative", overflow: "visible" }}>
+      {/* Banner - positioned to the left */}
       {showBanner && (
-        <div
+        <Chip
+          label="Help us improve (:"
           onClick={() => setShowFeedback(true)}
-          className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-lg border-2 border-orange-500 bg-white px-3 py-2 shadow-md duration-300 animate-in"
-        >
-          <H6 className="whitespace-nowrap font-bold text-orange-500">
-            Help us improve c:
-          </H6>
-        </div>
+          sx={{
+            position: "absolute",
+            right: "100%",
+            mr: 1.5,
+            fontWeight: 600,
+            fontSize: "0.8rem",
+            backgroundColor: "background.paper",
+            color: "secondary.main",
+            border: 2,
+            borderColor: "secondary.main",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            maxWidth: "none",
+            animation: "fadeIn 0.3s ease-in-out",
+            "@keyframes fadeIn": {
+              from: { opacity: 0, transform: "translateX(10px)" },
+              to: { opacity: 1, transform: "translateX(0)" },
+            },
+            "&:hover": {
+              backgroundColor: "secondary.main",
+              color: "secondary.contrastText",
+            },
+          }}
+        />
       )}
 
       {/* Feedback Button */}
-      <div className="z-10 flex items-center">
-        <Button
-          variant="secondary"
-          className={cn(
-            CSS_BUTTON,
-            "animate-[pulse-scale_3s_ease-in-out_infinite]",
-          )}
+      <Tooltip title="Give Feedback" arrow>
+        <IconButton
           onClick={() => setShowFeedback(true)}
+          sx={{
+            width: { xs: 40, md: 48, lg: 64 },
+            height: { xs: 40, md: 48, lg: 64 },
+            backgroundColor: "background.paper",
+            color: "secondary.main",
+            animation: `${pulseScale} 3s ease-in-out infinite`,
+            "&:hover": {
+              backgroundColor: "secondary.main",
+              color: "secondary.contrastText",
+            },
+          }}
         >
-          <MessageCircle strokeWidth={STRK_WDTH} className={BTN_SCALE} />
-        </Button>
-      </div>
-    </div>
+          <MessageCircle
+            size={24}
+            strokeWidth={2.2}
+            style={{ transform: "scale(1.2)" }}
+          />
+        </IconButton>
+      </Tooltip>
+    </Box>
   );
 }
 
@@ -134,118 +184,187 @@ export default function Feedback({
   const displayTitle = scenarioTitle || scenarioName;
 
   return (
-    <>
-      {/* Feedback Modal */}
-      {showFeedback && (
-        <div
-          className="absolute inset-0 z-20 flex items-center justify-center"
-          onClick={() => setShowFeedback(false)}
+    <Backdrop
+      open={showFeedback}
+      onClick={() => setShowFeedback(false)}
+      sx={{ zIndex: 20 }}
+    >
+      <Paper
+        onClick={(e) => e.stopPropagation()}
+        sx={{
+          maxHeight: "80vh",
+          width: "91.666%",
+          maxWidth: "672px",
+          overflow: "hidden",
+          borderRadius: 3,
+          backdropFilter: "blur(12px)",
+          backgroundColor: (theme) =>
+            theme.palette.mode === "dark"
+              ? "rgba(30, 30, 30, 0.95)"
+              : "rgba(255, 255, 255, 0.95)",
+        }}
+      >
+        <Box sx={{ overflow: "auto", maxHeight: "80vh", p: 3 }}>
+          {/* Header */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 2,
+          }}
         >
-          <div
-            className="relative max-h-[80vh] w-11/12 max-w-2xl overflow-y-auto rounded-xl bg-white/90 p-6 shadow-xl backdrop-blur-md"
-            onClick={(e) => e.stopPropagation()}
+          <Box>
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 600, fontFamily: "Inter, sans-serif" }}
+              color="text.primary"
+            >
+              Feedback for{" "}
+              <Box component="span" sx={{ color: "secondary.main" }}>
+                {displayTitle}
+              </Box>{" "}
+              scenario
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Thanks for helping us improve!
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={() => setShowFeedback(false)}
+            size="small"
+            sx={{ color: "text.secondary" }}
           >
-            {/* Header */}
-            <div className="mb-4 flex flex-row items-start justify-between">
-              <div>
-                <H2 className="text-xl font-semibold text-gray-800">
-                  Feedback for{" "}
-                  <span className="mb-2 text-orange-500">{displayTitle}</span>{" "}
-                  scenario
-                </H2>
-                <Small className="text-gray-600">
-                  Thanks for helping us improve!
-                </Small>
-              </div>
-              <button
-                className="p-1 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowFeedback(false)}
+            <X size={20} />
+          </IconButton>
+        </Box>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {submitted ? (
+          // Success state
+          <Box sx={{ py: 4, textAlign: "center" }}>
+            <Typography
+              variant="h6"
+              color="success.main"
+              sx={{ mb: 1, fontFamily: "Inter, sans-serif" }}
+            >
+              Thank you!
+            </Typography>
+            <Typography color="text.secondary">
+              Your feedback has been submitted successfully.
+            </Typography>
+          </Box>
+        ) : (
+          // Feedback form
+          <Stack spacing={3}>
+            {/* Usefulness Question */}
+            <Box>
+              <Typography
+                variant="subtitle1"
+                fontWeight={500}
+                color="text.primary"
+                sx={{ mb: 1.5 }}
               >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+                Do you find this scenario useful?
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant={isUseful === true ? "contained" : "outlined"}
+                  onClick={() => setIsUseful(true)}
+                  fullWidth
+                  sx={{
+                    ...(isUseful === true && {
+                      backgroundColor: "primary.main",
+                      "&:hover": { backgroundColor: "primary.dark" },
+                    }),
+                  }}
+                >
+                  Yes, it's useful
+                </Button>
+                <Button
+                  variant={isUseful === false ? "contained" : "outlined"}
+                  onClick={() => setIsUseful(false)}
+                  fullWidth
+                  sx={{
+                    ...(isUseful === false && {
+                      backgroundColor: "primary.main",
+                      "&:hover": { backgroundColor: "primary.dark" },
+                    }),
+                  }}
+                >
+                  No, not useful
+                </Button>
+              </Stack>
+            </Box>
 
-            <div className="mb-4 h-px w-full bg-gray-300" />
-
-            {submitted ? (
-              // Success state
-              <div className="py-8 text-center">
-                <H5 className="mb-2 text-green-600">Thank you!</H5>
-                <P className="px-0 text-gray-600">
-                  Your feedback has been submitted successfully.
-                </P>
-              </div>
-            ) : (
-              // Feedback form
-              <div className="space-y-6">
-                {/* Usefulness Question */}
-                <div>
-                  <H5 className="mb-3 text-gray-800">
-                    Do you find this scenario useful?
-                  </H5>
-                  <div className="flex space-x-4">
-                    <Button
-                      variant={isUseful === true ? "default" : "outline"}
-                      onClick={() => setIsUseful(true)}
-                      className="flex-1"
-                    >
-                      Yes, its useful
-                    </Button>
-                    <Button
-                      variant={isUseful === false ? "default" : "outline"}
-                      onClick={() => setIsUseful(false)}
-                      className="flex-1"
-                    >
-                      No, not useful
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Reason for usefulness */}
-                {isUseful !== null && (
-                  <div>
-                    <H5 className="mb-3 text-gray-800">
-                      {isUseful
-                        ? "Why do you find it useful?"
-                        : "Why is it not useful?"}
-                    </H5>
-                    <textarea
-                      value={usefulnessReason}
-                      onChange={(e) => setUsefulnessReason(e.target.value)}
-                      placeholder="Tell us more about your experience..."
-                      className="h-24 w-full resize-none rounded-lg border border-gray-300 p-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div>
-                )}
-
-                {/* Improvement suggestions */}
-                <div>
-                  <H5 className="mb-3 text-gray-800">
-                    How would you improve this scenario?
-                  </H5>
-                  <textarea
-                    value={improvementSuggestion}
-                    onChange={(e) => setImprovementSuggestion(e.target.value)}
-                    placeholder="Share your ideas for improvement..."
-                    className="h-24 w-full resize-none rounded-lg border border-gray-300 p-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                </div>
-
-                {/* Submit Button */}
-                <div className="pt-4">
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isUseful === null || isSubmitting}
-                    className="h-12 w-full bg-orange-500 text-lg font-medium hover:bg-orange-600 disabled:bg-gray-300"
-                  >
-                    {isSubmitting ? "Sending..." : "Send Feedback"}
-                  </Button>
-                </div>
-              </div>
+            {/* Reason for usefulness */}
+            {isUseful !== null && (
+              <Box>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={500}
+                  color="text.primary"
+                  sx={{ mb: 1.5 }}
+                >
+                  {isUseful
+                    ? "Why do you find it useful?"
+                    : "Why is it not useful?"}
+                </Typography>
+                <TextField
+                  value={usefulnessReason}
+                  onChange={(e) => setUsefulnessReason(e.target.value)}
+                  placeholder="Tell us more about your experience..."
+                  multiline
+                  rows={3}
+                  fullWidth
+                />
+              </Box>
             )}
-          </div>
-        </div>
-      )}
-    </>
+
+            {/* Improvement suggestions */}
+            <Box>
+              <Typography
+                variant="subtitle1"
+                fontWeight={500}
+                color="text.primary"
+                sx={{ mb: 1.5 }}
+              >
+                How would you improve this scenario?
+              </Typography>
+              <TextField
+                value={improvementSuggestion}
+                onChange={(e) => setImprovementSuggestion(e.target.value)}
+                placeholder="Share your ideas for improvement..."
+                multiline
+                rows={3}
+                fullWidth
+              />
+            </Box>
+
+            {/* Submit Button */}
+            <Button
+              onClick={handleSubmit}
+              disabled={isUseful === null || isSubmitting}
+              variant="contained"
+              size="large"
+              fullWidth
+              sx={{
+                mt: 2,
+                py: 1.5,
+                fontSize: "1rem",
+                fontWeight: 500,
+                backgroundColor: "secondary.main",
+                "&:hover": { backgroundColor: "secondary.dark" },
+                "&:disabled": { backgroundColor: "action.disabledBackground" },
+              }}
+            >
+              {isSubmitting ? "Sending..." : "Send Feedback"}
+            </Button>
+          </Stack>
+        )}
+        </Box>
+      </Paper>
+    </Backdrop>
   );
 }

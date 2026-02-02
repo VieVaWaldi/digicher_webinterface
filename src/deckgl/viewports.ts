@@ -1,4 +1,4 @@
-import { ViewState } from "react-map-gl";
+import { ViewState } from "react-map-gl/mapbox";
 
 export const INITIAL_VIEW_STATE_EU: ViewState = {
   longitude: 10,

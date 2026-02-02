@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "baseUrl": "src/",
     "plugins": [
@@ -20,13 +24,31 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/core/*": ["./src/core/*"],
-      "@/datamodel/*": ["./src/datamodel/*"],
-      "@/features/*": ["./src/features/*"],
-      "@/db/*": ["./src/db/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@/core/*": [
+        "./src/core/*"
+      ],
+      "@/datamodel/*": [
+        "./src/datamodel/*"
+      ],
+      "@/features/*": [
+        "./src/features/*"
+      ],
+      "@/db/*": [
+        "./src/db/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

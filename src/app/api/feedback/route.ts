@@ -24,16 +24,12 @@ async function feedbackHandler(request: NextRequest) {
   try {
     const body: FeedbackRequestBody = await request.json();
 
-    console.log("a");
-
     if (!body.scenarioName || typeof body.isUseful !== "boolean") {
       return apiError(
         "Missing required fields: scenarioName and isUseful",
         400,
       );
     }
-
-    console.log("b");
 
     const feedbackData = {
       scenario_name: body.scenarioName,
@@ -56,14 +52,10 @@ async function feedbackHandler(request: NextRequest) {
       page_load_time_ms: body.pageLoadTimeMs || null,
     };
 
-    console.log("c");
-
     const result = await feedbackDb
       .insert(feedback_v1)
       .values(feedbackData)
       .returning({ id: feedback_v1.id });
-
-    console.log("d");
 
     return apiSuccess({
       id: result[0].id,

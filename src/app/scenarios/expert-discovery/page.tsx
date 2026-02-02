@@ -21,12 +21,12 @@ export default function TopicIntelligenceScenario() {
     <>
       <BaseUI
         layers={[layer]}
-        viewState={INITIAL_VIEW_STATE_TILTED_EU}
-        titleContent={<p>WIP: Expert Discovery</p>}
-        infoBoxContent={null}
+        defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
         error={null}
         scenarioName="expert-discovery"
         scenarioTitle="Expert Discovery"
+        search={undefined}
+        filters={undefined}
       />
       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
         <div className="rounded-lg bg-white p-4 shadow-lg">

@@ -1,11 +1,8 @@
 "use client";
 
 import { ReactNode, useMemo, useState } from "react";
-
 import { countries, getEmojiFlag, TCountryCode } from "countries-list";
-
-import { MultiSelect } from "shadcn/multi-select";
-import { H6 } from "shadcn/typography";
+import { MultiSelectDropdown, MultiSelectOption } from "components/mui/MultiSelectDropdown";
 
 const FlagIcon = ({
   countryCode,
@@ -24,13 +21,15 @@ function matchCodesToDB(code: string): string {
   return code;
 }
 
-const allCountries = Object.entries(countries).map(([code, country]) => ({
-  value: matchCodesToDB(code),
-  label: country.name,
-  icon: (props: { className?: string }) => (
-    <FlagIcon countryCode={code as TCountryCode} {...props} />
-  ),
-}));
+const allCountries: MultiSelectOption[] = Object.entries(countries).map(
+  ([code, country]) => ({
+    value: matchCodesToDB(code),
+    label: country.name,
+    icon: (props: { className?: string }) => (
+      <FlagIcon countryCode={code as TCountryCode} {...props} />
+    ),
+  })
+);
 
 interface CountryFilterResult {
   CountryFilter: ReactNode;
@@ -46,19 +45,13 @@ export default function useCountryFilter(): CountryFilterResult {
   }, [selectedCountries]);
 
   const CountryFilter = (
-    <div>
-      <H6 className="text-center">Region</H6>
-      <MultiSelect
-        options={allCountries}
-        value={selectedCountries}
-        defaultValue={selectedCountries}
-        onValueChange={setSelectedCountries}
-        placeholder="Select Countries"
-        variant="default"
-        maxCount={4}
-        className="mt-2 w-full"
-      />
-    </div>
+    <MultiSelectDropdown
+      options={allCountries}
+      value={selectedCountries}
+      onChange={setSelectedCountries}
+      placeholder="Select countries"
+      maxChips={3}
+    />
   );
 
   const countryPredicate = useMemo(

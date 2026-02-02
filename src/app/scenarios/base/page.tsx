@@ -1,65 +1,68 @@
 "use client";
 
 import BaseUI from "components/baseui/BaseUI";
-import LeftSideFilters from "components/baseui/LeftSideFilterMenu";
-import RightSideDataMenu from "components/baseui/RightSideDataMenu";
-import SelectedInfo from "components/baseui/SelectedEntity";
-import { usePaginatedProjects } from "components/baseui/usePaginatedProjects";
-import { usePaginatedResearchOutputs } from "components/baseui/usePaginatedResearchOutputs";
-import { ScopeToggle } from "components/buttons/toggle";
 import useCountryFilter from "components/filter/useCountryFilter";
 import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
-import useInstitutionSearchFilter from "components/filter/useInstitutionSearchFilter";
-import useNutsFilter from "components/filter/useNutsFilter";
-import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
-import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
-import ProjectInfoPanel from "components/infoPanels/ProjectInfoPanel";
-import ResearchOutputInfoPanel from "components/infoPanels/ResearchOutputInfoPanel";
-import { ScatterplotLayer } from "deck.gl";
-import { baseLayerProps } from "deckgl/baseLayerProps";
-import { INITIAL_VIEW_STATE_EU } from "deckgl/viewports";
+import { FilterSection, useUnifiedSearchFilter, EntityOption } from "components/mui";
+import { IconLayer } from "deck.gl";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
-import { useMapViewProject } from "hooks/queries/views/map/useMapViewProject";
-import { FileText, Lightbulb } from "lucide-react";
 import { ReactNode, useCallback, useMemo, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "shadcn/tabs";
-import { InfoBox, Title } from "./content";
+import { INITIAL_VIEW_STATE_EU } from "@/deckgl/viewports";
+import { Box, Typography } from "@mui/material";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import ScienceIcon from "@mui/icons-material/Science";
+
+// MUI AccountBalance icon as SVG data URL
+const INSTITUTION_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
+  <path fill="#2c5f66" d="M4 10h3v7H4zm6.5 0h3v7h-3zM2 19h20v3H2zm15-9h3v7h-3zm-5-9L2 6v2h20V6z"/>
+</svg>`;
+const INSTITUTION_ICON_URL = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(INSTITUTION_ICON_SVG)}`;
+
+const ENTITY_OPTIONS: EntityOption[] = [
+  // {
+  //   value: "works",
+  //   label: "Works",
+  //   icon: <DescriptionIcon fontSize="small" />,
+  // },
+  {
+    value: "projects",
+    label: "Projects",
+    icon: <ScienceIcon fontSize="small" />,
+  },
+  {
+    value: "institutions",
+    label: "Institutions",
+    icon: <AccountBalanceIcon fontSize="small" />,
+  },
+];
 
 export default function BaseScenario() {
-  /** Map Data View */
-  const { data: mapViewProject, isPending, error } = useMapViewProject();
-  const { data: mapViewInstitution } = useMapViewInstitution();
-
-  /** View Toggle */
-  const [showInstitutions, setShowInstitutions] = useState<boolean>(false);
-  const dataView = showInstitutions ? mapViewInstitution : mapViewProject;
-
-  /** Selected Entity */
-  const [selectedInfo, setSelectedInfo] = useState<boolean | "p" | "i" | "r">(
-    false,
-  );
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    null,
-  );
+  const { data, isPending, error } = useMapViewInstitution();
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
-  const [selectedROId, setSelectedROId] = useState<string | null>(null);
 
   /** Filters */
 
   const { YearRangeFilter, yearRangePredicate, minYear, maxYear } =
-    useYearRangeFilter();
+    useYearRangeFilter({
+      defaultMinYear: 2020,
+      defaultMaxYear: 2025,
+    });
   const { CountryFilter, countryPredicate } = useCountryFilter();
   const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter();
-  const { NutsFilter, nutsPredicate } = useNutsFilter(mapViewProject);
-  const { InstitutionSearchFilter, institutionSearchPredicate } =
-    useInstitutionSearchFilter();
-  const { ProjectSearchFilter, projectSearchPredicate, projectSearchQuery } =
-    useProjectSearchFilter();
+  const {
+    SearchFilter,
+    institutionSearchPredicate,
+    projectSearchPredicate,
+    MinorityGroupsFilter,
+  } = useUnifiedSearchFilter({
+    entityOptions: ENTITY_OPTIONS,
+    defaultEntity: "projects",
+  });
   const {
     FrameworkProgrammeFilter,
     frameworkProgrammePredicate,
@@ -75,174 +78,122 @@ export default function BaseScenario() {
     selectedTopics,
   } = useTopicFilter();
 
-  /** Table Data View */
-
-  const handleTableProjectClick = useCallback((project: any) => {
-    setSelectedProjectId(project.id);
-    setSelectedInstitutionId(null);
-    setSelectedInfo("p");
-  }, []);
-
-  const handleTableResearchOutputClick = useCallback((ro: any) => {
-    setSelectedROId(ro.id);
-    setSelectedInstitutionId(null);
-    setSelectedProjectId(null);
-    setSelectedInfo("r");
-  }, []);
-
-  const { ProjectsPaginated } = usePaginatedProjects({
-    icon: <Lightbulb />,
-    minYear,
-    maxYear,
-    projectSearchQuery,
-    selectedFrameworkProgrammes,
-    selectedDomains: selectedDomains,
-    selectedFields: selectedFields,
-    selectedSubfields: selectedSubfields,
-    selectedTopics: selectedTopics,
-    onProjectClick: handleTableProjectClick,
-  });
-
-  const { ResearchOutputsPaginated } = usePaginatedResearchOutputs({
-    icon: <FileText />,
-    minYear,
-    maxYear,
-    researchOutputSearchQuery: projectSearchQuery,
-    onResearchOutputClick: handleTableResearchOutputClick,
-  });
-
   /** Apply Filters */
 
-  const filteredDataView = useMemo(() => {
-    if (!dataView?.length) return [];
-    return dataView.filter((p) => {
-      return (
-        topicPredicate(p.project_id) &&
-        institutionSearchPredicate(p.institution_id) &&
-        projectSearchPredicate(p.project_id) &&
-        frameworkProgrammePredicate(p.framework_programmes) &&
-        yearRangePredicate(p.start_date, p.end_date) &&
-        countryPredicate(p.country_code) &&
-        typeAndSmePredicate(p.type, p.sme) &&
-        nutsPredicate(p.nuts_0, p.nuts_1, p.nuts_2, p.nuts_3)
+  const filteredData = useMemo(() => {
+    if (!data?.length) return [];
+    return data.filter((p) => {
+      if (!institutionSearchPredicate(p.institution_id)) return false;
+      if (!countryPredicate(p.country_code)) return false;
+      if (!typeAndSmePredicate(p.type, p.sme)) return false;
+
+      const projects = p.projects;
+      if (!projects?.length) return false;
+
+      return projects.some(
+        (proj) =>
+          topicPredicate(proj.id) &&
+          projectSearchPredicate(proj.id) &&
+          frameworkProgrammePredicate(proj.framework_programmes) &&
+          yearRangePredicate(proj.start, proj.end),
       );
     });
   }, [
-    dataView,
+    data,
     institutionSearchPredicate,
+    countryPredicate,
+    typeAndSmePredicate,
+    topicPredicate,
     projectSearchPredicate,
     frameworkProgrammePredicate,
     yearRangePredicate,
-    countryPredicate,
-    typeAndSmePredicate,
-    nutsPredicate,
-    topicPredicate,
   ]);
 
   /** UI Components */
   const filters: ReactNode = (
-    <div className="space-y-6">
-      <div className="flex justify-center">
-        <ScopeToggle
-          isInstitution={showInstitutions}
-          onChange={setShowInstitutions}
-        />
-      </div>
-      {YearRangeFilter}
-      {TypeAndSmeFilter}
-      {InstitutionSearchFilter}
-      {ProjectSearchFilter}
-      {CountryFilter}
-      {FrameworkProgrammeFilter}
-      {TopicFilter}
-      {NutsFilter}
-    </div>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <Typography
+        variant="h5"
+        color="text.secondary"
+        sx={{ textAlign: "center", mt: 1 }}
+      >
+        Displaying{" "}
+        <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+          {filteredData?.length.toLocaleString()}
+        </Box>{" "}
+        institutions
+      </Typography>
+
+      {/* Search Section */}
+      <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
+
+      {/* Time Section */}
+      <FilterSection title="Project Time" showDivider={true}>
+        {YearRangeFilter}
+      </FilterSection>
+
+      {/* Geographic & Demographic Section */}
+      <FilterSection title="Geographic & Demographic">
+        {CountryFilter}
+        {MinorityGroupsFilter}
+        {/*{NutsFilter}*/}
+      </FilterSection>
+
+      {/* Institutional Section */}
+      <FilterSection title="Institutional">
+        {TypeAndSmeFilter}
+        {FrameworkProgrammeFilter}
+        {/*{InstitutionSearchFilter}*/}
+        {/*{ProjectSearchFilter}*/}
+      </FilterSection>
+
+      {/* Topics Section */}
+      <FilterSection title="Topics">{TopicFilter}</FilterSection>
+    </Box>
   );
 
   /** Event Handlers */
-  const handleMapOnClick = useCallback(
-    (info: any) => {
-      if (info.object.project_id) {
-        setSelectedProjectId(info.object.project_id);
-        setSelectedInfo(showInstitutions ? "i" : "p");
-      }
-      if (info.object.institution_id) {
-        setSelectedInstitutionId(info.object.institution_id);
-        setSelectedInfo(showInstitutions ? "i" : "p");
-      }
-    },
-    [showInstitutions],
-  );
+  const handleMapOnClick = useCallback((info: any) => {
+    if (info.object.institution_id) {
+      setSelectedInstitutionId(info.object.institution_id);
+      console.log(info.object);
+    }
+  }, []);
 
   /** Layer */
   const layer = useMemo(() => {
-    return new ScatterplotLayer({
-      ...baseLayerProps,
-      id: "scatter-projects",
-      data: filteredDataView,
-      getFillColor: (d) => getTopicColor(d.project_id),
+    return new IconLayer({
+      id: "icon-institutions",
+      data: filteredData,
+      pickable: true,
       getPosition: (d) => d.geolocation,
+      getIcon: () => ({
+        url: INSTITUTION_ICON_URL,
+        width: 64,
+        height: 64,
+        anchorY: 64,
+      }),
+      getSize: 40,
+      sizeUnits: "meters",
+      sizeMinPixels: 12, // clickable when zoomed out
+      sizeMaxPixels: 40, // building-sized when zoomed in
       onClick: handleMapOnClick,
       updateTriggers: {
-        getPosition: filteredDataView,
-        getFillColor: filteredDataView,
+        getPosition: filteredData,
       },
     });
-  }, [filteredDataView, handleMapOnClick, getTopicColor]);
+  }, [filteredData, handleMapOnClick]);
 
   return (
-    <div onClick={() => setSelectedInfo(false)}>
-      <SelectedInfo show={selectedInfo} setSelectedInfo={setSelectedInfo}>
-        {selectedInfo == "i" && (
-          <InstitutionInfoPanel institution_id={selectedInstitutionId} />
-        )}
-        {selectedInfo == "p" && (
-          <ProjectInfoPanel
-            institution_id={selectedInstitutionId}
-            project_id={selectedProjectId}
-          />
-        )}
-        {selectedInfo == "r" && (
-          <ResearchOutputInfoPanel researchOutputId={selectedROId} />
-        )}
-      </SelectedInfo>
-
-      <div onClick={(e) => e.stopPropagation()}>
-        <LeftSideFilters>{filters}</LeftSideFilters>
-
-        <RightSideDataMenu>
-          <Tabs defaultValue="projects" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 font-bold text-orange-500">
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="research-outputs">
-                Research Outputs
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="projects" className="mt-4">
-              <ProjectsPaginated />
-            </TabsContent>
-            <TabsContent value="research-outputs" className="mt-4">
-              <ResearchOutputsPaginated />
-            </TabsContent>
-          </Tabs>
-        </RightSideDataMenu>
-      </div>
-
-      <BaseUI
-        layers={[layer]}
-        viewState={INITIAL_VIEW_STATE_EU}
-        titleContent={
-          <Title
-            name={showInstitutions ? "Institutions" : "Projects"}
-            count={filteredDataView?.length}
-          />
-        }
-        infoBoxContent={<InfoBox />}
-        loading={isPending}
-        error={error}
-        scenarioName="projects"
-        scenarioTitle="Projects"
-      />
-    </div>
+    <BaseUI
+      layers={[layer]}
+      search={SearchFilter}
+      filters={filters}
+      defaultViewState={INITIAL_VIEW_STATE_EU}
+      loading={isPending}
+      error={error}
+      scenarioName={"<Base>"}
+      scenarioTitle={"<Base>"}
+    />
   );
 }

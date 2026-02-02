@@ -267,8 +267,6 @@ export default function CollaborationScenario() {
   //     </div>
   //   );
 
-  const isLoading = isPending;
-
   const filters: ReactNode = (
     <div className="space-y-6">
       {YearRangeFilter}
@@ -287,21 +285,16 @@ export default function CollaborationScenario() {
       <SelectedInfo show={showSelectedInfo} setSelectedInfo={setSelectedInfo}>
         <InstitutionInfoPanel institution_id={selectedInstitutionId} />
       </SelectedInfo>
-      <LeftSideFilters>{filters}</LeftSideFilters>
+      {/*<LeftSideFilters>{filters}</LeftSideFilters>*/}
       <BaseUI
         layers={[arcLayer, scatterLayer]} // columnLayer
-        viewState={INITIAL_VIEW_STATE_TILTED_EU}
-        titleContent={
-          <TitleContent
-            institutionCount={uniqueInstitutions.length}
-            connectionsCount={filteredDataView?.length || 0}
-          />
-        }
-        infoBoxContent={null}
-        loading={isLoading}
+        filters={filters}
+        defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
+        loading={isPending}
         scenarioName="collaboration"
         scenarioTitle="Collaboration"
         error={error}
+        search={undefined}
       />
       {/* {hoverTooltip} */}
     </div>

@@ -21,7 +21,7 @@ interface SettingsProviderProps {
 
 function SettingsProvider({ children }: SettingsProviderProps) {
   const [mapBoxStyle, setMapBoxStyle] =
-    useState<MapBoxStyle>("mapbox/light-v11");
+    useState<MapBoxStyle>("mapbox/dark-v11");
   const [isGlobe, setIsGlobe] = useState<boolean>(false);
 
   const settings: SettingsContextType = {

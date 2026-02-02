@@ -1,6 +1,6 @@
 import { withApiWrapper } from "app/api/apiClient";
 import { apiSuccess } from "app/api/response";
-import { cache } from "lib/cache";
+import { cache } from "lib/backend/cache";
 import { NextRequest } from "next/server";
 
 async function getCacheStats() {

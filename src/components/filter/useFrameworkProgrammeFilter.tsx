@@ -1,10 +1,9 @@
 "use client";
 
 import { ReactNode, useMemo, useState } from "react";
-import { MultiSelect } from "shadcn/multi-select";
-import { H6 } from "shadcn/typography";
+import { MultiSelectDropdown, MultiSelectOption } from "components/mui/MultiSelectDropdown";
 
-const frameworkProgrammeOptions = [
+const frameworkProgrammeOptions: MultiSelectOption[] = [
   { value: "PRE_FWP", label: "Pre-Framework (before 1984)" },
   { value: "FP1", label: "FP1 (1984-1987)" },
   { value: "FP2", label: "FP2 (1987-1991)" },
@@ -46,19 +45,13 @@ export default function useFrameworkProgrammeFilter(): FrameworkProgrammeFilterR
   }, [selectedFrameworkProgrammes]);
 
   const FrameworkProgrammeFilter = (
-    <div>
-      <H6 className="text-center">Framework Programme</H6>
-      <MultiSelect
-        options={frameworkProgrammeOptions}
-        onValueChange={setSelectedFrameworkProgrammes}
-        defaultValue={selectedFrameworkProgrammes}
-        placeholder="Select framework programmes"
-        variant="inverted"
-        animation={2}
-        maxCount={3}
-        className="mt-2"
-      />
-    </div>
+    <MultiSelectDropdown
+      options={frameworkProgrammeOptions}
+      value={selectedFrameworkProgrammes}
+      onChange={setSelectedFrameworkProgrammes}
+      placeholder="Select framework programmes"
+      maxChips={2}
+    />
   );
 
   const frameworkProgrammePredicate = useMemo(

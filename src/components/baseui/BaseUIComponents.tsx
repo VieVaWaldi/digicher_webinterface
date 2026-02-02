@@ -74,7 +74,7 @@ export const MainMenu = ({
   setShowFeedback,
 }: MainMenuProps) => {
   return (
-    <div className="absolute bottom-2 left-1/2 z-30 flex -translate-x-1/2 transform flex-row space-x-2 md:space-x-3">
+    <div className="absolute bottom-2 left-1/2 z-30 flex -translate-x-1/2 transform flex-row space-x-2 overflow-visible md:space-x-3">
       <NavigationMenu
         showNavigation={showNavigation}
         onToggleNavigation={onToggleNavigation}

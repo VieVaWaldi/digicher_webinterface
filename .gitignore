@@ -5,6 +5,8 @@
 ecosystem.config.js
 .vscode/*
 /.vscode/
+public/claude/*
+.idea/
 
 ##############
 

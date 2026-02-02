@@ -1,6 +1,21 @@
 import { Metadata } from "next";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { EB_Garamond, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+
+const ebGaramond = EB_Garamond({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-eb-garamond",
+  weight: ["400", "500", "600", "700"],
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "Heritage Monitor",
@@ -14,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`h-full ${ebGaramond.variable} ${inter.variable}`}>
       <head>
         <script>
           {`
@@ -32,9 +47,11 @@ export default function RootLayout({
         </script>
       </head>
       <body className="flex h-[100dvh] flex-col">
-        <Providers>
-          <main className="flex-1">{children}</main>
-        </Providers>
+        <AppRouterCacheProvider>
+          <Providers>
+            <main className="flex-1">{children}</main>
+          </Providers>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
