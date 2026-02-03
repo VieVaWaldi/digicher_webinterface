@@ -12,14 +12,14 @@ import { baseLayerProps } from "deckgl/baseLayerProps";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
 import { useInstitutionById } from "hooks/queries/institution/useInstitutionById";
 import { useCollaborationsEnriched } from "hooks/queries/views/map/useMapViewCollaborationsEnriched";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import TitleContent from "./content";
 import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
 import useCountryFilter from "@/components/filter/useCountryFilter";
 import { useFilters } from "@/hooks/useFilters";
 import { useDebouncedCallback } from "use-debounce";
 
-export default function CollaborationScenario() {
+function CollaborationScenarioContent() {
   //   const { isGlobe } = useSettings();
   //   const COLOR_GAMMA = 0.7;
   //   const MAX_HEIGHT = isGlobe ? 4_000_000 : 1_000_000;
@@ -317,5 +317,13 @@ export default function CollaborationScenario() {
       />
       {/* {hoverTooltip} */}
     </div>
+  );
+}
+
+export default function CollaborationScenario() {
+  return (
+    <Suspense>
+      <CollaborationScenarioContent />
+    </Suspense>
   );
 }

@@ -13,7 +13,7 @@ import {
 } from "components/mui";
 import { IconLayer } from "deck.gl";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import { INITIAL_VIEW_STATE_EU } from "@/deckgl/viewports";
 import { Box, Typography } from "@mui/material";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
@@ -44,7 +44,7 @@ const ENTITY_OPTIONS: EntityOption[] = [
   },
 ];
 
-export default function BaseScenario() {
+function BaseScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
@@ -204,5 +204,13 @@ export default function BaseScenario() {
       scenarioName={"<Base>"}
       scenarioTitle={"<Base>"}
     />
+  );
+}
+
+export default function BaseScenario() {
+  return (
+    <Suspense>
+      <BaseScenarioContent />
+    </Suspense>
   );
 }

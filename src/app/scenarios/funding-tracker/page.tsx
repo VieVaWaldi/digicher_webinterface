@@ -11,7 +11,7 @@ import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import { PickingInfo } from "deck.gl";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { Box, Typography } from "@mui/material";
 import {
@@ -42,7 +42,7 @@ const ENTITY_OPTIONS: EntityOption[] = [
   },
 ];
 
-export default function FundingScenario() {
+function FundingScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
@@ -283,5 +283,13 @@ export default function FundingScenario() {
       {hoverTooltip}
       {layerSwitcherUI}
     </>
+  );
+}
+
+export default function FundingScenario() {
+  return (
+    <Suspense>
+      <FundingScenarioContent />
+    </Suspense>
   );
 }
