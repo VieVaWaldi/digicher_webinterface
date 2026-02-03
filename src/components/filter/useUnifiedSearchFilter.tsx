@@ -1,15 +1,15 @@
 "use client";
 
-import { ReactNode, useCallback, useMemo, useState } from "react";
-import { Box, Typography, CircularProgress } from "@mui/material";
-import { SearchBar, EntityOption } from "./SearchBar";
-import { MultiSelectDropdown, MultiSelectOption } from "./MultiSelectDropdown";
-import { useInstitutionSearchByName } from "hooks/queries/institution/useInstitutionSearchByName";
-import { useProjectSearchByName } from "hooks/queries/project/useProjectSearchByName";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Box } from "@mui/material";
+import { EntityOption, SearchBar } from "../mui/SearchBar";
+import { MultiSelectDropdown, MultiSelectOption } from "../mui/MultiSelectDropdown";
+import { useInstitutionSearchByName } from "@/hooks/queries/institution/useInstitutionSearchByName";
+import { useProjectSearchByName } from "@/hooks/queries/project/useProjectSearchByName";
 
-// =============================================================================
-// TYPES
-// =============================================================================
+{
+  /* TYPE CONFIG */
+}
 
 export type SearchEntity = "institutions" | "projects" | "works";
 
@@ -18,8 +18,20 @@ export interface UnifiedSearchFilterOptions {
   entityOptions: EntityOption[];
   /** Default selected entity. Defaults to "projects". */
   defaultEntity?: SearchEntity;
-  /** Whether to show minority groups filter (only applies to projects). */
+  /** Whether to show minority groups filter. */
   showMinorityGroups?: boolean;
+  /** Controlled initial entity from URL params */
+  initialEntity?: SearchEntity;
+  /** Controlled initial query from URL params */
+  initialQuery?: string;
+  /** Controlled initial minority groups from URL params */
+  initialMinorityGroups?: string[];
+  /** Callback when entity changes (for URL sync) */
+  onEntityChange?: (value: SearchEntity) => void;
+  /** Callback when query changes (for URL sync) */
+  onQueryChange?: (value: string) => void;
+  /** Callback when minority groups change (for URL sync) */
+  onMinorityGroupsChange?: (value: string[]) => void;
 }
 
 export interface UnifiedSearchFilterResult {
@@ -35,13 +47,13 @@ export interface UnifiedSearchFilterResult {
   selectedEntity: SearchEntity;
   /** The current search query */
   searchQuery: string;
-  /** The minority groups filter UI (only rendered when entity is "projects") */
+  /** The minority groups filter UI (filters projects regardless of selected entity) */
   MinorityGroupsFilter: ReactNode;
 }
 
-// =============================================================================
-// MINORITY GROUPS CONFIG
-// =============================================================================
+{
+  /* MINORITY GROUPS CONFIG */
+}
 
 const MINORITY_GROUP_OPTIONS: MultiSelectOption[] = [
   { value: "ladin", label: "Ladin" },
@@ -55,31 +67,61 @@ const MINORITY_SEARCH_TERMS: Record<string, string> = {
   jewish: "jewish jew jews judaism hebrew yiddish",
 };
 
-// =============================================================================
-// HOOK
-// =============================================================================
+{
+  /* HOOK */
+}
 
 export default function useUnifiedSearchFilter(
-  options: UnifiedSearchFilterOptions
+  options: UnifiedSearchFilterOptions,
 ): UnifiedSearchFilterResult {
   const {
     entityOptions,
     defaultEntity = "projects",
     showMinorityGroups = true,
+    initialEntity,
+    initialQuery,
+    initialMinorityGroups,
+    onEntityChange,
+    onQueryChange,
+    onMinorityGroupsChange,
   } = options;
 
-  // ---------------------------------------------------------------------------
-  // SHARED STATE
-  // ---------------------------------------------------------------------------
+  {
+    /*SHARED STATE */
+  }
 
-  const [searchEntity, setSearchEntity] = useState<SearchEntity>(defaultEntity);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeQuery, setActiveQuery] = useState<string>("");
-  const [selectedMinorityGroups, setSelectedMinorityGroups] = useState<string[]>([]);
+  const [searchEntity, setSearchEntity] = useState<SearchEntity>(
+    initialEntity ?? defaultEntity
+  );
+  const [searchQuery, setSearchQuery] = useState<string>(initialQuery ?? "");
+  const [activeQuery, setActiveQuery] = useState<string>(initialQuery ?? "");
+  const [selectedMinorityGroups, setSelectedMinorityGroups] = useState<
+    string[]
+  >(initialMinorityGroups ?? []);
 
-  // ---------------------------------------------------------------------------
-  // INSTITUTION SEARCH
-  // ---------------------------------------------------------------------------
+  // Sync state when initial values change (browser nav)
+  useEffect(() => {
+    if (initialEntity !== undefined) {
+      setSearchEntity(initialEntity);
+    }
+  }, [initialEntity]);
+
+  useEffect(() => {
+    if (initialQuery !== undefined) {
+      setSearchQuery(initialQuery);
+      setActiveQuery(initialQuery);
+    }
+  }, [initialQuery]);
+
+  useEffect(() => {
+    if (initialMinorityGroups !== undefined) {
+      setSelectedMinorityGroups(initialMinorityGroups);
+    }
+  }, [initialMinorityGroups]);
+
+  {
+    /* INSTITUTION SEARCH */
+  }
 
   const isInstitutionSearch = searchEntity === "institutions";
 
@@ -89,7 +131,11 @@ export default function useUnifiedSearchFilter(
     });
 
   const institutionIdSet = useMemo(() => {
-    if (!isInstitutionSearch || !activeQuery || institutionResults.length === 0) {
+    if (
+      !isInstitutionSearch ||
+      !activeQuery ||
+      institutionResults.length === 0
+    ) {
       return null;
     }
     return new Set(institutionResults.map((result) => result.id));
@@ -102,52 +148,67 @@ export default function useUnifiedSearchFilter(
       if (!institutionIdSet) return false;
       return institutionIdSet.has(institutionId);
     },
-    [isInstitutionSearch, activeQuery, institutionIdSet]
+    [isInstitutionSearch, activeQuery, institutionIdSet],
   );
 
-  // ---------------------------------------------------------------------------
-  // PROJECT SEARCH (with minority groups support)
-  // ---------------------------------------------------------------------------
+  {
+    /* PROJECT SEARCH (with minority groups support) */
+  }
 
   const isProjectSearch = searchEntity === "projects";
 
-  // Combine text search query with minority group terms for projects
-  const fullProjectQuery = useMemo(() => {
-    if (!isProjectSearch) return "";
-
-    const minorityTerms = selectedMinorityGroups
+  // Minority terms query (works independently of selected entity)
+  const minorityTermsQuery = useMemo(() => {
+    return selectedMinorityGroups
       .map((group) => MINORITY_SEARCH_TERMS[group] || "")
       .filter(Boolean)
       .join(" ");
+  }, [selectedMinorityGroups]);
 
-    return [searchQuery, minorityTerms].filter(Boolean).join(" ");
-  }, [isProjectSearch, searchQuery, selectedMinorityGroups]);
+  // Full project query combines text search (when project selected) with minority terms
+  const fullProjectQuery = useMemo(() => {
+    if (isProjectSearch) {
+      return [searchQuery, minorityTermsQuery].filter(Boolean).join(" ");
+    }
+    return minorityTermsQuery;
+  }, [isProjectSearch, searchQuery, minorityTermsQuery]);
+
+  // Determine if project filter is active (either project search or minority filter)
+  const hasActiveProjectFilter =
+    (isProjectSearch && !!activeQuery) || selectedMinorityGroups.length > 0;
+
+  // The query to use for project search
+  const projectFilterQuery = isProjectSearch ? activeQuery : minorityTermsQuery;
 
   const { data: projectResults = [], isPending: isProjectPending } =
-    useProjectSearchByName(activeQuery, {
-      enabled: isProjectSearch && !!activeQuery,
+    useProjectSearchByName(projectFilterQuery, {
+      enabled: hasActiveProjectFilter && !!projectFilterQuery,
     });
 
   const projectIdSet = useMemo(() => {
-    if (!isProjectSearch || !activeQuery || projectResults.length === 0) {
+    if (
+      !hasActiveProjectFilter ||
+      !projectFilterQuery ||
+      projectResults.length === 0
+    ) {
       return null;
     }
     return new Set(projectResults.map((result) => result.id));
-  }, [isProjectSearch, activeQuery, projectResults]);
+  }, [hasActiveProjectFilter, projectFilterQuery, projectResults]);
 
   const projectSearchPredicate = useCallback(
     (projectId: string): boolean => {
-      if (!isProjectSearch) return true;
-      if (!activeQuery) return true;
+      if (!hasActiveProjectFilter) return true;
+      if (!projectFilterQuery) return true;
       if (!projectIdSet) return false;
       return projectIdSet.has(projectId);
     },
-    [isProjectSearch, activeQuery, projectIdSet]
+    [hasActiveProjectFilter, projectFilterQuery, projectIdSet],
   );
 
-  // ---------------------------------------------------------------------------
-  // WORKS SEARCH (placeholder)
-  // ---------------------------------------------------------------------------
+  {
+    /* WORKS SEARCH (placeholder) */
+  }
 
   const isWorksSearch = searchEntity === "works";
 
@@ -163,12 +224,12 @@ export default function useUnifiedSearchFilter(
       // TODO: Implement when works search is available
       return true;
     },
-    [isWorksSearch]
+    [isWorksSearch],
   );
 
-  // ---------------------------------------------------------------------------
-  // EVENT HANDLERS
-  // ---------------------------------------------------------------------------
+  {
+    /* EVENT HANDLERS */
+  }
 
   const handleSearchInput = useCallback((value: string) => {
     setSearchQuery(value);
@@ -184,21 +245,38 @@ export default function useUnifiedSearchFilter(
       } else {
         setActiveQuery(searchQuery);
       }
+      // Notify URL sync on search
+      onQueryChange?.(searchQuery);
     },
-    [isProjectSearch, fullProjectQuery, searchQuery]
+    [isProjectSearch, fullProjectQuery, searchQuery, onQueryChange],
   );
 
-  const handleEntityChange = useCallback((value: string) => {
-    setSearchEntity(value as SearchEntity);
-    // Reset search when changing entity
+  const handleSearchClear = useCallback(() => {
+    setSearchQuery("");
     setActiveQuery("");
-  }, []);
+    onQueryChange?.("");
+  }, [onQueryChange]);
+
+  const handleEntityChange = useCallback(
+    (value: string) => {
+      setSearchEntity(value as SearchEntity);
+      // Reset search when changing entity
+      setActiveQuery("");
+      setSearchQuery("");
+      onQueryChange?.("");
+      onEntityChange?.(value as SearchEntity);
+    },
+    [onEntityChange, onQueryChange]
+  );
 
   const handleMinorityGroupsChange = useCallback(
     (groups: string[]) => {
       setSelectedMinorityGroups(groups);
+      onMinorityGroupsChange?.(groups);
 
-      // Auto-trigger search when minority groups change (projects only)
+      // Auto-trigger search when minority groups change
+      // When project search: update activeQuery with full query (text + minority terms)
+      // When other entity: minority filter works independently via projectFilterQuery
       if (isProjectSearch) {
         const minorityTerms = groups
           .map((group) => MINORITY_SEARCH_TERMS[group] || "")
@@ -211,25 +289,26 @@ export default function useUnifiedSearchFilter(
 
         setActiveQuery(newFullQuery);
       }
+      // When not project search, minorityTermsQuery updates automatically via useMemo
     },
-    [isProjectSearch, searchQuery]
+    [isProjectSearch, searchQuery, onMinorityGroupsChange],
   );
 
-  // ---------------------------------------------------------------------------
-  // COMPUTED VALUES
-  // ---------------------------------------------------------------------------
+  {
+    /* COMPUTED VALUES */
+  }
 
-  const isPending = isInstitutionSearch
-    ? isInstitutionPending
-    : isProjectSearch
-      ? isProjectPending
-      : false;
-
-  const resultCount = isInstitutionSearch
-    ? institutionResults.length
-    : isProjectSearch
-      ? projectResults.length
-      : 0;
+  // const isPending = isInstitutionSearch
+  //   ? isInstitutionPending
+  //   : isProjectSearch
+  //     ? isProjectPending
+  //     : false;
+  //
+  // const resultCount = isInstitutionSearch
+  //   ? institutionResults.length
+  //   : isProjectSearch
+  //     ? projectResults.length
+  //     : 0;
 
   const entityLabel = isInstitutionSearch
     ? "institution"
@@ -237,41 +316,26 @@ export default function useUnifiedSearchFilter(
       ? "project"
       : "work";
 
-  // ---------------------------------------------------------------------------
-  // UI COMPONENTS
-  // ---------------------------------------------------------------------------
+  {
+    /* UI COMPONENTS */
+  }
 
   const SearchFilter: ReactNode = useMemo(
     () => (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         <SearchBar
-          placeholder={`Search ${entityLabel}s (press Enter)...`}
+          value={searchQuery}
+          placeholder={`Search ...`}
           onSearch={handleSearchInput}
           onSearchStart={handleSearchStart}
+          onClear={handleSearchClear}
           entityOptions={entityOptions}
           selectedEntity={searchEntity}
           onEntityChange={handleEntityChange}
         />
-
-        {/*{isProjectSearch && (*/}
         {/*  <Typography variant="caption" color="text.secondary">*/}
         {/*    Words separated by spaces are searched with OR logic*/}
         {/*  </Typography>*/}
-        {/*)}*/}
-
-        {/*{activeQuery && (*/}
-        {/*  <Typography variant="body2" color="text.secondary">*/}
-        {/*    {isPending ? (*/}
-        {/*      <CircularProgress size={16} />*/}
-        {/*    ) : resultCount > 0 ? (*/}
-        {/*      `Found ${resultCount} ${entityLabel}(s)`*/}
-        {/*    ) : isWorksSearch ? (*/}
-        {/*      "Works search not yet implemented"*/}
-        {/*    ) : (*/}
-        {/*      `No ${entityLabel}s found`*/}
-        {/*    )}*/}
-        {/*  </Typography>*/}
-        {/*)}*/}
       </Box>
     ),
     [
@@ -282,16 +346,13 @@ export default function useUnifiedSearchFilter(
       searchEntity,
       handleEntityChange,
       isProjectSearch,
-      activeQuery,
-      isPending,
-      resultCount,
       isWorksSearch,
-    ]
+    ],
   );
 
   const MinorityGroupsFilter: ReactNode = useMemo(
     () =>
-      showMinorityGroups && isProjectSearch ? (
+      showMinorityGroups ? (
         <MultiSelectDropdown
           options={MINORITY_GROUP_OPTIONS}
           value={selectedMinorityGroups}
@@ -300,17 +361,8 @@ export default function useUnifiedSearchFilter(
           maxChips={3}
         />
       ) : null,
-    [
-      showMinorityGroups,
-      isProjectSearch,
-      selectedMinorityGroups,
-      handleMinorityGroupsChange,
-    ]
+    [showMinorityGroups, selectedMinorityGroups, handleMinorityGroupsChange],
   );
-
-  // ---------------------------------------------------------------------------
-  // RETURN
-  // ---------------------------------------------------------------------------
 
   return {
     SearchFilter,

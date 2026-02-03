@@ -1,23 +1,23 @@
 "use client";
 
 import { useProjectTopicsEnriched } from "hooks/queries/topic/useProjectTopicsEnriched";
-import { ChevronDown, ChevronRight, Search } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "shadcn/button";
-import { Checkbox } from "shadcn/checkbox";
-import { Input } from "shadcn/input";
-import { H6 } from "shadcn/typography";
+import { Box, IconButton, Checkbox, Typography, Button } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import { SearchBar } from "components/mui/SearchBar";
 
 interface TopicTreeNode {
   id: string;
   name: string;
-  type: "domain" | "field" | "subfield" | "topic";
+  type: "field" | "subfield" | "topic";
   children?: TopicTreeNode[];
   count?: number;
 }
 
 interface SelectedCounts {
-  domains: number;
   fields: number;
   subfields: number;
   topics: number;
@@ -27,7 +27,6 @@ interface TopicFilterResult {
   TopicFilter: ReactNode;
   topicPredicate: (projectId: string) => boolean;
   getTopicColor: (projectId: string) => [number, number, number, number];
-  selectedDomains: string[];
   selectedFields: string[];
   selectedSubfields: string[];
   selectedTopics: number[];
@@ -38,7 +37,6 @@ export const useTopicFilter = (
 ): TopicFilterResult => {
   const enrichedData = useProjectTopicsEnriched();
 
-  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [selectedSubfields, setSelectedSubfields] = useState<string[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
@@ -49,12 +47,10 @@ export const useTopicFilter = (
   const { treeData, lookupMaps } = useMemo(() => {
     if (!enrichedData?.length) return { treeData: [], lookupMaps: null };
 
-    const projectDomainMap = new Map<string, string>();
     const projectFieldMap = new Map<string, string>();
     const projectSubfieldMap = new Map<string, string>();
     const projectTopicMap = new Map<string, number>();
 
-    const domainMap = new Map<string, TopicTreeNode>();
     const fieldMap = new Map<string, TopicTreeNode>();
     const subfieldMap = new Map<string, TopicTreeNode>();
     const topicMap = new Map<string, TopicTreeNode>();
@@ -62,30 +58,19 @@ export const useTopicFilter = (
     enrichedData.forEach(({ project_id, topic }) => {
       if (!topic) return;
 
-      projectDomainMap.set(project_id, topic.domain_id);
       projectFieldMap.set(project_id, topic.field_id);
       projectSubfieldMap.set(project_id, topic.subfield_id);
       projectTopicMap.set(project_id, topic.id);
 
-      if (!domainMap.has(topic.domain_id)) {
-        domainMap.set(topic.domain_id, {
-          id: topic.domain_id,
-          name: topic.domain_name,
-          type: "domain",
-          children: [],
-        });
-      }
-
-      const fieldKey = `${topic.domain_id}-${topic.field_id}`;
-      if (!fieldMap.has(fieldKey)) {
+      // Use field_id as key (fields are now top-level)
+      if (!fieldMap.has(topic.field_id)) {
         const fieldNode: TopicTreeNode = {
           id: topic.field_id,
           name: topic.field_name,
           type: "field",
           children: [],
         };
-        fieldMap.set(fieldKey, fieldNode);
-        domainMap.get(topic.domain_id)!.children!.push(fieldNode);
+        fieldMap.set(topic.field_id, fieldNode);
       }
 
       const subfieldKey = `${topic.field_id}-${topic.subfield_id}`;
@@ -97,7 +82,7 @@ export const useTopicFilter = (
           children: [],
         };
         subfieldMap.set(subfieldKey, subfieldNode);
-        fieldMap.get(fieldKey)!.children!.push(subfieldNode);
+        fieldMap.get(topic.field_id)!.children!.push(subfieldNode);
       }
 
       const topicKey = `${topic.subfield_id}-${topic.id}`;
@@ -112,14 +97,13 @@ export const useTopicFilter = (
       }
     });
 
-    const sortedTreeData = Array.from(domainMap.values()).sort((a, b) =>
+    const sortedTreeData = Array.from(fieldMap.values()).sort((a, b) =>
       a.name.localeCompare(b.name),
     );
 
     return {
       treeData: sortedTreeData,
       lookupMaps: {
-        projectDomainMap,
         projectFieldMap,
         projectSubfieldMap,
         projectTopicMap,
@@ -145,7 +129,7 @@ export const useTopicFilter = (
         const nodeKey = `${parentKey}-${node.type}-${node.id}`;
 
         if (node.type === "subfield" && node.id === defaultOpenSubfieldId) {
-          pathToExpand.add(parentKey); // Add parent domain/field keys
+          pathToExpand.add(parentKey); // Add parent field key
           return true;
         }
 
@@ -163,12 +147,11 @@ export const useTopicFilter = (
 
   const selectedSets = useMemo(
     () => ({
-      domains: new Set(selectedDomains),
       fields: new Set(selectedFields),
       subfields: new Set(selectedSubfields),
       topics: new Set(selectedTopics),
     }),
-    [selectedDomains, selectedFields, selectedSubfields, selectedTopics],
+    [selectedFields, selectedSubfields, selectedTopics],
   );
 
   const filteredTreeData = useMemo(() => {
@@ -196,14 +179,6 @@ export const useTopicFilter = (
 
     return treeData.map(filterNode).filter(Boolean) as TopicTreeNode[];
   }, [treeData, searchQuery]);
-
-  const handleDomainToggle = useCallback((domainId: string) => {
-    setSelectedDomains((prev) =>
-      prev.includes(domainId)
-        ? prev.filter((id) => id !== domainId)
-        : [...prev, domainId],
-    );
-  }, []);
 
   const handleFieldToggle = useCallback((fieldId: string) => {
     setSelectedFields((prev) =>
@@ -244,8 +219,6 @@ export const useTopicFilter = (
   const isNodeSelected = useCallback(
     (node: TopicTreeNode) => {
       switch (node.type) {
-        case "domain":
-          return selectedSets.domains.has(node.id);
         case "field":
           return selectedSets.fields.has(node.id);
         case "subfield":
@@ -261,16 +234,14 @@ export const useTopicFilter = (
 
   const selectedCounts: SelectedCounts = useMemo(
     () => ({
-      domains: selectedDomains.length,
       fields: selectedFields.length,
       subfields: selectedSubfields.length,
       topics: selectedTopics.length,
     }),
-    [selectedDomains, selectedFields, selectedSubfields, selectedTopics],
+    [selectedFields, selectedSubfields, selectedTopics],
   );
 
   const clearAllSelections = useCallback(() => {
-    setSelectedDomains([]);
     setSelectedFields([]);
     setSelectedSubfields([]);
     setSelectedTopics([]);
@@ -307,9 +278,6 @@ export const useTopicFilter = (
 
       const handleToggle = () => {
         switch (node.type) {
-          case "domain":
-            handleDomainToggle(node.id);
-            break;
           case "field":
             handleFieldToggle(node.id);
             break;
@@ -323,71 +291,91 @@ export const useTopicFilter = (
       };
 
       return (
-        <div key={nodeKey} className="select-none">
-          <div
-            className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800`}
-            style={{ paddingLeft: `${depth * 16 + 8}px` }}
+        <Box key={nodeKey} sx={{ userSelect: "none" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              borderRadius: 1,
+              px: 1,
+              py: 0.5,
+              pl: `${depth * 16 + 8}px`,
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "action.hover",
+              },
+            }}
           >
-            {hasChildren && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-4 w-4 p-0"
+            {hasChildren ? (
+              <IconButton
+                size="small"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleNodeExpansion(nodeKey);
                 }}
+                sx={{ p: 0, width: 20, height: 20 }}
               >
                 {isExpanded ? (
-                  <ChevronDown className="h-3 w-3" />
+                  <ExpandMoreIcon sx={{ fontSize: 16 }} />
                 ) : (
-                  <ChevronRight className="h-3 w-3" />
+                  <ChevronRightIcon sx={{ fontSize: 16 }} />
                 )}
-              </Button>
+              </IconButton>
+            ) : (
+              <Box sx={{ width: 20 }} />
             )}
-            {!hasChildren && <div className="w-4" />}
 
             <Checkbox
               checked={isSelected}
-              onCheckedChange={handleToggle}
-              className="h-4 w-4"
+              onChange={handleToggle}
+              size="small"
+              icon={<CheckBoxOutlineBlankIcon sx={{ fontSize: 18 }} />}
+              checkedIcon={<CheckBoxIcon sx={{ fontSize: 18 }} />}
+              sx={{ p: 0 }}
             />
 
-            <span
-              className={`flex-1 text-sm ${isSelected ? "font-medium" : ""}`}
-              style={
-                node.type === "topic"
-                  ? {
-                      color: `rgb(${simpleTopicColor(parseInt(node.id))[0]}, ${simpleTopicColor(parseInt(node.id))[1]}, ${simpleTopicColor(parseInt(node.id))[2]})`,
-                    }
-                  : {}
-              }
+            <Typography
+              variant="body2"
+              sx={{
+                flex: 1,
+                fontWeight: isSelected ? 500 : 400,
+                color:
+                  node.type === "topic"
+                    ? `rgb(${simpleTopicColor(parseInt(node.id))[0]}, ${simpleTopicColor(parseInt(node.id))[1]}, ${simpleTopicColor(parseInt(node.id))[2]})`
+                    : "text.primary",
+              }}
               onClick={
                 hasChildren ? () => toggleNodeExpansion(nodeKey) : handleToggle
               }
             >
               {node.name}
-            </span>
+            </Typography>
 
-            <span className="text-xs capitalize text-gray-500">
+            <Typography
+              variant="caption"
+              sx={{
+                textTransform: "capitalize",
+                color: "text.secondary",
+              }}
+            >
               {node.type}
-            </span>
-          </div>
+            </Typography>
+          </Box>
 
           {hasChildren && isExpanded && (
-            <div>
+            <Box>
               {node
                 .children!.sort((a, b) => a.name.localeCompare(b.name))
                 .map((child) => renderTreeNode(child, depth + 1, nodeKey))}
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       );
     },
     [
       expandedNodes,
       isNodeSelected,
-      handleDomainToggle,
       handleFieldToggle,
       handleSubfieldToggle,
       handleTopicToggle,
@@ -400,21 +388,18 @@ export const useTopicFilter = (
     (projectId: string): boolean => {
       if (
         !lookupMaps ||
-        (selectedSets.domains.size === 0 &&
-          selectedSets.fields.size === 0 &&
+        (selectedSets.fields.size === 0 &&
           selectedSets.subfields.size === 0 &&
           selectedSets.topics.size === 0)
       ) {
         return true;
       }
 
-      const projectDomain = lookupMaps.projectDomainMap.get(projectId);
       const projectField = lookupMaps.projectFieldMap.get(projectId);
       const projectSubfield = lookupMaps.projectSubfieldMap.get(projectId);
       const projectTopic = lookupMaps.projectTopicMap.get(projectId);
 
       return !!(
-        (projectDomain && selectedSets.domains.has(projectDomain)) ||
         (projectField && selectedSets.fields.has(projectField)) ||
         (projectSubfield && selectedSets.subfields.has(projectSubfield)) ||
         (projectTopic && selectedSets.topics.has(projectTopic))
@@ -424,62 +409,66 @@ export const useTopicFilter = (
   );
 
   const TopicFilter = (
-    <div className="space-y-4">
-      <H6 className="text-center">Topics</H6>
-
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {/* Selection summary */}
-      {selectedCounts.domains +
-        selectedCounts.fields +
+      {selectedCounts.fields +
         selectedCounts.subfields +
         selectedCounts.topics >
         0 && (
-        <div className="flex items-center justify-between rounded bg-gray-50 p-2 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-          <span>
-            Selected: {selectedCounts.domains}d, {selectedCounts.fields}f,{" "}
-            {selectedCounts.subfields}sf, {selectedCounts.topics}t
-          </span>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderRadius: 1,
+            backgroundColor: "action.hover",
+            p: 1,
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            Selected: {selectedCounts.fields}f, {selectedCounts.subfields}sf,{" "}
+            {selectedCounts.topics}t
+          </Typography>
           <Button
-            variant="ghost"
-            size="sm"
+            variant="text"
+            size="small"
             onClick={clearAllSelections}
-            className="h-6 text-xs"
+            sx={{ minWidth: "auto", fontSize: "0.75rem" }}
           >
             Clear
           </Button>
-        </div>
+        </Box>
       )}
 
       {/* Search input */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-        <Input
-          placeholder="Search domains, fields, subfields, topics..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      <SearchBar
+        placeholder="Search fields, subfields, topics..."
+        value={searchQuery}
+        onSearch={setSearchQuery}
+        onClear={() => setSearchQuery("")}
+      />
 
       {/* Tree view */}
-      <div className="max-h-96 overflow-y-auto rounded-md border dark:bg-gray-900">
+      <Box>
         {filteredTreeData.length === 0 ? (
-          <div className="p-4 text-center text-sm text-gray-500">
-            {searchQuery ? "No matching topics found" : "No topics available"}
-          </div>
+          <Box sx={{ p: 2, textAlign: "center" }}>
+            <Typography variant="body2" color="text.secondary">
+              {searchQuery ? "No matching topics found" : "No topics available"}
+            </Typography>
+          </Box>
         ) : (
-          <div className="p-2">
-            {filteredTreeData.map((domain) => renderTreeNode(domain))}
-          </div>
+          <Box sx={{ p: 1 }}>
+            {filteredTreeData.map((field) => renderTreeNode(field))}
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 
   return {
     TopicFilter,
     topicPredicate,
     getTopicColor,
-    selectedDomains,
     selectedFields,
     selectedSubfields,
     selectedTopics,

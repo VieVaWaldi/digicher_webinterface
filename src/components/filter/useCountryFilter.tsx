@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { countries, getEmojiFlag, TCountryCode } from "countries-list";
 import { MultiSelectDropdown, MultiSelectOption } from "components/mui/MultiSelectDropdown";
 
@@ -31,14 +31,41 @@ const allCountries: MultiSelectOption[] = Object.entries(countries).map(
   })
 );
 
+interface CountryFilterOptions {
+  /** Controlled initial value from URL params */
+  initialValue?: string[];
+  /** Callback when value changes (for URL sync) */
+  onChange?: (value: string[]) => void;
+}
+
 interface CountryFilterResult {
   CountryFilter: ReactNode;
   countryPredicate: (countryCode: string | null) => boolean;
   selectedCountries: string[];
 }
 
-export default function useCountryFilter(): CountryFilterResult {
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+export default function useCountryFilter(
+  options: CountryFilterOptions = {}
+): CountryFilterResult {
+  const { initialValue, onChange } = options;
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(
+    initialValue ?? []
+  );
+
+  // Sync state when initialValue changes (browser nav)
+  useEffect(() => {
+    if (initialValue !== undefined) {
+      setSelectedCountries(initialValue);
+    }
+  }, [initialValue]);
+
+  const handleChange = useCallback(
+    (value: string[]) => {
+      setSelectedCountries(value);
+      onChange?.(value);
+    },
+    [onChange]
+  );
 
   const selectedCountrySet = useMemo(() => {
     return new Set(selectedCountries);
@@ -48,7 +75,7 @@ export default function useCountryFilter(): CountryFilterResult {
     <MultiSelectDropdown
       options={allCountries}
       value={selectedCountries}
-      onChange={setSelectedCountries}
+      onChange={handleChange}
       placeholder="Select countries"
       maxChips={3}
     />

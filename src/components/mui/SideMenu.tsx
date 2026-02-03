@@ -30,26 +30,24 @@ export const SideMenu = ({
   onClose,
   width = 400,
 }: SideMenuProps) => {
+
   const isLeft = side === "left";
-
-  // Border radius: rounded on the edge away from screen edge
-  const borderRadius = isLeft
-    ? "0 16px 16px 0" // right corners rounded
-    : "16px 0 0 16px"; // left corners rounded
-
   const slideDirection = isLeft ? "right" : "left";
 
   return (
     <Slide direction={slideDirection} in={open} mountOnEnter unmountOnExit>
       <Paper
-        elevation={4}
+        // elevation={4}
         sx={{
           position: "absolute",
           top: 0,
           bottom: 0,
           [side]: 0,
           width,
-          borderRadius,
+          borderRadius: 0,
+          borderRight: 1,
+          borderLeft: 1,
+          borderColor: "divider",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -70,7 +68,11 @@ export const SideMenu = ({
           }}
         >
           {/* Title */}
-          <Typography variant="h6" fontWeight={500} sx={{ fontFamily: 'var(--font-inter)' }}>
+          <Typography
+            variant="h5"
+            fontWeight={500}
+            // sx={{ fontFamily: "var(--font-inter)" }}
+          >
             {title}
           </Typography>
 
@@ -103,8 +105,10 @@ export const SideMenu = ({
         <Box
           sx={{
             flex: 1,
-            overflow: "auto",
-            p: 2,
+            overflowY: "auto",
+            overflowX: "hidden",
+            py: 2,
+            px: 2.5,
           }}
         >
           {children}

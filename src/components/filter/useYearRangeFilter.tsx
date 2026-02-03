@@ -1,10 +1,14 @@
 import { useProjectYearRange } from "hooks/queries/project/useProjectYearRange";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { DualSlider } from "components/mui/DualSlider";
 
 interface YearRangeFilterOptions {
   defaultMinYear?: number;
   defaultMaxYear?: number;
+  /** Controlled initial value from URL params */
+  initialValue?: [number, number] | null;
+  /** Callback when value changes (for URL sync) */
+  onChange?: (value: [number, number]) => void;
 }
 
 interface YearRangeFilterResult {
@@ -17,21 +21,31 @@ interface YearRangeFilterResult {
 export default function useYearRangeFilter(
   options: YearRangeFilterOptions = {},
 ): YearRangeFilterResult {
-  const { defaultMinYear, defaultMaxYear } = options;
-
+  const { defaultMinYear, defaultMaxYear, initialValue, onChange } = options;
   const { data: { minStartDate = 1985, maxEndDate = 2035 } = {} } =
     useProjectYearRange();
 
-  const [years, setYears] = useState<[number, number]>(() => [
-    defaultMinYear ?? minStartDate,
-    defaultMaxYear ?? maxEndDate,
-  ]);
-
+  const [years, setYears] = useState<[number, number]>(() => {
+    // Priority: initialValue (URL) > defaultMinYear/defaultMaxYear > data defaults
+    if (initialValue) return initialValue;
+    return [defaultMinYear ?? minStartDate, defaultMaxYear ?? maxEndDate];
+  });
   const [minYear, maxYear] = useMemo(() => [years[0], years[1]], [years]);
 
-  const handleYearsChange = useCallback((value: [number, number]) => {
-    setYears(value);
-  }, []);
+  // Sync state when initialValue changes (browser nav)
+  useEffect(() => {
+    if (initialValue) {
+      setYears(initialValue);
+    }
+  }, [initialValue]);
+
+  const handleYearsChange = useCallback(
+    (value: [number, number]) => {
+      setYears(value);
+      onChange?.(value);
+    },
+    [onChange]
+  );
 
   const predicate = useMemo(
     () => (startDate: string, endDate: string) => {

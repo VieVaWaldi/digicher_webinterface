@@ -15,6 +15,9 @@ import { useCollaborationsEnriched } from "hooks/queries/views/map/useMapViewCol
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import TitleContent from "./content";
 import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
+import useCountryFilter from "@/components/filter/useCountryFilter";
+import { useFilters } from "@/hooks/useFilters";
+import { useDebouncedCallback } from "use-debounce";
 
 export default function CollaborationScenario() {
   //   const { isGlobe } = useSettings();
@@ -53,19 +56,32 @@ export default function CollaborationScenario() {
   //     object: any;
   //   } | null>(null);
 
+  /** URL Filter State */
+  const { filters: filterValues, setters } = useFilters();
+
+  // Debounced setters for URL sync
+  const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
+  const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 500);
+
   /** Filters */
   const { YearRangeFilter, yearRangePredicate, minYear, maxYear } =
     useYearRangeFilter({
       defaultMinYear: 2020,
       defaultMaxYear: 2025,
+      initialValue: filterValues.yearRange ?? undefined,
+      onChange: debouncedSetYearRange,
     });
+  const { CountryFilter, countryPredicate } = useCountryFilter({
+    initialValue: filterValues.countries,
+    onChange: setters.setCountries,
+  });
   const { ProjectSearchFilter, projectSearchPredicate, projectSearchQuery } =
     useProjectSearchFilter();
+
   const {
     TopicFilter,
     topicPredicate,
     getTopicColor,
-    selectedDomains,
     selectedFields,
     selectedSubfields,
     selectedTopics,
@@ -80,8 +96,8 @@ export default function CollaborationScenario() {
         //  institutionSearchPredicate(p.institution_id) &&
         projectSearchPredicate(p.project_id) &&
         //  frameworkProgrammePredicate(p.framework_programmes) &&
-        yearRangePredicate(p.start_date, p.end_date)
-        //  countryPredicate(p.country_code) &&
+        yearRangePredicate(p.start_date, p.end_date) &&
+        countryPredicate(p.country_code)
         //  typeAndSmePredicate(p.type, p.sme) &&
         //  nutsPredicate(p.nuts_0, p.nuts_1, p.nuts_2, p.nuts_3)
       );
@@ -271,10 +287,11 @@ export default function CollaborationScenario() {
     <div className="space-y-6">
       {YearRangeFilter}
       {ProjectSearchFilter}
+      {CountryFilter}
       {TopicFilter}
       {/* {TypeAndSmeFilter}
         {InstitutionSearchFilter}
-        {CountryFilter}
+
         {FrameworkProgrammeFilter}
         {NutsFilter} */}
     </div>
@@ -290,6 +307,8 @@ export default function CollaborationScenario() {
         layers={[arcLayer, scatterLayer]} // columnLayer
         filters={filters}
         defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
+        initialViewState={filterValues.viewState}
+        onViewStateChange={debouncedSetViewState}
         loading={isPending}
         scenarioName="collaboration"
         scenarioTitle="Collaboration"

@@ -6,7 +6,11 @@ import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgramme
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
-import { FilterSection, useUnifiedSearchFilter, EntityOption } from "components/mui";
+import {
+  EntityOption,
+  FilterSection,
+  useUnifiedSearchFilter,
+} from "components/mui";
 import { IconLayer } from "deck.gl";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { ReactNode, useCallback, useMemo, useState } from "react";
@@ -14,8 +18,9 @@ import { INITIAL_VIEW_STATE_EU } from "@/deckgl/viewports";
 import { Box, Typography } from "@mui/material";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import ScienceIcon from "@mui/icons-material/Science";
+import { useFilters } from "@/hooks/useFilters";
+import { useDebouncedCallback } from "use-debounce";
 
-// MUI AccountBalance icon as SVG data URL
 const INSTITUTION_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
   <path fill="#2c5f66" d="M4 10h3v7H4zm6.5 0h3v7h-3zM2 19h20v3H2zm15-9h3v7h-3zm-5-9L2 6v2h20V6z"/>
 </svg>`;
@@ -47,13 +52,22 @@ export default function BaseScenario() {
 
   /** Filters */
 
-  const { YearRangeFilter, yearRangePredicate, minYear, maxYear } =
-    useYearRangeFilter({
-      defaultMinYear: 2020,
-      defaultMaxYear: 2025,
-    });
-  const { CountryFilter, countryPredicate } = useCountryFilter();
-  const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter();
+  const { filters: filterValues, setters } = useFilters();
+
+  const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
+  const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 500);
+  const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
+    initialValue: filterValues.yearRange ?? undefined,
+    onChange: debouncedSetYearRange,
+  });
+  const { CountryFilter, countryPredicate } = useCountryFilter({
+    initialValue: filterValues.countries,
+    onChange: setters.setCountries,
+  });
+  const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter({
+    initialValue: filterValues.typeAndSme,
+    onChange: setters.setTypeAndSme,
+  });
   const {
     SearchFilter,
     institutionSearchPredicate,
@@ -62,21 +76,19 @@ export default function BaseScenario() {
   } = useUnifiedSearchFilter({
     entityOptions: ENTITY_OPTIONS,
     defaultEntity: "projects",
+    initialEntity: filterValues.unifiedSearch.entity,
+    initialQuery: filterValues.unifiedSearch.query,
+    initialMinorityGroups: filterValues.unifiedSearch.minorityGroups,
+    onEntityChange: setters.setEntity,
+    onQueryChange: setters.setQuery,
+    onMinorityGroupsChange: setters.setMinorityGroups,
   });
-  const {
-    FrameworkProgrammeFilter,
-    frameworkProgrammePredicate,
-    selectedFrameworkProgrammes,
-  } = useFrameworkProgrammeFilter();
-  const {
-    TopicFilter,
-    topicPredicate,
-    getTopicColor,
-    selectedDomains,
-    selectedFields,
-    selectedSubfields,
-    selectedTopics,
-  } = useTopicFilter();
+  const { FrameworkProgrammeFilter, frameworkProgrammePredicate } =
+    useFrameworkProgrammeFilter({
+      initialValue: filterValues.frameworkProgrammes,
+      onChange: setters.setFrameworkProgrammes,
+    });
+  const { TopicFilter, topicPredicate } = useTopicFilter();
 
   /** Apply Filters */
 
@@ -110,7 +122,8 @@ export default function BaseScenario() {
   ]);
 
   /** UI Components */
-  const filters: ReactNode = (
+
+  const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Typography
         variant="h5"
@@ -124,35 +137,28 @@ export default function BaseScenario() {
         institutions
       </Typography>
 
-      {/* Search Section */}
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
 
-      {/* Time Section */}
       <FilterSection title="Project Time" showDivider={true}>
         {YearRangeFilter}
       </FilterSection>
 
-      {/* Geographic & Demographic Section */}
       <FilterSection title="Geographic & Demographic">
         {CountryFilter}
         {MinorityGroupsFilter}
-        {/*{NutsFilter}*/}
       </FilterSection>
 
-      {/* Institutional Section */}
       <FilterSection title="Institutional">
         {TypeAndSmeFilter}
         {FrameworkProgrammeFilter}
-        {/*{InstitutionSearchFilter}*/}
-        {/*{ProjectSearchFilter}*/}
       </FilterSection>
 
-      {/* Topics Section */}
       <FilterSection title="Topics">{TopicFilter}</FilterSection>
     </Box>
   );
 
   /** Event Handlers */
+
   const handleMapOnClick = useCallback((info: any) => {
     if (info.object.institution_id) {
       setSelectedInstitutionId(info.object.institution_id);
@@ -161,6 +167,7 @@ export default function BaseScenario() {
   }, []);
 
   /** Layer */
+
   const layer = useMemo(() => {
     return new IconLayer({
       id: "icon-institutions",
@@ -188,8 +195,10 @@ export default function BaseScenario() {
     <BaseUI
       layers={[layer]}
       search={SearchFilter}
-      filters={filters}
+      filters={Filters}
       defaultViewState={INITIAL_VIEW_STATE_EU}
+      initialViewState={filterValues.viewState}
+      onViewStateChange={debouncedSetViewState}
       loading={isPending}
       error={error}
       scenarioName={"<Base>"}

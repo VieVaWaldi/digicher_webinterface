@@ -1,10 +1,9 @@
 "use client";
 import { ReactNode, useRef, useState } from "react";
-import { FlyToInterpolator, Layer, PickingInfo } from "@deck.gl/core";
+import { FlyToInterpolator, Layer } from "@deck.gl/core";
 import BaseDeckGLMap from "components/baseui/BaseDeckGLMap";
 import Navbar from "@/components/Navbar";
 import Feedback, { FeedbackButton } from "./Feedback";
-import { SearchBar } from "@/components/mui/SearchBar";
 import { IconTextButton } from "@/components/mui/IconTextButton";
 import { MapStyleSwitcher } from "@/components/mui/MapStyleSwitcher";
 import { SideMenu } from "@/components/mui/SideMenu";
@@ -24,6 +23,10 @@ interface BaseUIProps {
   search: ReactNode;
   filters: ReactNode;
   defaultViewState: ViewState;
+  /** Initial view state from URL (takes precedence over defaultViewState) */
+  initialViewState?: Partial<ViewState> | null;
+  /** Callback when view state changes (for URL persistence) */
+  onViewStateChange?: (viewState: ViewState) => void;
   onEmptyMapClick?: () => void;
   loading?: boolean;
   error: Error | null;
@@ -36,6 +39,8 @@ export default function BaseUI({
   search,
   filters,
   defaultViewState,
+  initialViewState,
+  onViewStateChange,
   onEmptyMapClick,
   loading = false,
   error = null,
@@ -56,10 +61,15 @@ export default function BaseUI({
     transitionInterpolator?: FlyToInterpolator;
   };
 
-  const viewStateRef = useRef<ViewState>(defaultViewState);
+  // Merge initialViewState (from URL) with defaultViewState
+  const effectiveDefaultViewState: ViewState = initialViewState
+    ? { ...defaultViewState, ...initialViewState }
+    : defaultViewState;
+
+  const viewStateRef = useRef<ViewState>(effectiveDefaultViewState);
   const [commandedViewState, setCommandedViewState] = useState<
     CommandedViewState | undefined
-  >(undefined);
+  >(() => (initialViewState ? effectiveDefaultViewState : undefined));
 
   const handleReset = () => {
     setCommandedViewState({
@@ -135,6 +145,7 @@ export default function BaseUI({
             onViewStateChange={(newViewState) => {
               viewStateRef.current = newViewState;
               if (commandedViewState) setCommandedViewState(undefined);
+              onViewStateChange?.(newViewState);
             }}
             isGlobe={isGlobe}
             // onMapClick={(info: PickingInfo) => console.log("no")}

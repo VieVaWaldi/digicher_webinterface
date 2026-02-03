@@ -6,6 +6,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import PaidIcon from "@mui/icons-material/Paid";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { useRouter, usePathname } from "next/navigation";
+import { useFilters } from "@/hooks/useFilters";
 
 export type Scenario = "base" | "funding-tracker" | "collaboration";
 
@@ -49,6 +50,7 @@ export const ScenarioSelector = ({
 }: ScenarioSelectorProps) => {
   const router = useRouter();
   const pathname = usePathname();
+  const { toQueryString } = useFilters();
 
   const getSelected = (scenarioId: Scenario) => {
     if (canRoute) {
@@ -76,7 +78,13 @@ export const ScenarioSelector = ({
           selected={getSelected(scenario.id)}
           onClick={() => {
             onChange?.(scenario.id);
-            if (canRoute) {router.push(`/scenarios/${scenario.id}`);}
+            if (canRoute) {
+              const queryString = toQueryString();
+              const url = queryString
+                ? `/scenarios/${scenario.id}?${queryString}`
+                : `/scenarios/${scenario.id}`;
+              router.push(url);
+            }
           }}
         />
       ))}

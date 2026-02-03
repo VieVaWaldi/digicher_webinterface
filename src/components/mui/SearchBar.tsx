@@ -3,6 +3,7 @@
 import {
   Box,
   Divider,
+  IconButton,
   InputAdornment,
   MenuItem,
   Select,
@@ -11,6 +12,7 @@ import {
   TextFieldProps,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { ReactNode } from "react";
 
@@ -20,19 +22,25 @@ export interface EntityOption {
   icon?: ReactNode;
 }
 
-export interface SearchBarProps
-  extends Omit<TextFieldProps, "variant" | "InputProps"> {
+export interface SearchBarProps extends Omit<
+  TextFieldProps,
+  "variant" | "InputProps"
+> {
+  value?: string;
   onSearch?: (value: string) => void;
   onSearchStart?: (key: string) => void;
+  onClear?: () => void;
   entityOptions?: EntityOption[];
   selectedEntity?: string;
   onEntityChange?: (value: string) => void;
 }
 
 export const SearchBar = ({
+  value,
   placeholder = "Search...",
   onSearch,
   onSearchStart,
+  onClear,
   entityOptions,
   selectedEntity,
   onEntityChange,
@@ -40,7 +48,7 @@ export const SearchBar = ({
   ...props
 }: SearchBarProps) => {
   const selectedOption = entityOptions?.find(
-    (opt) => opt.value === selectedEntity
+    (opt) => opt.value === selectedEntity,
   );
 
   const handleEntityChange = (event: SelectChangeEvent<string>) => {
@@ -50,6 +58,7 @@ export const SearchBar = ({
   return (
     <TextField
       fullWidth
+      value={value}
       placeholder={placeholder}
       variant="outlined"
       onChange={(e) => onSearch?.(e.target.value)}
@@ -81,7 +90,24 @@ export const SearchBar = ({
         input: {
           startAdornment: (
             <InputAdornment position="start">
-              <SearchIcon sx={{ color: "text.secondary", ml: 1 }} />
+              <IconButton
+                onClick={value ? onClear : undefined}
+                size="small"
+                disableRipple={!value}
+                sx={{
+                  ml: 0.5,
+                  cursor: value ? "pointer" : "default",
+                  "&:hover": {
+                    backgroundColor: value ? undefined : "transparent",
+                  },
+                }}
+              >
+                {value ? (
+                  <ClearIcon />
+                ) : (
+                  <SearchIcon sx={{ color: "text.secondary" }} />
+                )}
+              </IconButton>
             </InputAdornment>
           ),
           endAdornment: entityOptions && entityOptions.length > 0 && (
@@ -125,9 +151,7 @@ export const SearchBar = ({
               >
                 {entityOptions.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                    >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       {option.icon && (
                         <Box
                           sx={{

@@ -40,7 +40,10 @@ const LandingPage = () => {
   };
   const handleStartSearch = (key: string) => {
     if (key !== "Enter") return;
-    router.push("/scenarios/base");
+    const queryString = searchQuery
+      ? `?q=${encodeURIComponent(searchQuery)}`
+      : "";
+    router.push(`/scenarios/base${queryString}`);
   };
 
   const HeroSection: ReactNode = (
@@ -130,54 +133,33 @@ const LandingPage = () => {
           justifyContent: "center",
           pb: 3,
           color: "text.secondary",
-          cursor: "pointer",
-          "&:hover": {
-            color: "text.primary",
-          },
         }}
       >
         <KeyboardArrowDownIcon />
         <Typography variant="body2">Learn more</Typography>
       </Box>
-    </Box>
-  );
-
-  const BannerSection: ReactNode = (
-    <Box
-      sx={{
-        backgroundColor: "background.default",
-        py: 8,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      <Typography
-        variant="body2"
-        sx={{
-          color: "text.secondary",
-          mb: 4,
-          textAlign: "center",
-        }}
-      >
-        Funded by the European Union, built for Everyone.
-      </Typography>
 
       <Box
         sx={{
           display: "flex",
           flexDirection: "row",
-          alignItems: "center",
           justifyContent: "center",
           gap: { xs: 4, md: 8 },
           flexWrap: "wrap",
-          px: 4,
+          backgroundColor: "background.paper",
+          border: 1,
+          borderColor: "divider",
+          py: 3,
+          width: "100%",
         }}
       >
         {[
           { src: "/images/logos/digicher-logo.png", alt: "DIGICHer" },
           { src: "/images/logos/fsujena-logo.png", alt: "FSU Jena" },
-          { src: "/images/logos/time-machine-logo.png", alt: "Time Machine" },
+          {
+            src: "/images/logos/time-machine-logo.png",
+            alt: "Time Machine",
+          },
           { src: "/images/logos/eu-logo.jpg", alt: "EU Funded" },
         ].map((logo) => (
           <Box
@@ -199,16 +181,6 @@ const LandingPage = () => {
           />
         ))}
       </Box>
-
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: 800,
-          mt: 6,
-          borderBottom: 1,
-          borderColor: "divider",
-        }}
-      />
     </Box>
   );
 
@@ -239,7 +211,8 @@ const LandingPage = () => {
     <Box
       sx={{
         backgroundColor: "background.default",
-        py: 4,
+        pt: 12,
+        pb: 4,
       }}
     >
       <Container
@@ -253,7 +226,7 @@ const LandingPage = () => {
           sx={{
             fontWeight: 700,
             color: "text.primary",
-            mb: 4,
+            mb: 8,
             display: "block",
             textAlign: "center",
           }}
@@ -279,6 +252,16 @@ const LandingPage = () => {
           ))}
         </Grid>
       </Container>
+      <Typography
+        variant="body2"
+        sx={{
+          color: "text.secondary",
+          mb: 4,
+          textAlign: "center",
+        }}
+      >
+        Funded by the European Union, built for Everyone.
+      </Typography>
     </Box>
   );
 
@@ -444,7 +427,6 @@ const LandingPage = () => {
   return (
     <>
       {HeroSection}
-      {BannerSection}
       {InformationSection}
       {FooterSection}
     </>

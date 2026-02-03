@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { MultiSelectDropdown, MultiSelectOption } from "components/mui/MultiSelectDropdown";
 
 const frameworkProgrammeOptions: MultiSelectOption[] = [
@@ -28,6 +28,13 @@ const frameworkProgrammeOptions: MultiSelectOption[] = [
   { value: "HS", label: "Health & Safety" },
 ];
 
+interface FrameworkProgrammeFilterOptions {
+  /** Controlled initial value from URL params */
+  initialValue?: string[];
+  /** Callback when value changes (for URL sync) */
+  onChange?: (value: string[]) => void;
+}
+
 interface FrameworkProgrammeFilterResult {
   FrameworkProgrammeFilter: ReactNode;
   frameworkProgrammePredicate: (
@@ -36,9 +43,27 @@ interface FrameworkProgrammeFilterResult {
   selectedFrameworkProgrammes: string[];
 }
 
-export default function useFrameworkProgrammeFilter(): FrameworkProgrammeFilterResult {
+export default function useFrameworkProgrammeFilter(
+  options: FrameworkProgrammeFilterOptions = {}
+): FrameworkProgrammeFilterResult {
+  const { initialValue, onChange } = options;
   const [selectedFrameworkProgrammes, setSelectedFrameworkProgrammes] =
-    useState<string[]>([]);
+    useState<string[]>(initialValue ?? []);
+
+  // Sync state when initialValue changes (browser nav)
+  useEffect(() => {
+    if (initialValue !== undefined) {
+      setSelectedFrameworkProgrammes(initialValue);
+    }
+  }, [initialValue]);
+
+  const handleChange = useCallback(
+    (value: string[]) => {
+      setSelectedFrameworkProgrammes(value);
+      onChange?.(value);
+    },
+    [onChange]
+  );
 
   const selectedFrameworkSet = useMemo(() => {
     return new Set(selectedFrameworkProgrammes);
@@ -48,7 +73,7 @@ export default function useFrameworkProgrammeFilter(): FrameworkProgrammeFilterR
     <MultiSelectDropdown
       options={frameworkProgrammeOptions}
       value={selectedFrameworkProgrammes}
-      onChange={setSelectedFrameworkProgrammes}
+      onChange={handleChange}
       placeholder="Select framework programmes"
       maxChips={2}
     />

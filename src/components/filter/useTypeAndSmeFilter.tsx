@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { MultiSelectDropdown, MultiSelectOption } from "components/mui/MultiSelectDropdown";
 
 const institutionOptions: MultiSelectOption[] = [
@@ -25,14 +25,39 @@ const institutionOptions: MultiSelectOption[] = [
   { value: "null", label: "Unspecified" },
 ];
 
+interface TypeAndSmeFilterOptions {
+  /** Controlled initial value from URL params */
+  initialValue?: string[];
+  /** Callback when value changes (for URL sync) */
+  onChange?: (value: string[]) => void;
+}
+
 interface TypeAndSmeFilterResult {
   TypeAndSmeFilter: ReactNode;
   typeAndSmePredicate: (type: string | null, sme: boolean | null) => boolean;
 }
 
-export default function useTypeAndSmeFilter(): TypeAndSmeFilterResult {
+export default function useTypeAndSmeFilter(
+  options: TypeAndSmeFilterOptions = {}
+): TypeAndSmeFilterResult {
+  const { initialValue, onChange } = options;
   const [selectedInstitutions, setSelectedInstitutions] = useState<string[]>(
-    [],
+    initialValue ?? []
+  );
+
+  // Sync state when initialValue changes (browser nav)
+  useEffect(() => {
+    if (initialValue !== undefined) {
+      setSelectedInstitutions(initialValue);
+    }
+  }, [initialValue]);
+
+  const handleChange = useCallback(
+    (value: string[]) => {
+      setSelectedInstitutions(value);
+      onChange?.(value);
+    },
+    [onChange]
   );
 
   const selectedInstitutionSet = useMemo(() => {
@@ -43,7 +68,7 @@ export default function useTypeAndSmeFilter(): TypeAndSmeFilterResult {
     <MultiSelectDropdown
       options={institutionOptions}
       value={selectedInstitutions}
-      onChange={setSelectedInstitutions}
+      onChange={handleChange}
       placeholder="Select institution types"
       maxChips={2}
     />
