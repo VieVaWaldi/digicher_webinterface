@@ -7,8 +7,8 @@ export type { IconTextButtonProps } from "./IconTextButton";
 export { IconTextPill } from "./IconTextPill";
 export type { IconTextPillProps } from "./IconTextPill";
 
-export { Navbar } from "../Navbar";
-export type { NavbarProps } from "../Navbar";
+export { Navbar } from "../layout/Navbar";
+export type { NavbarProps } from "../layout/Navbar";
 
 export { ScenarioSelector } from "./ScenarioSelector";
 export type { ScenarioSelectorProps, Scenario, ScenarioOption } from "./ScenarioSelector";

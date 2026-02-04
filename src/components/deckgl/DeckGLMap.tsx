@@ -14,7 +14,8 @@ import DeckGL from "@deck.gl/react";
 import "@deck.gl/widgets/stylesheet.css";
 import { useSettings } from "context/SettingsContext";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Spinner } from "shadcn/spinner";
+import { Box, CircularProgress, Paper, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useThemeMode } from "@/app/providers";
 
 interface UnifiedDeckMapProps {
@@ -30,7 +31,7 @@ interface UnifiedDeckMapProps {
   error: Error | null;
 }
 
-export default function BaseDeckGLMap({
+export default function DeckGLMap({
   id,
   layers,
   defaultViewState,
@@ -149,23 +150,43 @@ export default function BaseDeckGLMap({
 
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
-          <div className="rounded-lg bg-white p-4 shadow-lg">
-            <Spinner />
-            <p className="mt-2 text-sm text-gray-600">Loading ...</p>
-          </div>
-        </div>
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            bgcolor: (theme) => alpha(theme.palette.common.black, 0.2),
+          }}
+        >
+          <Paper sx={{ p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <CircularProgress size={32} />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              Loading ...
+            </Typography>
+          </Paper>
+        </Box>
       )}
 
       {/* Error overlay */}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
-          <div className="rounded-lg bg-white p-4 shadow-lg">
-            <p className="text-red-600">
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            bgcolor: (theme) => alpha(theme.palette.common.black, 0.2),
+          }}
+        >
+          <Paper sx={{ p: 3 }}>
+            <Typography color="error">
               Something went wrong, this is still the alpha version though
-            </p>
-          </div>
-        </div>
+            </Typography>
+          </Paper>
+        </Box>
       )}
     </>
   );

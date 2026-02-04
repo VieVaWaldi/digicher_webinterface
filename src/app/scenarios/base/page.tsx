@@ -1,6 +1,6 @@
 "use client";
 
-import BaseUI from "components/baseui/BaseUI";
+import ScenarioController from "@/components/deckgl/ScenarioController";
 import useCountryFilter from "components/filter/useCountryFilter";
 import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
 import { useTopicFilter } from "components/filter/useTopicFilter";
@@ -14,11 +14,11 @@ import {
 import { IconLayer } from "deck.gl";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
-import { INITIAL_VIEW_STATE_EU } from "@/deckgl/viewports";
+import { INITIAL_VIEW_STATE_EU } from "@/components/deckgl/viewports";
 import { Box, Typography } from "@mui/material";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import ScienceIcon from "@mui/icons-material/Science";
-import { useFilters } from "@/hooks/useFilters";
+import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
 
 const INSTITUTION_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
@@ -52,12 +52,12 @@ function BaseScenarioContent() {
 
   /** Filters */
 
-  const { filters: filterValues, setters } = useFilters();
+  const { filters: filterValues, setters, resetAll } = useFilters();
 
   const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
   const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
-    initialValue: filterValues.yearRange ?? undefined,
+    initialValue: filterValues.yearRange,
     onChange: debouncedSetYearRange,
   });
   const { CountryFilter, countryPredicate } = useCountryFilter({
@@ -192,13 +192,14 @@ function BaseScenarioContent() {
   }, [filteredData, handleMapOnClick]);
 
   return (
-    <BaseUI
+    <ScenarioController
       layers={[layer]}
       search={SearchFilter}
       filters={Filters}
       defaultViewState={INITIAL_VIEW_STATE_EU}
       initialViewState={filterValues.viewState}
       onViewStateChange={debouncedSetViewState}
+      onResetAll={resetAll}
       loading={isPending}
       error={error}
       scenarioName={"Base"}

@@ -1,13 +1,13 @@
 "use client";
 import { ReactNode, useRef, useState } from "react";
 import { FlyToInterpolator, Layer } from "@deck.gl/core";
-import BaseDeckGLMap from "components/baseui/BaseDeckGLMap";
-import Navbar from "@/components/Navbar";
-import Feedback, { FeedbackButton } from "./Feedback";
+import DeckGLMap from "@/components/deckgl/DeckGLMap";
+import Navbar from "@/components/layout/Navbar";
+import Feedback, { FeedbackButton } from "../layout/Feedback";
 import { IconTextButton } from "@/components/mui/IconTextButton";
 import { MapStyleSwitcher } from "@/components/mui/MapStyleSwitcher";
 import { SideMenu } from "@/components/mui/SideMenu";
-import { Box, Button, debounce, Paper, Stack } from "@mui/material";
+import { Box, Button, Paper, Stack } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import AddIcon from "@mui/icons-material/Add";
@@ -28,6 +28,8 @@ interface BaseUIProps {
   initialViewState?: Partial<ViewState> | null;
   /** Callback when view state changes (for URL persistence) */
   onViewStateChange?: (viewState: ViewState) => void;
+  /** Callback to reset all filters to default values */
+  onResetAll?: () => void;
   onEmptyMapClick?: () => void;
   loading?: boolean;
   error: Error | null;
@@ -35,13 +37,14 @@ interface BaseUIProps {
   scenarioTitle?: string;
 }
 
-export default function BaseUI({
+export default function ScenarioController({
   layers,
   search,
   filters,
   defaultViewState,
   initialViewState,
   onViewStateChange,
+  onResetAll,
   onEmptyMapClick,
   loading = false,
   error = null,
@@ -150,7 +153,7 @@ export default function BaseUI({
             overflow: "hidden",
           }}
         >
-          <BaseDeckGLMap
+          <DeckGLMap
             id="funding-map"
             layers={layers}
             defaultViewState={defaultViewState}
@@ -314,6 +317,7 @@ export default function BaseUI({
               variant="outlined"
               size="small"
               sx={{ borderRadius: 4, textTransform: "none" }}
+              onClick={onResetAll}
             >
               Reset All
             </Button>

@@ -53,6 +53,7 @@ export interface UseFiltersResult {
   filters: FilterValues;
   setters: FilterSetters;
   toQueryString: () => string;
+  resetAll: () => void;
 }
 
 /**
@@ -232,6 +233,11 @@ export function useFilters(): UseFiltersResult {
     };
   }, [buildParams, updateUrl]);
 
+  /** Reset all filters by clearing all URL parameters */
+  const resetAll = useCallback(() => {
+    router.replace(pathname, { scroll: false });
+  }, [router, pathname]);
+
   /** Generate query string from current filters (for navigation) */
   const toQueryString = useCallback((): string => {
     const params = new URLSearchParams();
@@ -294,6 +300,7 @@ export function useFilters(): UseFiltersResult {
     filters,
     setters,
     toQueryString,
+    resetAll,
   };
 }
 

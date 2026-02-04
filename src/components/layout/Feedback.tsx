@@ -14,9 +14,10 @@ import {
   Typography,
 } from "@mui/material";
 import { keyframes } from "@mui/system";
-import { MessageCircle, X } from "lucide-react";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import CloseIcon from "@mui/icons-material/Close";
 import { useCallback, useEffect, useState } from "react";
-import { submitFeedback } from "utils/feedbackUtils";
+import { submitFeedback } from "@/utils/feedbackUtils";
 
 const pulseScale = keyframes`
   0%, 100% {
@@ -106,11 +107,7 @@ export function FeedbackButton({
             },
           }}
         >
-          <MessageCircle
-            size={24}
-            strokeWidth={2.2}
-            style={{ transform: "scale(1.2)" }}
-          />
+          <ChatBubbleOutlineIcon sx={{ fontSize: 28 }} />
         </IconButton>
       </Tooltip>
     </Box>
@@ -235,7 +232,7 @@ export default function Feedback({
             size="small"
             sx={{ color: "text.secondary" }}
           >
-            <X size={20} />
+            <CloseIcon sx={{ fontSize: 20 }} />
           </IconButton>
         </Box>
 

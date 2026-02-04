@@ -1,18 +1,18 @@
 "use client";
 
 import { ArcLayer, ScatterplotLayer } from "@deck.gl/layers";
-import BaseUI from "components/baseui/BaseUI";
+import ScenarioController from "@/components/deckgl/ScenarioController";
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import { PickingInfo } from "deck.gl";
-import { baseLayerProps } from "deckgl/baseLayerProps";
-import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
+import { baseLayerProps } from "@/components/deckgl/layers/baseLayerProps";
+import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
 import { useInstitutionById } from "hooks/queries/institution/useInstitutionById";
 import { useCollaborationsEnriched } from "hooks/queries/views/map/useMapViewCollaborationsEnriched";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
 import useCountryFilter from "@/components/filter/useCountryFilter";
-import { useFilters } from "@/hooks/useFilters";
+import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
 
 function CollaborationScenarioContent() {
@@ -53,7 +53,7 @@ function CollaborationScenarioContent() {
   //   } | null>(null);
 
   /** URL Filter State */
-  const { filters: filterValues, setters } = useFilters();
+  const { filters: filterValues, setters, resetAll } = useFilters();
 
   // Debounced setters for URL sync
   const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
@@ -64,7 +64,7 @@ function CollaborationScenarioContent() {
     useYearRangeFilter({
       defaultMinYear: 2020,
       defaultMaxYear: 2025,
-      initialValue: filterValues.yearRange ?? undefined,
+      initialValue: filterValues.yearRange,
       onChange: debouncedSetYearRange,
     });
   const { CountryFilter, countryPredicate } = useCountryFilter({
@@ -293,12 +293,13 @@ function CollaborationScenarioContent() {
   );
 
   return (
-    <BaseUI
+    <ScenarioController
       layers={[arcLayer, scatterLayer]} // columnLayer
       filters={filters}
       defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
       initialViewState={filterValues.viewState}
       onViewStateChange={debouncedSetViewState}
+      onResetAll={resetAll}
       loading={isPending}
       scenarioName="collaboration"
       scenarioTitle="Collaboration"

@@ -1,7 +1,11 @@
 // import { CompositeLayer, UpdateParameters, PickingInfo } from "@deck.gl/core";
 // import { IconLayer, TextLayer } from "@deck.gl/layers";
 // import Supercluster from "supercluster";
-// import type { PointFeature, ClusterFeature, ClusterProperties } from "supercluster";
+// import type {
+//   PointFeature,
+//   ClusterFeature,
+//   ClusterProperties,
+// } from "supercluster";
 //
 // // Types for our institution data
 // export interface InstitutionData {
@@ -10,7 +14,9 @@
 //   [key: string]: unknown;
 // }
 //
-// type ClusterOrPoint = PointFeature<InstitutionData> | ClusterFeature<InstitutionData>;
+// type ClusterOrPoint =
+//   | PointFeature<InstitutionData>
+//   | ClusterFeature<InstitutionData>;
 //
 // export interface InstitutionClusterLayerProps {
 //   id: string;
@@ -53,7 +59,7 @@
 //       // Filter out items with null geolocation
 //       const validData = props.data.filter(
 //         (d): d is InstitutionData & { geolocation: number[] } =>
-//           d.geolocation !== null && d.geolocation.length >= 2
+//           d.geolocation !== null && d.geolocation.length >= 2,
 //       );
 //
 //       index.load(
@@ -64,7 +70,7 @@
 //             coordinates: d.geolocation as [number, number],
 //           },
 //           properties: d,
-//         }))
+//         })),
 //       );
 //
 //       this.setState({ index });
@@ -140,7 +146,7 @@
 //
 //     // Text layer for cluster counts (only for clusters)
 //     const clusterData = clusteredData.filter(
-//       (d) => "cluster" in d.properties && d.properties.cluster
+//       (d) => "cluster" in d.properties && d.properties.cluster,
 //     );
 //
 //     const textLayer = new TextLayer<ClusterOrPoint>({

@@ -6,7 +6,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import PaidIcon from "@mui/icons-material/Paid";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { useRouter, usePathname } from "next/navigation";
-import { useFilters } from "@/hooks/useFilters";
+import { useFilters } from "@/hooks/persistence/useFilters";
 
 export type Scenario = "base" | "funding-tracker" | "collaboration";
 

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { H2 } from "shadcn/typography";
+// import { H2 } from "shadcn/typography";
 
 export default function DIGICHerLinks() {
   return (
     <div className="mx-auto max-w-2xl pt-8">
-      <H2 className="text-center">About the Project</H2>
+      <h2 className="text-center">About the Project</h2>
 
       <p className="mt-4 px-4 text-center text-muted-foreground">
         This application is part of the{" "}

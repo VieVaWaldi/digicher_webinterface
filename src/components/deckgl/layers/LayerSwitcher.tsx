@@ -1,10 +1,11 @@
 import { ColumnLayer, ScatterplotLayer } from "@deck.gl/layers";
-import { useSettings } from "context/SettingsContext";
+import { useSettings } from "@/context/SettingsContext";
 import { HeatmapLayer, HexagonLayer, Layer } from "deck.gl";
-import { baseLayerProps } from "deckgl/baseLayerProps";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { baseLayerProps } from "@/components/deckgl/layers/baseLayerProps";
+import ChevronLeft from "@mui/icons-material/ChevronLeft";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import { useMemo, useState } from "react";
-import { Button } from "shadcn/button";
+// import { Button } from "@/shadcn/button";
 
 interface LayerSwitcherProps {
   data: any[];
@@ -21,8 +22,6 @@ interface LayerConfig {
 }
 
 const CSS_BUTTON = "h-10 w-10 rounded-xl bg-white text-orange-500";
-const STRK_WDTH = 2.2;
-const BTN_SCALE = 1.5;
 
 const MAX_HEIGHT = 1_000_000;
 const BAR_RADIUS = 2_200;
@@ -208,16 +207,9 @@ export function LayerSwitcher({
     layer: currentLayer,
     layerSwitcherUI: (
       <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 transform items-center space-x-4">
-        <Button
-          variant="secondary"
-          className={CSS_BUTTON}
-          onClick={goToPrevious}
-        >
-          <ChevronLeft
-            strokeWidth={STRK_WDTH}
-            style={{ transform: `scale(${BTN_SCALE})` }}
-          />
-        </Button>
+        <button className={CSS_BUTTON} onClick={goToPrevious}>
+          <ChevronLeft fontSize="large" />
+        </button>
 
         <div className="rounded-xl bg-white/90 px-4 py-2 text-center backdrop-blur-sm">
           <div className="font-semibold text-orange-600">
@@ -228,12 +220,9 @@ export function LayerSwitcher({
           </div>
         </div>
 
-        <Button variant="secondary" className={CSS_BUTTON} onClick={goToNext}>
-          <ChevronRight
-            strokeWidth={STRK_WDTH}
-            style={{ transform: `scale(${BTN_SCALE})` }}
-          />
-        </Button>
+        <button className={CSS_BUTTON} onClick={goToNext}>
+          <ChevronRight fontSize="large" />
+        </button>
       </div>
     ),
   };

@@ -5,7 +5,7 @@ import { DualSlider } from "components/mui/DualSlider";
 interface YearRangeFilterOptions {
   defaultMinYear?: number;
   defaultMaxYear?: number;
-  /** Controlled initial value from URL params */
+  /** Controlled initial value from URL params (null means reset to defaults) */
   initialValue?: [number, number] | null;
   /** Callback when value changes (for URL sync) */
   onChange?: (value: [number, number]) => void;
@@ -32,12 +32,15 @@ export default function useYearRangeFilter(
   });
   const [minYear, maxYear] = useMemo(() => [years[0], years[1]], [years]);
 
-  // Sync state when initialValue changes (browser nav)
+  // Sync state when initialValue changes (browser nav or reset)
   useEffect(() => {
     if (initialValue) {
       setYears(initialValue);
+    } else if (initialValue === null) {
+      // Reset to defaults when URL params are cleared
+      setYears([defaultMinYear ?? minStartDate, defaultMaxYear ?? maxEndDate]);
     }
-  }, [initialValue]);
+  }, [initialValue, defaultMinYear, defaultMaxYear, minStartDate, maxEndDate]);
 
   const handleYearsChange = useCallback(
     (value: [number, number]) => {
