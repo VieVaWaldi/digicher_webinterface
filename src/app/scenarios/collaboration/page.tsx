@@ -2,18 +2,14 @@
 
 import { ArcLayer, ScatterplotLayer } from "@deck.gl/layers";
 import BaseUI from "components/baseui/BaseUI";
-import LeftSideFilters from "components/baseui/LeftSideFilterMenu";
-import SelectedInfo from "components/baseui/SelectedEntity";
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
-import InstitutionInfoPanel from "components/infoPanels/InstitutionInfoPanel";
 import { PickingInfo } from "deck.gl";
 import { baseLayerProps } from "deckgl/baseLayerProps";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "deckgl/viewports";
 import { useInstitutionById } from "hooks/queries/institution/useInstitutionById";
 import { useCollaborationsEnriched } from "hooks/queries/views/map/useMapViewCollaborationsEnriched";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
-import TitleContent from "./content";
 import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
 import useCountryFilter from "@/components/filter/useCountryFilter";
 import { useFilters } from "@/hooks/useFilters";
@@ -291,32 +287,24 @@ function CollaborationScenarioContent() {
       {TopicFilter}
       {/* {TypeAndSmeFilter}
         {InstitutionSearchFilter}
-
         {FrameworkProgrammeFilter}
         {NutsFilter} */}
     </div>
   );
 
   return (
-    <div onClick={() => setSelectedInfo(false)}>
-      <SelectedInfo show={showSelectedInfo} setSelectedInfo={setSelectedInfo}>
-        <InstitutionInfoPanel institution_id={selectedInstitutionId} />
-      </SelectedInfo>
-      {/*<LeftSideFilters>{filters}</LeftSideFilters>*/}
-      <BaseUI
-        layers={[arcLayer, scatterLayer]} // columnLayer
-        filters={filters}
-        defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
-        initialViewState={filterValues.viewState}
-        onViewStateChange={debouncedSetViewState}
-        loading={isPending}
-        scenarioName="collaboration"
-        scenarioTitle="Collaboration"
-        error={error}
-        search={undefined}
-      />
-      {/* {hoverTooltip} */}
-    </div>
+    <BaseUI
+      layers={[arcLayer, scatterLayer]} // columnLayer
+      filters={filters}
+      defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
+      initialViewState={filterValues.viewState}
+      onViewStateChange={debouncedSetViewState}
+      loading={isPending}
+      scenarioName="collaboration"
+      scenarioTitle="Collaboration"
+      error={error}
+      search={undefined}
+    />
   );
 }
 

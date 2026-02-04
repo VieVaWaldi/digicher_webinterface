@@ -55,7 +55,7 @@ function BaseScenarioContent() {
   const { filters: filterValues, setters } = useFilters();
 
   const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
-  const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 500);
+  const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
   const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
     initialValue: filterValues.yearRange ?? undefined,
     onChange: debouncedSetYearRange,
@@ -201,8 +201,8 @@ function BaseScenarioContent() {
       onViewStateChange={debouncedSetViewState}
       loading={isPending}
       error={error}
-      scenarioName={"<Base>"}
-      scenarioTitle={"<Base>"}
+      scenarioName={"Base"}
+      scenarioTitle={"Base"}
     />
   );
 }

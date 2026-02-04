@@ -7,7 +7,7 @@ import Feedback, { FeedbackButton } from "./Feedback";
 import { IconTextButton } from "@/components/mui/IconTextButton";
 import { MapStyleSwitcher } from "@/components/mui/MapStyleSwitcher";
 import { SideMenu } from "@/components/mui/SideMenu";
-import { Box, Button, Paper, Stack } from "@mui/material";
+import { Box, Button, debounce, Paper, Stack } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import AddIcon from "@mui/icons-material/Add";
@@ -22,6 +22,7 @@ interface BaseUIProps {
   layers: Layer[];
   search: ReactNode;
   filters: ReactNode;
+  /** Default view state for a given scenario */
   defaultViewState: ViewState;
   /** Initial view state from URL (takes precedence over defaultViewState) */
   initialViewState?: Partial<ViewState> | null;
@@ -56,20 +57,32 @@ export default function BaseUI({
 
   const [isGlobe, setIsGlobe] = useState(false);
 
+  /** View State Logic **/
+
+  /** Merge initialViewState (from URL) with defaultViewState -> actual starting position */
+  const effectiveViewState: ViewState = initialViewState
+    ? { ...defaultViewState, ...initialViewState }
+    : defaultViewState;
+
+  /** Reference to track effectiveViewState (no state to avoid rerenders) */
+  const viewStateRef = useRef<ViewState>(effectiveViewState);
+
+  /** Enables programmatic actions for viewState animation */
   type CommandedViewState = ViewState & {
     transitionDuration?: number;
     transitionInterpolator?: FlyToInterpolator;
   };
-
-  // Merge initialViewState (from URL) with defaultViewState
-  const effectiveDefaultViewState: ViewState = initialViewState
-    ? { ...defaultViewState, ...initialViewState }
-    : defaultViewState;
-
-  const viewStateRef = useRef<ViewState>(effectiveDefaultViewState);
   const [commandedViewState, setCommandedViewState] = useState<
     CommandedViewState | undefined
-  >(() => (initialViewState ? effectiveDefaultViewState : undefined));
+  >(() => (initialViewState ? effectiveViewState : undefined));
+
+  const handleViewStateChange = (newViewState: ViewState) => {
+    /** Exclude bearing and pitch to let defaultViewState set it specifically for the scenarios */
+    const { bearing, pitch, ...rest } = newViewState;
+    viewStateRef.current = rest as ViewState;
+    if (commandedViewState) setCommandedViewState(undefined);
+    onViewStateChange?.(rest as ViewState);
+  };
 
   const handleReset = () => {
     setCommandedViewState({
@@ -142,11 +155,7 @@ export default function BaseUI({
             layers={layers}
             defaultViewState={defaultViewState}
             commandedViewState={commandedViewState}
-            onViewStateChange={(newViewState) => {
-              viewStateRef.current = newViewState;
-              if (commandedViewState) setCommandedViewState(undefined);
-              onViewStateChange?.(newViewState);
-            }}
+            onViewStateChange={handleViewStateChange}
             isGlobe={isGlobe}
             // onMapClick={(info: PickingInfo) => console.log("no")}
             onEmptyMapClick={onEmptyMapClick}

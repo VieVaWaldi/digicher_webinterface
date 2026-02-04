@@ -14,7 +14,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LanguageIcon from "@mui/icons-material/Language";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   IconTextButton,
   Navbar,
@@ -23,6 +23,7 @@ import {
   SearchBar,
 } from "@/components/mui";
 import { useRouter } from "next/navigation";
+import { useDataPreFetcher } from "@/hooks/fetching/DataPreFetcher";
 // import { useThemeMode } from "@/app/providers";
 
 type ViewMode = "list" | "map";
@@ -35,15 +36,31 @@ const LandingPage = () => {
   const router = useRouter();
   // const { resolvedMode } = useThemeMode();
 
+  useDataPreFetcher();
+
   const handleSearch = (value: string) => {
     setSearchQuery(value);
   };
+
+  const buildQueryString = () => {
+    return searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : "";
+  };
+
   const handleStartSearch = (key: string) => {
     if (key !== "Enter") return;
-    const queryString = searchQuery
-      ? `?q=${encodeURIComponent(searchQuery)}`
-      : "";
-    router.push(`/scenarios/base${queryString}`);
+    const queryString = buildQueryString();
+
+    if (viewMode === "list") {
+      router.push(`/list/${queryString}`);
+    } else {
+      router.push(`/scenarios/${selectedScenario}${queryString}`);
+    }
+  };
+
+  const handleScenarioChange = (scenario: Scenario) => {
+    setSelectedScenario(scenario);
+    const queryString = buildQueryString();
+    router.push(`/scenarios/${scenario}${queryString}`);
   };
 
   const HeroSection: ReactNode = (
@@ -118,7 +135,7 @@ const LandingPage = () => {
             <Box sx={{ position: "absolute", top: 10 }}>
               <ScenarioSelector
                 selected={selectedScenario}
-                onChange={setSelectedScenario}
+                onChange={handleScenarioChange}
               />
             </Box>
           )}
@@ -170,8 +187,7 @@ const LandingPage = () => {
             sx={{
               height: { xs: 40, md: 50 },
               width: "auto",
-              // filter: resolvedMode === "dark" ? "brightness(0) invert(1)" : "grayscale(100%)",
-              // filter: "invert(1)",
+              // filter: resolvedMode === "dark" ? "" : "",
               opacity: 0.8,
               transition: "opacity 0.2s ease-in-out, filter 0.2s ease-in-out",
               "&:hover": {

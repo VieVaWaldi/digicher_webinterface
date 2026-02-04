@@ -3,13 +3,14 @@
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Box } from "@mui/material";
 import { EntityOption, SearchBar } from "../mui/SearchBar";
-import { MultiSelectDropdown, MultiSelectOption } from "../mui/MultiSelectDropdown";
+import {
+  MultiSelectDropdown,
+  MultiSelectOption,
+} from "../mui/MultiSelectDropdown";
 import { useInstitutionSearchByName } from "@/hooks/queries/institution/useInstitutionSearchByName";
 import { useProjectSearchByName } from "@/hooks/queries/project/useProjectSearchByName";
 
-{
-  /* TYPE CONFIG */
-}
+/** Type config */
 
 export type SearchEntity = "institutions" | "projects" | "works";
 
@@ -51,9 +52,7 @@ export interface UnifiedSearchFilterResult {
   MinorityGroupsFilter: ReactNode;
 }
 
-{
-  /* MINORITY GROUPS CONFIG */
-}
+/** Minority groups config */
 
 const MINORITY_GROUP_OPTIONS: MultiSelectOption[] = [
   { value: "ladin", label: "Ladin" },
@@ -67,9 +66,7 @@ const MINORITY_SEARCH_TERMS: Record<string, string> = {
   jewish: "jewish jew jews judaism hebrew yiddish",
 };
 
-{
-  /* HOOK */
-}
+/** Main Hook */
 
 export default function useUnifiedSearchFilter(
   options: UnifiedSearchFilterOptions,
@@ -86,12 +83,10 @@ export default function useUnifiedSearchFilter(
     onMinorityGroupsChange,
   } = options;
 
-  {
-    /*SHARED STATE */
-  }
+  /**SHARED STATE */
 
   const [searchEntity, setSearchEntity] = useState<SearchEntity>(
-    initialEntity ?? defaultEntity
+    initialEntity ?? defaultEntity,
   );
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery ?? "");
   const [activeQuery, setActiveQuery] = useState<string>(initialQuery ?? "");
@@ -99,7 +94,7 @@ export default function useUnifiedSearchFilter(
     string[]
   >(initialMinorityGroups ?? []);
 
-  // Sync state when initial values change (browser nav)
+  /** Sync state when initial values change (browser nav) */
   useEffect(() => {
     if (initialEntity !== undefined) {
       setSearchEntity(initialEntity);
@@ -119,9 +114,7 @@ export default function useUnifiedSearchFilter(
     }
   }, [initialMinorityGroups]);
 
-  {
-    /* INSTITUTION SEARCH */
-  }
+  /** INSTITUTION SEARCH */
 
   const isInstitutionSearch = searchEntity === "institutions";
 
@@ -151,9 +144,7 @@ export default function useUnifiedSearchFilter(
     [isInstitutionSearch, activeQuery, institutionIdSet],
   );
 
-  {
-    /* PROJECT SEARCH (with minority groups support) */
-  }
+  /** PROJECT SEARCH (with minority groups support) */
 
   const isProjectSearch = searchEntity === "projects";
 
@@ -206,9 +197,7 @@ export default function useUnifiedSearchFilter(
     [hasActiveProjectFilter, projectFilterQuery, projectIdSet],
   );
 
-  {
-    /* WORKS SEARCH (placeholder) */
-  }
+  /** WORKS SEARCH (placeholder) */
 
   const isWorksSearch = searchEntity === "works";
 
@@ -227,9 +216,7 @@ export default function useUnifiedSearchFilter(
     [isWorksSearch],
   );
 
-  {
-    /* EVENT HANDLERS */
-  }
+  /** EVENT HANDLERS */
 
   const handleSearchInput = useCallback((value: string) => {
     setSearchQuery(value);
@@ -266,7 +253,7 @@ export default function useUnifiedSearchFilter(
       onQueryChange?.("");
       onEntityChange?.(value as SearchEntity);
     },
-    [onEntityChange, onQueryChange]
+    [onEntityChange, onQueryChange],
   );
 
   const handleMinorityGroupsChange = useCallback(
@@ -294,9 +281,7 @@ export default function useUnifiedSearchFilter(
     [isProjectSearch, searchQuery, onMinorityGroupsChange],
   );
 
-  {
-    /* COMPUTED VALUES */
-  }
+  /** COMPUTED VALUES */
 
   // const isPending = isInstitutionSearch
   //   ? isInstitutionPending
@@ -316,9 +301,7 @@ export default function useUnifiedSearchFilter(
       ? "project"
       : "work";
 
-  {
-    /* UI COMPONENTS */
-  }
+  /** UI COMPONENTS */
 
   const SearchFilter: ReactNode = useMemo(
     () => (

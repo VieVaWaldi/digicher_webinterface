@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { SearchEntity } from "@/components/filter/useUnifiedSearchFilter";
 
@@ -13,7 +13,7 @@ const PARAM_KEYS = {
   entity: "entity",
   query: "q",
   minorities: "minorities",
-  view: "view", // format: "lat,lng,zoom" or "lat,lng,zoom,bearing,pitch"
+  view: "view", // format: "lat,lng,zoom"
 } as const;
 
 /** ViewState stored in URL */
@@ -21,8 +21,6 @@ export interface UrlViewState {
   latitude: number;
   longitude: number;
   zoom: number;
-  bearing?: number;
-  pitch?: number;
 }
 
 /** Parsed filter values from URL */
@@ -99,7 +97,7 @@ export function useFilters(): UseFiltersResult {
     // Parse query
     const query = searchParams.get(PARAM_KEYS.query) || "";
 
-    // Parse viewState: "lat,lng,zoom" or "lat,lng,zoom,bearing,pitch"
+    // Parse viewState: "lat,lng,zoom"
     const viewParam = searchParams.get(PARAM_KEYS.view);
     let viewState: UrlViewState | null = null;
     if (viewParam) {
@@ -109,8 +107,6 @@ export function useFilters(): UseFiltersResult {
           latitude: parts[0],
           longitude: parts[1],
           zoom: parts[2],
-          ...(parts[3] !== undefined && { bearing: parts[3] }),
-          ...(parts[4] !== undefined && { pitch: parts[4] }),
         };
       }
     }
@@ -193,7 +189,7 @@ export function useFilters(): UseFiltersResult {
     const setEntity = (value: SearchEntity) => {
       const params = buildParams({
         entity: value !== "projects" ? value : null,
-        query: null // Need to overwrite query like changing entities in SearchBar does to prevent RaceCondition
+        query: null, // Need to overwrite query like changing entities in SearchBar does to prevent RaceCondition
       });
       updateUrl(params);
     };
@@ -216,11 +212,9 @@ export function useFilters(): UseFiltersResult {
     const setViewState = (value: UrlViewState | null) => {
       let viewString: string | null = null;
       if (value) {
-        const parts = [value.latitude, value.longitude, value.zoom];
-        if (value.bearing !== undefined || value.pitch !== undefined) {
-          parts.push(value.bearing ?? 0, value.pitch ?? 0);
-        }
-        viewString = parts.map((n) => n.toFixed(4)).join(",");
+        viewString = [value.latitude, value.longitude, value.zoom]
+          .map((n) => n.toFixed(4))
+          .join(",");
       }
       const params = buildParams({ view: viewString });
       updateUrl(params);
@@ -287,11 +281,10 @@ export function useFilters(): UseFiltersResult {
 
     if (filters.viewState) {
       const v = filters.viewState;
-      const parts = [v.latitude, v.longitude, v.zoom];
-      if (v.bearing !== undefined || v.pitch !== undefined) {
-        parts.push(v.bearing ?? 0, v.pitch ?? 0);
-      }
-      params.set(PARAM_KEYS.view, parts.map((n) => n.toFixed(4)).join(","));
+      params.set(
+        PARAM_KEYS.view,
+        [v.latitude, v.longitude, v.zoom].map((n) => n.toFixed(4)).join(","),
+      );
     }
 
     return params.toString();
