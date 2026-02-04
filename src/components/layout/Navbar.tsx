@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  AppBar,
-  Box,
-  Chip,
-  IconButton,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { AppBar, Box, Chip, IconButton, Toolbar, Typography } from "@mui/material";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
@@ -29,7 +22,7 @@ export const Navbar = ({
   logoIcon,
   onUserClick,
   showUserIcon = true,
-  children,
+  children
 }: NavbarProps) => {
   const { resolvedMode, setMode } = useThemeMode();
 

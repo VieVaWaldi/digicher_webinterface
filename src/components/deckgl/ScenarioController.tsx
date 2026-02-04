@@ -3,17 +3,19 @@ import { ReactNode, useRef, useState } from "react";
 import { FlyToInterpolator, Layer } from "@deck.gl/core";
 import DeckGLMap from "@/components/deckgl/DeckGLMap";
 import Navbar from "@/components/layout/Navbar";
+import MobileNavbar from "@/components/layout/MobileNavbar";
 import Feedback, { FeedbackButton } from "../layout/Feedback";
 import { IconTextButton } from "@/components/mui/IconTextButton";
 import { MapStyleSwitcher } from "@/components/mui/MapStyleSwitcher";
 import { SideMenu } from "@/components/mui/SideMenu";
-import { Box, Button, Paper, Stack } from "@mui/material";
+import { Box, Button, Paper, Stack, useMediaQuery, useTheme } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import MenuIcon from "@mui/icons-material/Menu";
 import { ViewState } from "react-map-gl/mapbox";
 import { Map, Public } from "@mui/icons-material";
 import { ScenarioSelector } from "@/components/mui";
@@ -51,9 +53,13 @@ export default function ScenarioController({
   scenarioName,
   scenarioTitle,
 }: BaseUIProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [showSearchbar, setShowSearchbar] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [listOpen, setListOpen] = useState(false);
+  const [navbarOpen, setNavbarOpen] = useState(false);
 
   const [showFeedback, setShowFeedback] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
@@ -132,17 +138,20 @@ export default function ScenarioController({
         overflow: "hidden",
       }}
     >
-      <Navbar>
-        <Box sx={{ flexGrow: 1 }} />
-        <ScenarioSelector canRoute={true} />
-        <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}>
-          <FeedbackButton
-            showBanner={showBanner}
-            setShowBanner={setShowBanner}
-            setShowFeedback={setShowFeedback}
-          />
-        </Box>
-      </Navbar>
+      {/* Desktop Navbar - hidden on mobile */}
+      {!isMobile && (
+        <Navbar>
+          <Box sx={{ flexGrow: 1 }} />
+          <ScenarioSelector canRoute={true} />
+          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}>
+            <FeedbackButton
+              showBanner={showBanner}
+              setShowBanner={setShowBanner}
+              setShowFeedback={setShowFeedback}
+            />
+          </Box>
+        </Navbar>
+      )}
 
       <Box sx={{ flex: 1, position: "relative" }}>
         {/* Map */}
@@ -187,9 +196,26 @@ export default function ScenarioController({
                 gap: 1.5,
               }}
             >
-              <Paper sx={{ borderRadius: 4 }} elevation={3}>
-                {search}
-              </Paper>
+              {/* Search Bar - hidden on mobile */}
+              {!isMobile && (
+                <Paper sx={{ borderRadius: 4 }} elevation={3}>
+                  {search}
+                </Paper>
+              )}
+              {/* Menu Button - mobile only */}
+              {isMobile && (
+                <Paper
+                  elevation={3}
+                  sx={{ borderRadius: 4, width: "fit-content" }}
+                >
+                  <IconTextButton
+                    icon={<MenuIcon />}
+                    label="Menu"
+                    tooltip="Open Menu"
+                    onClick={() => setNavbarOpen(true)}
+                  />
+                </Paper>
+              )}
               <Paper
                 elevation={3}
                 sx={{ borderRadius: 4, width: "fit-content" }}
@@ -337,6 +363,23 @@ export default function ScenarioController({
           children={<Stack>{undefined}</Stack>}
         >
           {/* List content will go here */}
+        </SideMenu>
+
+        {/* Mobile Navbar Menu */}
+        <SideMenu
+          side="left"
+          title="Menu"
+          open={navbarOpen}
+          onClose={() => setNavbarOpen(false)}
+        >
+          <MobileNavbar>
+            <ScenarioSelector canRoute={true} />
+            <FeedbackButton
+              showBanner={showBanner}
+              setShowBanner={setShowBanner}
+              setShowFeedback={setShowFeedback}
+            />
+          </MobileNavbar>
         </SideMenu>
 
         {/* Feedback Modal */}

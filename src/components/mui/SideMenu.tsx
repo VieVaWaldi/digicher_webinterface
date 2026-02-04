@@ -30,7 +30,6 @@ export const SideMenu = ({
   onClose,
   width = 400,
 }: SideMenuProps) => {
-
   const isLeft = side === "left";
   const slideDirection = isLeft ? "right" : "left";
 
