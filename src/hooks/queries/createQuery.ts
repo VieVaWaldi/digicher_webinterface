@@ -3,7 +3,7 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 // In the Provider ?
 // const defaultQueryOptions = {
 //   staleTime: 1000 * 60 * 5,
-//   retry: 2,
+//   retry: 2,/clear
 //   refetchOnWindowFocus: false,
 // };
 

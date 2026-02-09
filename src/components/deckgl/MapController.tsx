@@ -39,7 +39,7 @@ interface BaseUIProps {
   scenarioTitle?: string;
 }
 
-export default function ScenarioController({
+export default function MapController({
   layers,
   search,
   filters,
@@ -175,7 +175,7 @@ export default function ScenarioController({
             error={error}
           />
         </Box>
-        {/* UI Controls - overlay on top of map */}
+        {/* UI Controls - overlay on top of scenarios */}
         <Box
           sx={{
             position: "absolute",
@@ -222,7 +222,7 @@ export default function ScenarioController({
               >
                 <IconTextButton
                   icon={<FilterListIcon />}
-                  label="Filters"
+                  label="Filter"
                   tooltip="Open Filter Panel"
                   onClick={() => {
                     setFiltersOpen(true);

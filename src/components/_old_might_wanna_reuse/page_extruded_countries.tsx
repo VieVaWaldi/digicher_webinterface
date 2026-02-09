@@ -75,7 +75,7 @@
 //       idPredicate: "project_id",
 //     });
 //
-//   const filteredAllInstitutions = dataInstitutionPoints?.map((institution) => {
+//   const filteredAllInstitutions = dataInstitutionPoints?.scenarios((institution) => {
 //     const filteredProjects = institution.projects_funding.filter((project) =>
 //       filterDomainPredicate(project),
 //     );
@@ -488,7 +488,7 @@
 //   if (error) {
 //     return (
 //       <div className="flex h-screen items-center justify-center">
-//         Error loading map: {error}
+//         Error loading scenarios: {error}
 //       </div>
 //     );
 //   }

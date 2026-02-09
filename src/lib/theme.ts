@@ -2,7 +2,7 @@
 import { createTheme } from "@mui/material/styles";
 
 // Color palette - Modern Heritage
-const palette = {
+export const palette = {
   light: {
     background: "#fafafa",
     paper: "#ffffff",
@@ -241,7 +241,26 @@ export const darkTheme = createTheme({
   shape: {
     borderRadius: 8,
   },
-  components: getComponents("dark"),
+  components: {
+    ...getComponents("dark"),
+    MuiCssBaseline: {
+      styleOverrides: {
+        "*::-webkit-scrollbar": {
+          width: "12px",
+        },
+        "*::-webkit-scrollbar-track": {
+          background: palette.dark.background,
+        },
+        "*::-webkit-scrollbar-thumb": {
+          background: palette.dark.divider,
+          borderRadius: "6px",
+        },
+        "*::-webkit-scrollbar-thumb:hover": {
+          background: palette.dark.textSecondary,
+        },
+      },
+    },
+  },
 });
 
 // Default export for convenience

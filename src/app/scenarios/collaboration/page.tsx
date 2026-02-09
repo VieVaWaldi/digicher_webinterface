@@ -1,7 +1,7 @@
 "use client";
 
 import { ArcLayer, ScatterplotLayer } from "@deck.gl/layers";
-import ScenarioController from "@/components/deckgl/ScenarioController";
+import MapController from "@/components/deckgl/MapController";
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import { PickingInfo } from "deck.gl";
@@ -26,7 +26,7 @@ function CollaborationScenarioContent() {
     data: mapViewCollaborations,
     isPending,
     error,
-  } = useCollaborationsEnriched(); // loses projects not in map view
+  } = useCollaborationsEnriched(); // loses projects not in scenarios view
   //   const {
   //     data: mapViewCollaborations,
   //     isPending,
@@ -137,7 +137,7 @@ function CollaborationScenarioContent() {
 
   //   const MAX_COLLAB_WEIGHT = useMemo(() => {
   //     if (!collaborationView) return 0;
-  //     return Math.max(...collaborationView.map((d) => d.collaboration_weight));
+  //     return Math.max(...collaborationView.scenarios((d) => d.collaboration_weight));
   //   }, [collaborationView]);
 
   /** Event Handlers */
@@ -293,7 +293,7 @@ function CollaborationScenarioContent() {
   );
 
   return (
-    <ScenarioController
+    <MapController
       layers={[arcLayer, scatterLayer]} // columnLayer
       filters={filters}
       defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}

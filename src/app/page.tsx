@@ -14,7 +14,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LanguageIcon from "@mui/icons-material/Language";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, Suspense, useEffect, useState } from "react";
 import {
   IconTextButton,
   Navbar,
@@ -29,7 +29,7 @@ import { useDataPreFetcher } from "@/hooks/fetching/DataPreFetcher";
 type ViewMode = "list" | "map";
 
 const LandingPage = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [viewMode, setViewMode] = useState<ViewMode>("map");
   const [selectedScenario, setSelectedScenario] = useState<Scenario>("base");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -108,18 +108,18 @@ const LandingPage = () => {
 
         <Box sx={{ display: "flex", gap: 1 }}>
           <IconTextButton
-            icon={<FormatListBulletedIcon />}
-            label="List"
-            tooltip="Sets search to default List View (liike google scholar, but better)"
-            selected={viewMode === "list"}
-            onClick={() => setViewMode("list")}
-          />
-          <IconTextButton
             icon={<MapOutlinedIcon />}
             label="Map"
             tooltip="Sets search to an interactive Map View"
             selected={viewMode === "map"}
             onClick={() => setViewMode("map")}
+          />
+          <IconTextButton
+            icon={<FormatListBulletedIcon />}
+            label="List"
+            tooltip="Sets search to default List View (liike google scholar, but better)"
+            selected={viewMode === "list"}
+            onClick={() => setViewMode("list")}
           />
         </Box>
 
@@ -133,10 +133,12 @@ const LandingPage = () => {
         >
           {viewMode === "map" && (
             <Box sx={{ position: "absolute", top: 10 }}>
-              <ScenarioSelector
-                selected={selectedScenario}
-                onChange={handleScenarioChange}
-              />
+              <Suspense>
+                <ScenarioSelector
+                  selected={selectedScenario}
+                  onChange={handleScenarioChange}
+                />
+              </Suspense>
             </Box>
           )}
         </Box>

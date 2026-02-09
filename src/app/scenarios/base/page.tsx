@@ -1,6 +1,6 @@
 "use client";
 
-import ScenarioController from "@/components/deckgl/ScenarioController";
+import MapController from "@/components/deckgl/MapController";
 import useCountryFilter from "components/filter/useCountryFilter";
 import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
 import { useTopicFilter } from "components/filter/useTopicFilter";
@@ -15,16 +15,13 @@ import { IconLayer } from "deck.gl";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import { INITIAL_VIEW_STATE_EU } from "@/components/deckgl/viewports";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import ScienceIcon from "@mui/icons-material/Science";
 import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
-
-const INSTITUTION_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
-  <path fill="#2c5f66" d="M4 10h3v7H4zm6.5 0h3v7h-3zM2 19h20v3H2zm15-9h3v7h-3zm-5-9L2 6v2h20V6z"/>
-</svg>`;
-const INSTITUTION_ICON_URL = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(INSTITUTION_ICON_SVG)}`;
+import { institutionIconUrl } from "@/components/deckgl/layers/icons";
+import { palette } from "@/lib/theme";
 
 const ENTITY_OPTIONS: EntityOption[] = [
   // {
@@ -160,7 +157,7 @@ function BaseScenarioContent() {
   /** Event Handlers */
 
   const handleMapOnClick = useCallback((info: any) => {
-    if (info.object.institution_id) {
+    if (info.object.count) {
       setSelectedInstitutionId(info.object.institution_id);
       console.log(info.object);
     }
@@ -168,31 +165,75 @@ function BaseScenarioContent() {
 
   /** Layer */
 
+  const groupedData = useMemo(() => {
+    const geoMap = new Map<string, typeof filteredData>();
+
+    filteredData.forEach((inst) => {
+      if (!inst.geolocation) return;
+      const key = inst.geolocation.join(",");
+      if (!geoMap.has(key)) {
+        geoMap.set(key, []);
+      }
+      geoMap.get(key)!.push(inst);
+    });
+
+    // Stats (uncomment to analyse)
+    // const grouped = Array.from(geoMap.values());
+    // const withGeo = grouped.reduce((sum, g) => sum + g.length, 0);
+    // console.log({
+    //   totalInstitutions: filteredData.length,
+    //   withGeolocation: withGeo,
+    //   withoutGeolocation: filteredData.length - withGeo,
+    //   uniqueLocations: geoMap.size,
+    //   duplicatesSaved: withGeo - geoMap.size,
+    //   withMultiple: grouped.filter((g) => g.length > 1).length,
+    //   maxAtSameLocation: Math.max(...grouped.scenarios((g) => g.length)),
+    // });
+
+    return Array.from(geoMap.values()).map((institutions) => ({
+      geolocation: institutions[0].geolocation,
+      institutions,
+      count: institutions.length,
+    }));
+  }, [filteredData]);
+
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   const layer = useMemo(() => {
     return new IconLayer({
-      id: "icon-institutions",
-      data: filteredData,
+      id: "scatter-institution-view",
+      data: groupedData,
       pickable: true,
       getPosition: (d) => d.geolocation,
-      getIcon: () => ({
-        url: INSTITUTION_ICON_URL,
+      getIcon: (d) => ({
+        url: institutionIconUrl(
+          isDark
+            ? d.count >= 2
+              ? palette.dark.secondaryLight
+              : palette.dark.primaryLight
+            : d.count >= 2
+              ? palette.light.secondaryLight
+              : palette.light.primaryLight,
+        ),
         width: 64,
         height: 64,
         anchorY: 64,
       }),
-      getSize: 40,
+      getSize: (d) => (d.count >= 2 ? 400 : 400),
       sizeUnits: "meters",
       sizeMinPixels: 12, // clickable when zoomed out
       sizeMaxPixels: 40, // building-sized when zoomed in
       onClick: handleMapOnClick,
       updateTriggers: {
-        getPosition: filteredData,
+        getPosition: groupedData,
+        getIcon: theme.palette.mode,
       },
     });
-  }, [filteredData, handleMapOnClick]);
+  }, [groupedData, handleMapOnClick, isDark]);
 
   return (
-    <ScenarioController
+    <MapController
       layers={[layer]}
       search={SearchFilter}
       filters={Filters}

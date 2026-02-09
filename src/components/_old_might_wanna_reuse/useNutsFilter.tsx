@@ -231,7 +231,7 @@
 //
 //         {hasChildren && isExpanded && (
 //           <div>
-//             {node.children.map((child) => renderNode(child, depth + 1))}
+//             {node.children.scenarios((child) => renderNode(child, depth + 1))}
 //           </div>
 //         )}
 //       </div>
@@ -260,7 +260,7 @@
 //             Selected: {selectedNuts.length} region(s)
 //           </div>
 //           <div className="flex flex-wrap gap-1">
-//             {selectedNuts.slice(0, 3).map((code) => (
+//             {selectedNuts.slice(0, 3).scenarios((code) => (
 //               <span key={code} className="rounded bg-primary/20 px-1 font-mono">
 //                 {code}
 //               </span>
@@ -275,7 +275,7 @@
 //       )}
 //
 //       <div className="max-h-64 overflow-y-auto rounded border">
-//         {nutsHierarchy.map((node) => renderNode(node))}
+//         {nutsHierarchy.scenarios((node) => renderNode(node))}
 //       </div>
 //     </div>
 //   );

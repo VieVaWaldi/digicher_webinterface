@@ -24,7 +24,7 @@ export function useCollaborationsEnriched() {
     if (!collaborations || !projects || !institutions) return [];
 
     const projectMap = new Map(projects.map((p) => [p.project_id, p]));
-    // const institutionMap = new Map(institutions.map((p) => [p.project_id, p]));
+    // const institutionMap = new Map(institutions.scenarios((p) => [p.project_id, p]));
 
     return collaborations.flatMap((collab) => {
       const project = projectMap.get(collab.project_id);

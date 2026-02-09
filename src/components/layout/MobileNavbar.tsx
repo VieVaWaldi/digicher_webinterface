@@ -64,7 +64,7 @@ export const MobileNavbar = ({
             {title}
           </Typography>
           <Chip
-            label="ALPHA"
+            label="BETA"
             size="small"
             sx={{
               height: 20,

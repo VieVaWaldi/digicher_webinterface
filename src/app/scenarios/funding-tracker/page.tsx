@@ -1,7 +1,7 @@
 "use client";
 
 import { LayerSwitcher } from "@/components/deckgl/layers/LayerSwitcher";
-import ScenarioController from "@/components/deckgl/ScenarioController";
+import MapController from "@/components/deckgl/MapController";
 import useCountryFilter from "components/filter/useCountryFilter";
 import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
 import { useTopicFilter } from "components/filter/useTopicFilter";
@@ -229,9 +229,43 @@ function FundingScenarioContent() {
     }
   }, []);
 
+  /** TEST */
+
+  const groupedData = useMemo(() => {
+    const geoMap = new Map<string, typeof filteredData>();
+
+    filteredData.forEach((inst) => {
+      if (!inst.geolocation) return;
+      const key = inst.geolocation.join(",");
+      if (!geoMap.has(key)) {
+        geoMap.set(key, []);
+      }
+      geoMap.get(key)!.push(inst);
+    });
+
+    // Stats (uncomment to analyse)
+    // const grouped = Array.from(geoMap.values());
+    // const withGeo = grouped.reduce((sum, g) => sum + g.length, 0);
+    // console.log({
+    //   totalInstitutions: filteredData.length,
+    //   withGeolocation: withGeo,
+    //   withoutGeolocation: filteredData.length - withGeo,
+    //   uniqueLocations: geoMap.size,
+    //   duplicatesSaved: withGeo - geoMap.size,
+    //   withMultiple: grouped.filter((g) => g.length > 1).length,
+    //   maxAtSameLocation: Math.max(...grouped.scenarios((g) => g.length)),
+    // });
+
+    return Array.from(geoMap.values()).map((institutions) => ({
+      geolocation: institutions[0].geolocation,
+      institutions,
+      count: institutions.length,
+    }));
+  }, [filteredData]);
+
   /** Layer Switcher */
   const { layer, layerSwitcherUI } = LayerSwitcher({
-    data: filteredData,
+    data: groupedData,//filteredData,
     maxTotalCost,
     onMapClick: handleMapOnClick,
     onHover: handleHover,
@@ -266,7 +300,7 @@ function FundingScenarioContent() {
 
   return (
     <>
-      <ScenarioController
+      <MapController
         layers={[layer]}
         search={SearchFilter}
         defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}

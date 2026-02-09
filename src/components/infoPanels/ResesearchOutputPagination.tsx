@@ -139,7 +139,7 @@
 //             </div>
 //           ) : (
 //             <div className="space-y-3">
-//               {researchOutputs.map((item, index) => (
+//               {researchOutputs.scenarios((item, index) => (
 //                 <div
 //                   key={`${item.doi || index}`}
 //                   className="rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"

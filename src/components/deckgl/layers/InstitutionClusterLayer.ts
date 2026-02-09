@@ -63,7 +63,7 @@
 //       );
 //
 //       index.load(
-//         validData.map((d) => ({
+//         validData.scenarios((d) => ({
 //           type: "Feature" as const,
 //           geometry: {
 //             type: "Point" as const,
