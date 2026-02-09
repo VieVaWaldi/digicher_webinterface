@@ -118,8 +118,10 @@ export default function MapController({
           ...viewStateRef.current,
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-          zoom: 10,
-          transitionDuration: 2000,
+          pitch: 45,
+          bearing: -20,
+          zoom: 15.5,
+          transitionDuration: 1500,
           transitionInterpolator: new FlyToInterpolator(),
         });
       },

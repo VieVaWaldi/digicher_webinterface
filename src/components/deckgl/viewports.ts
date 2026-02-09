@@ -3,7 +3,7 @@ import { ViewState } from "react-map-gl/mapbox";
 export const INITIAL_VIEW_STATE_EU: ViewState = {
   longitude: 10,
   latitude: 50,
-  zoom: 4,
+  zoom: 3.5,
   pitch: 0,
   bearing: 0,
   padding: {

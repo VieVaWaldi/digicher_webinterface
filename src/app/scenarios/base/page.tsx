@@ -11,7 +11,6 @@ import {
   FilterSection,
   useUnifiedSearchFilter,
 } from "components/mui";
-import { IconLayer } from "deck.gl";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import { INITIAL_VIEW_STATE_EU } from "@/components/deckgl/viewports";
@@ -20,8 +19,8 @@ import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import ScienceIcon from "@mui/icons-material/Science";
 import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
-import { institutionIconUrl } from "@/components/deckgl/layers/icons";
-import { palette } from "@/lib/theme";
+import { GroupedIconLayer } from "@/components/deckgl/layers/GroupedIconLayer";
+import { createIconLayer } from "@/components/deckgl/layers/IconLayer";
 
 const ENTITY_OPTIONS: EntityOption[] = [
   // {
@@ -200,37 +199,55 @@ function BaseScenarioContent() {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
+  // const layer = useMemo(() => {
+  //   return new IconLayer({
+  //     id: "scatter-institution-view",
+  //     data: groupedData,
+  //     pickable: true,
+  //     getPosition: (d) => d.geolocation,
+  //     getIcon: (d) => ({
+  //       url: institutionIconUrl(
+  //         isDark
+  //           ? d.count >= 2
+  //             ? palette.dark.secondaryLight
+  //             : palette.dark.primaryLight
+  //           : d.count >= 2
+  //             ? palette.light.secondaryLight
+  //             : palette.light.primaryLight,
+  //       ),
+  //       width: 64,
+  //       height: 64,
+  //       anchorY: 64,
+  //     }),
+  //     getSize: (d) => (d.count >= 2 ? 400 : 400),
+  //     sizeUnits: "meters",
+  //     sizeMinPixels: 12, // clickable when zoomed out
+  //     sizeMaxPixels: 40, // building-sized when zoomed in
+  //     onClick: handleMapOnClick,
+  //     updateTriggers: {
+  //       getPosition: groupedData,
+  //       getIcon: theme.palette.mode,
+  //     },
+  //   });
+  // }, [groupedData, handleMapOnClick, isDark]);
+
   const layer = useMemo(() => {
-    return new IconLayer({
+    return new GroupedIconLayer({
       id: "scatter-institution-view",
       data: groupedData,
-      pickable: true,
-      getPosition: (d) => d.geolocation,
-      getIcon: (d) => ({
-        url: institutionIconUrl(
-          isDark
-            ? d.count >= 2
-              ? palette.dark.secondaryLight
-              : palette.dark.primaryLight
-            : d.count >= 2
-              ? palette.light.secondaryLight
-              : palette.light.primaryLight,
-        ),
-        width: 64,
-        height: 64,
-        anchorY: 64,
-      }),
-      getSize: (d) => (d.count >= 2 ? 400 : 400),
-      sizeUnits: "meters",
-      sizeMinPixels: 12, // clickable when zoomed out
-      sizeMaxPixels: 40, // building-sized when zoomed in
+      isDark,
       onClick: handleMapOnClick,
-      updateTriggers: {
-        getPosition: groupedData,
-        getIcon: theme.palette.mode,
-      },
     });
   }, [groupedData, handleMapOnClick, isDark]);
+
+  // const layer = useMemo(() => {
+  //   return createIconLayer({
+  //     id: "scatter-institution-view",
+  //     data: groupedData,
+  //     isDark,
+  //     onClick: handleMapOnClick,
+  //   });
+  // }, [groupedData, handleMapOnClick, isDark]);
 
   return (
     <MapController

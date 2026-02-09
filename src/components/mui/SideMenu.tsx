@@ -106,6 +106,14 @@ export const SideMenu = ({
             flex: 1,
             overflowY: "auto",
             overflowX: "hidden",
+            scrollbarWidth: "thin",
+            scrollbarColor: "rgba(0,0,0,0.2) transparent",
+            "&::-webkit-scrollbar": { width: 6 },
+            "&::-webkit-scrollbar-track": { background: "transparent" },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "rgba(0,0,0,0.2)",
+              borderRadius: 3,
+            },
             py: 2,
             px: 2.5,
           }}

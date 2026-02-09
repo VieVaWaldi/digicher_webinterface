@@ -54,6 +54,8 @@ export type MapViewInstitutionType = typeof mapViewInstitution.$inferSelect;
 
 export const mapViewCollaborations = coreMatsSchema
   .materializedView("collaborations", {
+    // country, type, sme, cost
+    // project_count
     a_institution_id: text("a_institution_id").notNull(),
     b_institution_id: text("b_institution_id").notNull(),
     a_geolocation: doublePrecision("a_geolocation").array().notNull(),

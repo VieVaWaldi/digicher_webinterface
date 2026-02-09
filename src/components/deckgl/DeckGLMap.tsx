@@ -87,7 +87,7 @@ export default function DeckGLMap({
   };
 
   const view = isGlobe
-    ? new GlobeView({ id: "globe" })
+    ? new GlobeView({ id: "globe" }) // , resolution: 10
     : new MapView({ id: "mercator" });
 
   // Google Maps-like controller config for globe mode:
