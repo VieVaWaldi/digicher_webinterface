@@ -301,7 +301,7 @@ function FundingScenarioContent() {
   return (
     <>
       <MapController
-        layers={[layer]}
+        layerConfigs={[{ id: "funding", title: "Funding", description: "", previewImage: "", createLayers: () => [layer] }]}
         search={SearchFilter}
         defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
         initialViewState={filterValues.viewState}

@@ -21,6 +21,7 @@ import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
 import { GroupedIconLayer } from "@/components/deckgl/layers/GroupedIconLayer";
 import { createIconLayer } from "@/components/deckgl/layers/IconLayer";
+import { LayerConfig } from "@/components/mui/LayerSwitcher";
 
 const ENTITY_OPTIONS: EntityOption[] = [
   // {
@@ -190,7 +191,7 @@ function BaseScenarioContent() {
     // });
 
     return Array.from(geoMap.values()).map((institutions) => ({
-      geolocation: institutions[0].geolocation,
+      geolocation: institutions[0].geolocation!,
       institutions,
       count: institutions.length,
     }));
@@ -199,59 +200,44 @@ function BaseScenarioContent() {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
-  // const layer = useMemo(() => {
-  //   return new IconLayer({
-  //     id: "scatter-institution-view",
-  //     data: groupedData,
-  //     pickable: true,
-  //     getPosition: (d) => d.geolocation,
-  //     getIcon: (d) => ({
-  //       url: institutionIconUrl(
-  //         isDark
-  //           ? d.count >= 2
-  //             ? palette.dark.secondaryLight
-  //             : palette.dark.primaryLight
-  //           : d.count >= 2
-  //             ? palette.light.secondaryLight
-  //             : palette.light.primaryLight,
-  //       ),
-  //       width: 64,
-  //       height: 64,
-  //       anchorY: 64,
-  //     }),
-  //     getSize: (d) => (d.count >= 2 ? 400 : 400),
-  //     sizeUnits: "meters",
-  //     sizeMinPixels: 12, // clickable when zoomed out
-  //     sizeMaxPixels: 40, // building-sized when zoomed in
-  //     onClick: handleMapOnClick,
-  //     updateTriggers: {
-  //       getPosition: groupedData,
-  //       getIcon: theme.palette.mode,
-  //     },
-  //   });
-  // }, [groupedData, handleMapOnClick, isDark]);
-
-  const layer = useMemo(() => {
-    return new GroupedIconLayer({
-      id: "scatter-institution-view",
-      data: groupedData,
-      isDark,
-      onClick: handleMapOnClick,
-    });
-  }, [groupedData, handleMapOnClick, isDark]);
-
-  // const layer = useMemo(() => {
-  //   return createIconLayer({
-  //     id: "scatter-institution-view",
-  //     data: groupedData,
-  //     isDark,
-  //     onClick: handleMapOnClick,
-  //   });
-  // }, [groupedData, handleMapOnClick, isDark]);
+  const layerConfigs: LayerConfig[] = useMemo(
+    () => [
+      {
+        id: "grouped-icons",
+        title: "Grouped",
+        description:
+          "Institutions grouped by location with cluster indicators.",
+        previewImage: "/images/settings/mapbox-dark.png",
+        createLayers: () => [
+          new GroupedIconLayer({
+            id: "grouped-institution-view",
+            data: groupedData,
+            isDark,
+            onClick: handleMapOnClick,
+          }),
+        ],
+      },
+      {
+        id: "individual-icons",
+        title: "Individual",
+        description: "Each institution displayed as an individual icon.",
+        previewImage: "/images/settings/mapbox-dark.png",
+        createLayers: () => [
+          createIconLayer({
+            id: "icon-institution-view",
+            data: groupedData,
+            isDark,
+            onClick: handleMapOnClick,
+          }),
+        ],
+      },
+    ],
+    [groupedData, isDark, handleMapOnClick],
+  );
 
   return (
     <MapController
-      layers={[layer]}
+      layerConfigs={layerConfigs}
       search={SearchFilter}
       filters={Filters}
       defaultViewState={INITIAL_VIEW_STATE_EU}

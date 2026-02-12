@@ -294,7 +294,7 @@ function CollaborationScenarioContent() {
 
   return (
     <MapController
-      layers={[arcLayer, scatterLayer]} // columnLayer
+      layerConfigs={[{ id: "collaboration", title: "Collaboration", description: "", previewImage: "", createLayers: () => [arcLayer, scatterLayer] }]}
       filters={filters}
       defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
       initialViewState={filterValues.viewState}

@@ -1,12 +1,12 @@
 "use client";
-import { ReactNode, useRef, useState } from "react";
-import { FlyToInterpolator, Layer } from "@deck.gl/core";
+import { ReactNode, useMemo, useRef, useState } from "react";
+import { FlyToInterpolator } from "@deck.gl/core";
 import DeckGLMap from "@/components/deckgl/DeckGLMap";
 import Navbar from "@/components/layout/Navbar";
 import MobileNavbar from "@/components/layout/MobileNavbar";
 import Feedback, { FeedbackButton } from "../layout/Feedback";
 import { IconTextButton } from "@/components/mui/IconTextButton";
-import { MapStyleSwitcher } from "@/components/mui/MapStyleSwitcher";
+import { LayerSwitcher, LayerConfig } from "@/components/mui/LayerSwitcher";
 import { SideMenu } from "@/components/mui/SideMenu";
 import { Box, Button, Paper, Stack, useMediaQuery, useTheme } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -21,7 +21,7 @@ import { Map, Public } from "@mui/icons-material";
 import { ScenarioSelector } from "@/components/mui";
 
 interface BaseUIProps {
-  layers: Layer[];
+  layerConfigs: LayerConfig[];
   search: ReactNode;
   filters: ReactNode;
   /** Default view state for a given scenario */
@@ -40,7 +40,7 @@ interface BaseUIProps {
 }
 
 export default function MapController({
-  layers,
+  layerConfigs,
   search,
   filters,
   defaultViewState,
@@ -65,6 +65,13 @@ export default function MapController({
   const [showBanner, setShowBanner] = useState(false);
 
   const [isGlobe, setIsGlobe] = useState(false);
+  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
+
+  /** Create fresh layer instances for the active config (deck.gl layers are single-use) */
+  const activeLayers = useMemo(
+    () => layerConfigs[activeLayerIndex]?.createLayers() ?? [],
+    [layerConfigs, activeLayerIndex],
+  );
 
   /** View State Logic **/
 
@@ -166,7 +173,7 @@ export default function MapController({
         >
           <DeckGLMap
             id="funding-map"
-            layers={layers}
+            layers={activeLayers}
             defaultViewState={defaultViewState}
             commandedViewState={commandedViewState}
             onViewStateChange={handleViewStateChange}
@@ -253,16 +260,22 @@ export default function MapController({
             </Paper>
           </Box>
 
-          {/* Bottom Left: Map Style Switcher */}
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: 22,
-              left: 22,
-            }}
-          >
-            <MapStyleSwitcher />
-          </Box>
+          {/* Bottom Left: Layer Switcher */}
+          {layerConfigs.length > 1 && (
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 22,
+                left: 22,
+              }}
+            >
+              <LayerSwitcher
+                layerConfigs={layerConfigs}
+                activeIndex={activeLayerIndex}
+                onChange={setActiveLayerIndex}
+              />
+            </Box>
+          )}
 
           {/* Bottom Right: Map Controls */}
           <Box

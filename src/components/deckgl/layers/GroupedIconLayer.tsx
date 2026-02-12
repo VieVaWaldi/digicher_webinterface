@@ -109,7 +109,7 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
       data: clustered,
       pickable: true,
       getPosition: (d) =>
-        [d.geolocation[0], d.geolocation[1], 50000] as Position,
+        d.geolocation as Position,
       getIcon: (d) => ({
         url: clusterIconUrl(
           isDark ? palette.dark.secondaryLight : palette.light.secondaryLight,
