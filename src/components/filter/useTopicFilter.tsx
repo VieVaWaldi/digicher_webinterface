@@ -426,7 +426,7 @@ export const useTopicFilter = (
           }}
         >
           <Typography variant="caption" color="text.secondary">
-            Selected: {selectedCounts.fields}f, {selectedCounts.subfields}sf,{" "}
+            Selected: {selectedCounts.fields}, {selectedCounts.subfields},{" "}
             {selectedCounts.topics}t
           </Typography>
           <Button

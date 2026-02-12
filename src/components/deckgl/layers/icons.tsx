@@ -21,7 +21,7 @@ function quantize(n: number): number {
   return Math.round(n / 500) * 500;
 }
 
-export function clusterIconUrl(color: string, count: number): string {
+export function clusterIconUrl(color: string, count: number, isDark: boolean): string {
   const display = quantize(count);
   const key = `${color}-${display}`;
   const cached = clusterIconCache.get(key);
@@ -59,7 +59,9 @@ export function clusterIconUrl(color: string, count: number): string {
   // Badge background + border
   ctx.beginPath();
   ctx.roundRect(badgeX, badgeY, badgeW, badgeH, badgeR);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+  ctx.fillStyle = isDark
+    ? "rgba(30, 30, 30, 0.92)"
+    : "rgba(255, 255, 255, 0.92)";
   ctx.fill();
   ctx.strokeStyle = color;
   ctx.lineWidth = 1.5;

@@ -10,6 +10,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Deploy on the VM
 
+## Patches
+
+This project uses [patch-package](https://github.com/ds300/patch-package) to fix upstream bugs. Patches are in the `patches/` directory and are applied automatically on `npm install` via the `postinstall` script.
+
+### `@luma.gl/core@9.2.6`
+
+Fixes a race condition where the `ResizeObserver` callback fires before the WebGL device is fully initialized, causing `Cannot read properties of undefined (reading 'maxTextureDimension2D')`. The patch adds a safe fallback of 8192 (standard max texture size) when `device.limits` is not yet available. This can be removed once the bug is fixed upstream in luma.gl.
+
 ## Unsorted
 
 ### Prefetch data 

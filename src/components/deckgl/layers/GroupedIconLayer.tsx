@@ -58,8 +58,7 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
     if (changeFlags.propsOrDataChanged) return true;
     // Only update on viewport changes when zoomed past the cluster threshold
     return (
-      changeFlags.viewportChanged &&
-      this.context.viewport.zoom < ZOOM_THRESHOLD
+      changeFlags.viewportChanged && this.context.viewport.zoom < ZOOM_THRESHOLD
     );
   }
 
@@ -109,11 +108,13 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
       id: `${this.props.id}-clusters`,
       data: clustered,
       pickable: true,
-      getPosition: (d) => d.geolocation,
+      getPosition: (d) =>
+        [d.geolocation[0], d.geolocation[1], 50000] as Position,
       getIcon: (d) => ({
         url: clusterIconUrl(
           isDark ? palette.dark.secondaryLight : palette.light.secondaryLight,
           d.count,
+          isDark,
         ),
         width: CLUSTER_ICON_SIZE,
         height: CLUSTER_ICON_SIZE,
@@ -128,7 +129,7 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
         getIcon: isDark,
         getSize: zoom,
       },
-      parameters: { depthCompare: "always" },
+      parameters: { depthCompare: "less-equal" },
     });
 
     return [singleLayer, clusterLayer];

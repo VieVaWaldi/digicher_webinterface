@@ -30,10 +30,10 @@ export function createIconLayer({
         isDark
           ? d.count >= 2
             ? palette.dark.secondaryLight
-              : palette.dark.primaryLight
-            : d.count >= 2
+            : palette.dark.primaryLight
+          : d.count >= 2
             ? palette.light.secondaryLight
-              : palette.light.primaryLight,
+            : palette.light.primaryLight,
       ),
       width: 64,
       height: 64,
@@ -41,8 +41,8 @@ export function createIconLayer({
     }),
     getSize: 400,
     sizeUnits: "meters",
-    sizeMinPixels: 12,  // floor when zoomed out
-    sizeMaxPixels: 40,  // cap when zoomed in
+    sizeMinPixels: 12, // floor when zoomed out
+    sizeMaxPixels: 40, // cap when zoomed in
     onClick,
     updateTriggers: {
       getIcon: isDark,
