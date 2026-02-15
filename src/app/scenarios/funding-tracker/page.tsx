@@ -1,6 +1,5 @@
 "use client";
 
-import { LayerSwitcher } from "@/components/deckgl/layers/LayerSwitcher";
 import MapController from "@/components/deckgl/MapController";
 import useCountryFilter from "components/filter/useCountryFilter";
 import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
@@ -12,43 +11,23 @@ import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { Box, Typography } from "@mui/material";
-import {
-  EntityOption,
-  FilterSection,
-  useUnifiedSearchFilter,
-} from "@/components/mui";
+import { FilterSection, useUnifiedSearchFilter } from "@/components/mui";
 import useFilters from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
-import ScienceIcon from "@mui/icons-material/Science";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-
-const ENTITY_OPTIONS: EntityOption[] = [
-  // {
-  //   value: "works",
-  //   label: "Works",
-  //   icon: <DescriptionIcon fontSize="small" />,
-  // },
-  {
-    value: "projects",
-    label: "Projects",
-    icon: <ScienceIcon fontSize="small" />,
-  },
-  {
-    value: "institutions",
-    label: "Institutions",
-    icon: <AccountBalanceIcon fontSize="small" />,
-  },
-];
+import { LayerConfig } from "@/components/mui/LayerSwitcher";
+import { createColumnLayer } from "@/components/deckgl/layers/ColumnLayer";
+import { createHexagonLayer } from "@/components/deckgl/layers/HexagonLayer";
+import { createExtrudedCountryLayer } from "@/components/deckgl/layers/ExtrudedCountryLayer";
+import { useCountryGeoData } from "@/hooks/queries/useCountryGeoData";
+import { useSettings } from "@/context/SettingsContext";
+import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
+import { groupByGeolocation } from "@/app/scenarios/scenario_data";
 
 function FundingScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
-  // const { data: institution, isPending: isPendingInstitution } =
-  //   useInstitutionById(selectedInstitutionId || "", {
-  //     enabled: !!selectedInstitutionId,
-  //   });
 
   /** Hover State */
   const [hoverInfo, setHoverInfo] = useState<{
@@ -59,9 +38,6 @@ function FundingScenarioContent() {
   } | null>(null);
 
   /** Filters */
-
-  // ToDo: In the new drizzle institutionView data type there is the information for per institution budget AND total project budget, so we can keep the
-  // toggle removed. Now we can use the total project sums without institution budgets from here
 
   const { filters: filterValues, setters, resetAll } = useFilters();
 
@@ -106,42 +82,22 @@ function FundingScenarioContent() {
   const filteredData = useMemo(() => {
     if (!data?.length) return [];
 
-    const filtered = data.filter((p) => {
-      if (!institutionSearchPredicate(p.institution_id)) return false;
-      if (!countryPredicate(p.country_code)) return false;
-      if (!typeAndSmePredicate(p.type, p.sme)) return false;
+    return data.flatMap((p) => {
+      if (!institutionSearchPredicate(p.institution_id)) return [];
+      if (!countryPredicate(p.country_code)) return [];
+      if (!typeAndSmePredicate(p.type, p.sme)) return [];
 
-      const projects = p.projects;
-      if (!projects?.length) return false;
-
-      return projects.some(
+      const matchingProjects = p.projects?.filter(
         (proj) =>
           topicPredicate(proj.id) &&
           projectSearchPredicate(proj.id) &&
           frameworkProgrammePredicate(proj.framework_programmes) &&
           yearRangePredicate(proj.start, proj.end),
       );
+      if (!matchingProjects?.length) return [];
+
+      return [{ ...p, projects: matchingProjects }];
     });
-
-    const institutionMap = new Map();
-
-    filtered.forEach((row) => {
-      const existing = institutionMap.get(row.institution_id);
-      if (existing) {
-        existing.total_cost += row.total_cost || 0;
-        existing.project_count += 1;
-        // existing.project_ids.push(row.project_id);
-      } else {
-        institutionMap.set(row.institution_id, {
-          ...row,
-          total_cost: row.total_cost || 0,
-          project_count: 1,
-          // project_ids: [row.project_id],
-        });
-      }
-    });
-
-    return Array.from(institutionMap.values());
   }, [
     data,
     institutionSearchPredicate,
@@ -207,12 +163,18 @@ function FundingScenarioContent() {
   );
 
   /** Event Handlers */
+
   const handleMapOnClick = useCallback((info: PickingInfo) => {
-    if (info.object?.institution_id) {
+    if (info.object.points) {
+      // ToDo: Is not in grouped format, but flat institution array
+      const institutions = info.object.points.flatMap(
+        (p: any) => p.institutions,
+      );
+      console.log(institutions);
+    }
+    if (info.object.count && !info.object.points) {
       setSelectedInstitutionId(info.object.institution_id);
       console.log(info.object);
-    } else if (!info.object?.project_id) {
-      setSelectedInstitutionId(info.object.institution_id);
     }
   }, []);
 
@@ -229,47 +191,73 @@ function FundingScenarioContent() {
     }
   }, []);
 
-  /** TEST */
+  /** Layer */
 
-  const groupedData = useMemo(() => {
-    const geoMap = new Map<string, typeof filteredData>();
+  const { isGlobe } = useSettings();
+  const { data: countryGeoData } = useCountryGeoData();
 
-    filteredData.forEach((inst) => {
-      if (!inst.geolocation) return;
-      const key = inst.geolocation.join(",");
-      if (!geoMap.has(key)) {
-        geoMap.set(key, []);
-      }
-      geoMap.get(key)!.push(inst);
-    });
+  const groupedData = useMemo(
+    () => groupByGeolocation(filteredData),
+    [filteredData],
+  );
 
-    // Stats (uncomment to analyse)
-    // const grouped = Array.from(geoMap.values());
-    // const withGeo = grouped.reduce((sum, g) => sum + g.length, 0);
-    // console.log({
-    //   totalInstitutions: filteredData.length,
-    //   withGeolocation: withGeo,
-    //   withoutGeolocation: filteredData.length - withGeo,
-    //   uniqueLocations: geoMap.size,
-    //   duplicatesSaved: withGeo - geoMap.size,
-    //   withMultiple: grouped.filter((g) => g.length > 1).length,
-    //   maxAtSameLocation: Math.max(...grouped.scenarios((g) => g.length)),
-    // });
-
-    return Array.from(geoMap.values()).map((institutions) => ({
-      geolocation: institutions[0].geolocation,
-      institutions,
-      count: institutions.length,
-    }));
-  }, [filteredData]);
-
-  /** Layer Switcher */
-  const { layer, layerSwitcherUI } = LayerSwitcher({
-    data: groupedData,//filteredData,
-    maxTotalCost,
-    onMapClick: handleMapOnClick,
-    onHover: handleHover,
-  });
+  const layerConfigs: LayerConfig[] = useMemo(
+    () => [
+      {
+        id: "hexagon",
+        title: "Hexagon",
+        description: "Aggregated hexagonal bins showing funding density.",
+        previewImage: "/images/settings/mapbox-dark.png",
+        createLayers: () => [
+          createHexagonLayer({
+            data: groupedData,
+            isGlobe,
+            onClick: handleMapOnClick,
+            onHover: handleHover,
+          }),
+        ],
+      },
+      {
+        id: "column",
+        title: "Column",
+        description: "3D columns showing funding amounts as height.",
+        previewImage: "/images/settings/mapbox-dark.png",
+        createLayers: () => [
+          createColumnLayer({
+            data: groupedData,
+            maxTotalCost,
+            isGlobe,
+            onClick: handleMapOnClick,
+            onHover: handleHover,
+          }),
+        ],
+      },
+      {
+        id: "extruded-countries",
+        title: "Countries",
+        description:
+          "Extruded country shapes showing aggregated funding per country.",
+        previewImage: "/images/settings/mapbox-dark.png",
+        createLayers: () => [
+          createExtrudedCountryLayer({
+            data: filteredData,
+            countryGeoData,
+            isGlobe,
+            onClick: handleMapOnClick,
+            onHover: handleHover,
+          }),
+        ],
+      },
+    ],
+    [
+      filteredData,
+      maxTotalCost,
+      isGlobe,
+      handleMapOnClick,
+      handleHover,
+      countryGeoData,
+    ],
+  );
 
   /** Hover Tooltip */
   const hoverTooltip = hoverInfo && (
@@ -301,7 +289,7 @@ function FundingScenarioContent() {
   return (
     <>
       <MapController
-        layerConfigs={[{ id: "funding", title: "Funding", description: "", previewImage: "", createLayers: () => [layer] }]}
+        layerConfigs={layerConfigs}
         search={SearchFilter}
         defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
         initialViewState={filterValues.viewState}
@@ -314,7 +302,6 @@ function FundingScenarioContent() {
         filters={Filters}
       />
       {hoverTooltip}
-      {layerSwitcherUI}
     </>
   );
 }

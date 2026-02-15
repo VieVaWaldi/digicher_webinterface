@@ -144,19 +144,19 @@ const LandingPage = () => {
         </Box>
       </Container>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          pb: 3,
-          color: "text.secondary",
-        }}
-      >
-        <KeyboardArrowDownIcon />
-        <Typography variant="body2">Learn more</Typography>
-      </Box>
+      {/*<Box*/}
+      {/*  sx={{*/}
+      {/*    display: "flex",*/}
+      {/*    flexDirection: "row",*/}
+      {/*    alignItems: "center",*/}
+      {/*    justifyContent: "center",*/}
+      {/*    pb: 3,*/}
+      {/*    color: "text.secondary",*/}
+      {/*  }}*/}
+      {/*>*/}
+      {/*  <KeyboardArrowDownIcon />*/}
+      {/*  <Typography variant="body2">Learn more</Typography>*/}
+      {/*</Box>*/}
 
       <Box
         sx={{

@@ -6,40 +6,18 @@ import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgramme
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
-import {
-  EntityOption,
-  FilterSection,
-  useUnifiedSearchFilter,
-} from "components/mui";
+import { FilterSection, useUnifiedSearchFilter } from "components/mui";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import { INITIAL_VIEW_STATE_EU } from "@/components/deckgl/viewports";
 import { Box, Typography, useTheme } from "@mui/material";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import ScienceIcon from "@mui/icons-material/Science";
 import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
 import { GroupedIconLayer } from "@/components/deckgl/layers/GroupedIconLayer";
 import { createIconLayer } from "@/components/deckgl/layers/IconLayer";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
-
-const ENTITY_OPTIONS: EntityOption[] = [
-  // {
-  //   value: "works",
-  //   label: "Works",
-  //   icon: <DescriptionIcon fontSize="small" />,
-  // },
-  {
-    value: "projects",
-    label: "Projects",
-    icon: <ScienceIcon fontSize="small" />,
-  },
-  {
-    value: "institutions",
-    label: "Institutions",
-    icon: <AccountBalanceIcon fontSize="small" />,
-  },
-];
+import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
+import { groupByGeolocation } from "@/app/scenarios/scenario_data";
 
 function BaseScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
@@ -91,21 +69,21 @@ function BaseScenarioContent() {
 
   const filteredData = useMemo(() => {
     if (!data?.length) return [];
-    return data.filter((p) => {
-      if (!institutionSearchPredicate(p.institution_id)) return false;
-      if (!countryPredicate(p.country_code)) return false;
-      if (!typeAndSmePredicate(p.type, p.sme)) return false;
+    return data.flatMap((p) => {
+      if (!institutionSearchPredicate(p.institution_id)) return [];
+      if (!countryPredicate(p.country_code)) return [];
+      if (!typeAndSmePredicate(p.type, p.sme)) return [];
 
-      const projects = p.projects;
-      if (!projects?.length) return false;
-
-      return projects.some(
+      const matchingProjects = p.projects?.filter(
         (proj) =>
           topicPredicate(proj.id) &&
           projectSearchPredicate(proj.id) &&
           frameworkProgrammePredicate(proj.framework_programmes) &&
           yearRangePredicate(proj.start, proj.end),
       );
+      if (!matchingProjects?.length) return [];
+
+      return [{ ...p, projects: matchingProjects }];
     });
   }, [
     data,
@@ -120,6 +98,11 @@ function BaseScenarioContent() {
 
   /** UI Components */
 
+  const totalProjects = useMemo(
+    () => filteredData.reduce((sum, p) => sum + p.projects.length, 0),
+    [filteredData],
+  );
+
   const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Typography
@@ -131,7 +114,11 @@ function BaseScenarioContent() {
         <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
           {filteredData?.length.toLocaleString()}
         </Box>{" "}
-        institutions
+        institutions &{" "}
+        <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+          {totalProjects.toLocaleString()}
+        </Box>{" "}
+        projects
       </Typography>
 
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
@@ -165,37 +152,10 @@ function BaseScenarioContent() {
 
   /** Layer */
 
-  const groupedData = useMemo(() => {
-    const geoMap = new Map<string, typeof filteredData>();
-
-    filteredData.forEach((inst) => {
-      if (!inst.geolocation) return;
-      const key = inst.geolocation.join(",");
-      if (!geoMap.has(key)) {
-        geoMap.set(key, []);
-      }
-      geoMap.get(key)!.push(inst);
-    });
-
-    // Stats (uncomment to analyse)
-    // const grouped = Array.from(geoMap.values());
-    // const withGeo = grouped.reduce((sum, g) => sum + g.length, 0);
-    // console.log({
-    //   totalInstitutions: filteredData.length,
-    //   withGeolocation: withGeo,
-    //   withoutGeolocation: filteredData.length - withGeo,
-    //   uniqueLocations: geoMap.size,
-    //   duplicatesSaved: withGeo - geoMap.size,
-    //   withMultiple: grouped.filter((g) => g.length > 1).length,
-    //   maxAtSameLocation: Math.max(...grouped.scenarios((g) => g.length)),
-    // });
-
-    return Array.from(geoMap.values()).map((institutions) => ({
-      geolocation: institutions[0].geolocation!,
-      institutions,
-      count: institutions.length,
-    }));
-  }, [filteredData]);
+  const groupedData = useMemo(
+    () => groupByGeolocation(filteredData),
+    [filteredData],
+  );
 
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";

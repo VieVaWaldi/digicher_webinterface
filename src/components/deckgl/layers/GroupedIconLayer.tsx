@@ -3,14 +3,10 @@ import Supercluster, { ClusterProperties, PointFeature } from "supercluster";
 import { clusterIconUrl, CLUSTER_ICON_SIZE } from "./icons";
 import { palette } from "@/lib/theme";
 import { createIconLayer } from "./IconLayer";
-
-interface GroupedInstitution {
-  geolocation: number[] | null;
-  institutions: unknown[];
-  count: number;
-}
+import { GeoGroup } from "@/app/scenarios/scenario_data";
 
 interface PointProps {
+  geoKey: string;
   count: number;
 }
 
@@ -18,15 +14,17 @@ interface ClusterProps {
   totalCount: number;
 }
 
-interface ClusterPoint {
+interface RenderPoint {
   geolocation: Position;
   count: number;
   isCluster: boolean;
+  geoKey?: string;
+  clusterId?: number;
 }
 
 interface GroupedIconLayerProps {
   id: string;
-  data: GroupedInstitution[];
+  data: GeoGroup[];
   isDark: boolean;
   pickable?: boolean;
   onClick?: (info: unknown) => void;
@@ -39,6 +37,7 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
 
   state!: {
     index: Supercluster<PointProps, ClusterProps>;
+    lookup: Map<string, GeoGroup>;
   };
 
   initializeState() {
@@ -51,12 +50,12 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
           acc.totalCount += props.totalCount;
         },
       }),
+      lookup: new Map<string, GeoGroup>(),
     });
   }
 
   shouldUpdateState({ changeFlags }: UpdateParameters<this>): boolean {
     if (changeFlags.propsOrDataChanged) return true;
-    // Only update on viewport changes when zoomed past the cluster threshold
     return (
       changeFlags.viewportChanged && this.context.viewport.zoom < ZOOM_THRESHOLD
     );
@@ -64,52 +63,86 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
 
   updateState(params: UpdateParameters<this>) {
     if (params.changeFlags.dataChanged) {
+      const lookup = new Map<string, GeoGroup>();
       const features: PointFeature<PointProps>[] = (this.props.data || [])
         .filter((d) => d.geolocation)
-        .map((d) => ({
-          type: "Feature" as const,
-          geometry: {
-            type: "Point" as const,
-            coordinates: d.geolocation as [number, number],
-          },
-          properties: { count: d.count },
-        }));
+        .map((d) => {
+          const geoKey = d.geolocation.join(",");
+          lookup.set(geoKey, d);
+          return {
+            type: "Feature" as const,
+            geometry: {
+              type: "Point" as const,
+              coordinates: d.geolocation as [number, number],
+            },
+            properties: { geoKey, count: d.count },
+          };
+        });
       this.state.index.load(features);
+      this.setState({ lookup });
     }
   }
 
+  /** Resolve a lean RenderPoint back to a full GeoGroup on demand (pick). */
+  getPickingInfo({ info }: { info: any }) {
+    const point = info.object as RenderPoint | undefined;
+    if (!point) return info;
+
+    if (!point.isCluster && point.geoKey) {
+      info.object = this.state.lookup.get(point.geoKey)!;
+    } else if (point.isCluster && point.clusterId != null) {
+      const leaves = this.state.index.getLeaves(point.clusterId, Infinity);
+      const institutions = leaves.flatMap((leaf) => {
+        const key = (leaf.properties as PointProps).geoKey;
+        return this.state.lookup.get(key)?.institutions ?? [];
+      });
+      info.object = {
+        geolocation: point.geolocation as number[],
+        institutions,
+        count: point.count,
+      } satisfies GeoGroup;
+    }
+
+    return info;
+  }
+
   renderLayers() {
-    const { isDark, onClick } = this.props;
+    const { isDark } = this.props;
     const zoom = Math.floor(this.context.viewport.zoom);
     const clusters = this.state.index.getClusters([-180, -85, 180, 85], zoom);
 
-    const clusterData: ClusterPoint[] = clusters.map((c) => {
+    const renderData: RenderPoint[] = clusters.map((c) => {
       const isCluster = "cluster" in c.properties && c.properties.cluster;
+      if (isCluster) {
+        return {
+          geolocation: c.geometry.coordinates as Position,
+          count: (c.properties as ClusterProperties & ClusterProps).totalCount,
+          isCluster: true,
+          clusterId: (c.properties as ClusterProperties).cluster_id,
+        };
+      }
       return {
         geolocation: c.geometry.coordinates as Position,
-        count: isCluster
-          ? (c.properties as ClusterProperties & ClusterProps).totalCount
-          : (c.properties as PointProps).count,
-        isCluster,
+        count: (c.properties as PointProps).count,
+        isCluster: false,
+        geoKey: (c.properties as PointProps).geoKey,
       };
     });
 
-    const singles = clusterData.filter((d) => !d.isCluster);
-    const clustered = clusterData.filter((d) => d.isCluster);
+    const singles = renderData.filter((d) => !d.isCluster);
+    const clustered = renderData.filter((d) => d.isCluster);
 
     const singleLayer = createIconLayer({
       id: `${this.props.id}-singles`,
       data: singles,
       isDark,
-      onClick,
     });
 
-    const clusterLayer = new IconLayer<ClusterPoint>({
+    const clusterLayer = new IconLayer<RenderPoint>({
       id: `${this.props.id}-clusters`,
       data: clustered,
       pickable: true,
-      getPosition: (d) =>
-        d.geolocation as Position,
+      getPosition: (d) => d.geolocation as Position,
       getIcon: (d) => ({
         url: clusterIconUrl(
           isDark ? palette.dark.secondaryLight : palette.light.secondaryLight,
@@ -122,9 +155,6 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
       }),
       getSize: (d) => Math.min(80, 28 + d.count * 0.05),
       sizeUnits: "pixels",
-      // sizeMinPixels: 32,
-      // sizeMaxPixels: 124,
-      onClick,
       updateTriggers: {
         getIcon: isDark,
         getSize: zoom,

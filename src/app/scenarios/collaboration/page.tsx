@@ -10,7 +10,7 @@ import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
 import { useInstitutionById } from "hooks/queries/institution/useInstitutionById";
 import { useCollaborationsEnriched } from "hooks/queries/views/map/useMapViewCollaborationsEnriched";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
-import useProjectSearchFilter from "components/filter/useProjectSearchFilter";
+// import useProjectSearchFilter from "@/components/filter/_useProjectSearchFilter";
 import useCountryFilter from "@/components/filter/useCountryFilter";
 import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
@@ -71,8 +71,8 @@ function CollaborationScenarioContent() {
     initialValue: filterValues.countries,
     onChange: setters.setCountries,
   });
-  const { ProjectSearchFilter, projectSearchPredicate, projectSearchQuery } =
-    useProjectSearchFilter();
+  // const { ProjectSearchFilter, projectSearchPredicate, projectSearchQuery } =
+  //   useProjectSearchFilter();
 
   const {
     TopicFilter,
@@ -90,7 +90,7 @@ function CollaborationScenarioContent() {
       return (
         topicPredicate(p.project_id) &&
         //  institutionSearchPredicate(p.institution_id) &&
-        projectSearchPredicate(p.project_id) &&
+        // projectSearchPredicate(p.project_id) &&
         //  frameworkProgrammePredicate(p.framework_programmes) &&
         yearRangePredicate(p.start_date, p.end_date) &&
         countryPredicate(p.country_code)
@@ -108,7 +108,7 @@ function CollaborationScenarioContent() {
     mapViewCollaborations,
     //  showInstitutions,
     //  institutionSearchPredicate,
-    projectSearchPredicate,
+    // projectSearchPredicate,
     //  frameworkProgrammePredicate,
     yearRangePredicate,
     //  countryPredicate,
@@ -282,7 +282,7 @@ function CollaborationScenarioContent() {
   const filters: ReactNode = (
     <div className="space-y-6">
       {YearRangeFilter}
-      {ProjectSearchFilter}
+      {/*{ProjectSearchFilter}*/}
       {CountryFilter}
       {TopicFilter}
       {/* {TypeAndSmeFilter}

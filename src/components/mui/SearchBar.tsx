@@ -14,6 +14,8 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import ScienceIcon from "@mui/icons-material/Science";
 import { ReactNode } from "react";
 
 export interface EntityOption {
@@ -21,6 +23,24 @@ export interface EntityOption {
   label: string;
   icon?: ReactNode;
 }
+
+export const ENTITY_OPTIONS: EntityOption[] = [
+  // {
+  //   value: "works",
+  //   label: "Works",
+  //   icon: <DescriptionIcon fontSize="small" />,
+  // },
+  {
+    value: "projects",
+    label: "Projects",
+    icon: <ScienceIcon fontSize="small" />,
+  },
+  {
+    value: "institutions",
+    label: "Institutions",
+    icon: <AccountBalanceIcon fontSize="small" />,
+  },
+];
 
 export interface SearchBarProps extends Omit<
   TextFieldProps,

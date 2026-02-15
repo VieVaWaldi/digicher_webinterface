@@ -24,7 +24,7 @@ export function createIconLayer({
     id,
     data,
     pickable: true,
-    getPosition: (d) => d.geolocation as Position,
+    getPosition: (d) => d.geolocation? d.geolocation as Position : [10,10],
     getIcon: (d) => ({
       url: institutionIconUrl(
         isDark
