@@ -143,7 +143,7 @@ export default function MapController({
       sx={{
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        height: "100dvh",
         overflow: "hidden",
       }}
     >
