@@ -146,12 +146,7 @@ export const topicoa = coreSchema.table("topicoa", {
 
 export type TopicOAType = typeof topicoa.$inferSelect;
 
-/**
- *
- *
- */
-
-// export const coreSchema = pgSchema("core");
+//
 
 export const tableViewProject = coreSchema
   .view("table_view_project", {

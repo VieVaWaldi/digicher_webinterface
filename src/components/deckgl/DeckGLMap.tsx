@@ -81,7 +81,7 @@ export default function DeckGLMap({
   ];
 
   const handleClick = (info: PickingInfo) => {
-    if (info.object && onEmptyMapClick) {
+    if (!info.object && onEmptyMapClick) {
       onEmptyMapClick();
     }
   };

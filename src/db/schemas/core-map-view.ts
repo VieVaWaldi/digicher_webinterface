@@ -66,3 +66,23 @@ export const mapViewCollaborations = coreMatsSchema
 
 export type MapViewCollaborationsType =
   typeof mapViewCollaborations.$inferSelect;
+
+export const mapViewcollaborationNetwork = coreMatsSchema
+  .materializedView("collaboration_network_view", {
+    institution_id: text("institution_id").notNull(),
+    collaborator_id: text("collaborator_id").notNull(),
+    collaborator_geolocation: doublePrecision(
+      "collaborator_geolocation",
+    ).array(),
+    projects: jsonb("projects").$type<
+      {
+        project_id: string;
+        total_cost: number | null;
+        combined_institution_cost: number | null;
+      }[]
+    >(),
+  })
+  .existing();
+
+export type MapViewCollaborationNetworkType =
+  typeof mapViewcollaborationNetwork.$inferSelect;

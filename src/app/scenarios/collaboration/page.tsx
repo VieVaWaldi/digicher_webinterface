@@ -1,48 +1,44 @@
 "use client";
 
-import { ArcLayer, ScatterplotLayer } from "@deck.gl/layers";
 import MapController from "@/components/deckgl/MapController";
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
-import { PickingInfo } from "deck.gl";
-import { baseLayerProps } from "@/components/deckgl/layers/baseLayerProps";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
-import { useInstitutionById } from "hooks/queries/institution/useInstitutionById";
-import { useCollaborationsEnriched } from "hooks/queries/views/map/useMapViewCollaborationsEnriched";
-import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
-// import useProjectSearchFilter from "@/components/filter/_useProjectSearchFilter";
+import {
+  ReactNode,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import useCountryFilter from "@/components/filter/useCountryFilter";
 import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
+import { useMapViewInstitution } from "@/hooks/queries/views/map/useMapViewInstitution";
+import useTypeAndSmeFilter from "@/components/filter/useTypeAndSmeFilter";
+import { FilterSection, useUnifiedSearchFilter } from "@/components/mui";
+import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
+import useFrameworkProgrammeFilter from "@/components/filter/useFrameworkProgrammeFilter";
+import { Box, Typography, useTheme } from "@mui/material";
+import { groupByGeolocation } from "@/app/scenarios/scenario_data";
+import { LayerConfig } from "@/components/mui/LayerSwitcher";
+import { CollaborationNetworkLayer } from "@/components/deckgl/layers/CollaborationNetworkLayer";
+import { useCollaborationNetworkById } from "@/hooks/queries/collaboration/useCollaborationNetworkById";
 
 function CollaborationScenarioContent() {
-  //   const { isGlobe } = useSettings();
-  //   const COLOR_GAMMA = 0.7;
-  //   const MAX_HEIGHT = isGlobe ? 4_000_000 : 1_000_000;
-  //   const BAR_RADIUS = isGlobe ? 3_000 : 2_200;
+  const { data, isPending, error } = useMapViewInstitution();
 
-  /** Main Data */
-  const {
-    data: mapViewCollaborations,
-    isPending,
-    error,
-  } = useCollaborationsEnriched(); // loses projects not in scenarios view
-  //   const {
-  //     data: mapViewCollaborations,
-  //     isPending,
-  //     error,
-  //   } = useMapViewCollaborations();
-
-  /** Center Selection UGH */
-  const [showSelectedInfo, setSelectedInfo] = useState(false);
+  /** ToDo, the 2nd Layer */
+  // const {
+  //   data: mapViewCollaborations,
+  //   isPending,
+  //   error,
+  // } = useCollaborationsEnriched(); // loses projects not in scenarios view
 
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
-  const { data: selectedInstitution, isPending: isPendingInstitution } =
-    useInstitutionById(selectedInstitutionId || "", {
-      enabled: !!selectedInstitutionId,
-    });
 
   /** Hover State */
   //   const [hoverInfo, setHoverInfo] = useState<{
@@ -53,87 +49,139 @@ function CollaborationScenarioContent() {
   //   } | null>(null);
 
   /** URL Filter State */
+
   const { filters: filterValues, setters, resetAll } = useFilters();
 
-  // Debounced setters for URL sync
   const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
-  const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 500);
-
-  /** Filters */
-  const { YearRangeFilter, yearRangePredicate, minYear, maxYear } =
-    useYearRangeFilter({
-      defaultMinYear: 2020,
-      defaultMaxYear: 2025,
-      initialValue: filterValues.yearRange,
-      onChange: debouncedSetYearRange,
-    });
+  const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
+  const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
+    initialValue: filterValues.yearRange,
+    onChange: debouncedSetYearRange,
+  });
   const { CountryFilter, countryPredicate } = useCountryFilter({
     initialValue: filterValues.countries,
     onChange: setters.setCountries,
   });
-  // const { ProjectSearchFilter, projectSearchPredicate, projectSearchQuery } =
-  //   useProjectSearchFilter();
-
+  const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter({
+    initialValue: filterValues.typeAndSme,
+    onChange: setters.setTypeAndSme,
+  });
   const {
-    TopicFilter,
-    topicPredicate,
-    getTopicColor,
-    selectedFields,
-    selectedSubfields,
-    selectedTopics,
-  } = useTopicFilter("1206");
-
-  const filteredDataView = useMemo(() => {
-    if (!mapViewCollaborations?.length) return [];
-
-    const filtered = mapViewCollaborations.filter((p) => {
-      return (
-        topicPredicate(p.project_id) &&
-        //  institutionSearchPredicate(p.institution_id) &&
-        // projectSearchPredicate(p.project_id) &&
-        //  frameworkProgrammePredicate(p.framework_programmes) &&
-        yearRangePredicate(p.start_date, p.end_date) &&
-        countryPredicate(p.country_code)
-        //  typeAndSmePredicate(p.type, p.sme) &&
-        //  nutsPredicate(p.nuts_0, p.nuts_1, p.nuts_2, p.nuts_3)
-      );
+    SearchFilter,
+    institutionSearchPredicate,
+    projectSearchPredicate,
+    MinorityGroupsFilter,
+  } = useUnifiedSearchFilter({
+    entityOptions: ENTITY_OPTIONS,
+    defaultEntity: "projects",
+    initialEntity: filterValues.unifiedSearch.entity,
+    initialQuery: filterValues.unifiedSearch.query,
+    initialMinorityGroups: filterValues.unifiedSearch.minorityGroups,
+    onEntityChange: setters.setEntity,
+    onQueryChange: setters.setQuery,
+    onMinorityGroupsChange: setters.setMinorityGroups,
+  });
+  const { FrameworkProgrammeFilter, frameworkProgrammePredicate } =
+    useFrameworkProgrammeFilter({
+      initialValue: filterValues.frameworkProgrammes,
+      onChange: setters.setFrameworkProgrammes,
     });
+  const { TopicFilter, topicPredicate } = useTopicFilter();
 
-    if (filtered.length > 100000) {
-      return filtered.slice(0, 100000);
-    }
+  /** Apply Filters */
 
-    return filtered;
+  const filteredData = useMemo(() => {
+    if (!data?.length) return [];
+    return data.flatMap((p) => {
+      if (!institutionSearchPredicate(p.institution_id)) return [];
+      if (!countryPredicate(p.country_code)) return [];
+      if (!typeAndSmePredicate(p.type, p.sme)) return [];
+
+      const matchingProjects = p.projects?.filter(
+        (proj) =>
+          topicPredicate(proj.id) &&
+          projectSearchPredicate(proj.id) &&
+          frameworkProgrammePredicate(proj.framework_programmes) &&
+          yearRangePredicate(proj.start, proj.end),
+      );
+      if (!matchingProjects?.length) return [];
+
+      return [{ ...p, projects: matchingProjects }];
+    });
   }, [
-    mapViewCollaborations,
-    //  showInstitutions,
-    //  institutionSearchPredicate,
-    // projectSearchPredicate,
-    //  frameworkProgrammePredicate,
-    yearRangePredicate,
-    //  countryPredicate,
-    //  typeAndSmePredicate,
-    //  nutsPredicate,
+    data,
+    institutionSearchPredicate,
+    countryPredicate,
+    typeAndSmePredicate,
     topicPredicate,
+    projectSearchPredicate,
+    frameworkProgrammePredicate,
+    yearRangePredicate,
   ]);
 
+  /** UI Components */
+
+  const totalProjects = useMemo(
+    () => filteredData.reduce((sum, p) => sum + p.projects.length, 0),
+    [filteredData],
+  );
+
+  const Filters: ReactNode = (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <Typography
+        variant="h5"
+        color="text.secondary"
+        sx={{ textAlign: "center", mt: 1 }}
+      >
+        Displaying{" "}
+        <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+          {filteredData?.length.toLocaleString()}
+        </Box>{" "}
+        institutions &{" "}
+        <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+          {totalProjects.toLocaleString()}
+        </Box>{" "}
+        projects
+      </Typography>
+
+      <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
+
+      <FilterSection title="Project Time" showDivider={true}>
+        {YearRangeFilter}
+      </FilterSection>
+
+      <FilterSection title="Geographic & Demographic">
+        {CountryFilter}
+        {MinorityGroupsFilter}
+      </FilterSection>
+
+      <FilterSection title="Institutional">
+        {TypeAndSmeFilter}
+        {FrameworkProgrammeFilter}
+      </FilterSection>
+
+      <FilterSection title="Topics">{TopicFilter}</FilterSection>
+    </Box>
+  );
+
   /** Calculations */
-  const uniqueInstitutions = useMemo(() => {
-    if (!filteredDataView) return [];
 
-    const institutionMap = new Map();
-
-    filteredDataView
-      .flatMap((collab) => [
-        { id: collab?.a_institution_id, geolocation: collab?.a_geolocation },
-        { id: collab?.b_institution_id, geolocation: collab?.b_geolocation },
-      ])
-      .forEach((inst) => {
-        institutionMap.set(inst.id, inst);
-      });
-
-    return Array.from(institutionMap.values());
-  }, [filteredDataView]);
+  // const uniqueInstitutions = useMemo(() => {
+  //   if (!filteredDataView) return [];
+  //
+  //   const institutionMap = new Map();
+  //
+  //   filteredDataView
+  //     .flatMap((collab) => [
+  //       { id: collab?.a_institution_id, geolocation: collab?.a_geolocation },
+  //       { id: collab?.b_institution_id, geolocation: collab?.b_geolocation },
+  //     ])
+  //     .forEach((inst) => {
+  //       institutionMap.set(inst.id, inst);
+  //     });
+  //
+  //   return Array.from(institutionMap.values());
+  // }, [filteredDataView]);
 
   //   const MAX_COLLAB_WEIGHT = useMemo(() => {
   //     if (!collaborationView) return 0;
@@ -141,16 +189,38 @@ function CollaborationScenarioContent() {
   //   }, [collaborationView]);
 
   /** Event Handlers */
-  //   const handleMapOnClick = useCallback((info: any) => {
-  //     const { object } = info;
-  //     if (object && object.institution_id) {
-  //       setSelectedInstitutionId(object.institution_id);
-  //     }
-  //   }, []);
 
-  //   const handleEmptyMapClick = useCallback(() => {
-  //     setSelectedInstitutionId(null);
-  //   }, []);
+  const { data: networkData } = useCollaborationNetworkById(
+    selectedInstitutionId,
+  );
+
+  useEffect(() => {
+    if (networkData) {
+      /** ToDo: This is where we open the SideMenu from */
+      console.log("Network data:", networkData);
+    }
+  }, [networkData]);
+
+  const handleMapOnClick = useCallback((info: any) => {
+    if (info.object?.institutions?.length) {
+      setSelectedInstitutionId(info.object.institutions[0].institution_id);
+    }
+  }, []);
+
+  const handleEmptyMapClick = useCallback(() => {
+    setSelectedInstitutionId(null);
+  }, []);
+
+  // const handleScatterOnClick = useCallback(
+  //   (info: PickingInfo) => {
+  //     console.log(info.object);
+  //     if (info.object?.id) {
+  //       setSelectedInstitutionId(info.object.id);
+  //       setSelectedInfo(true);
+  //     }
+  //   },
+  //   [uniqueInstitutions],
+  // );
 
   //   const handleHover = useCallback((info: PickingInfo) => {
   //     if (info.object) {
@@ -166,97 +236,78 @@ function CollaborationScenarioContent() {
   //   }, []);
 
   /** Layers */
-  //   const columnLayer = useMemo(() => {
-  //     return new ColumnLayer({
-  //       ...baseLayerProps,
-  //       id: "collaboration-columns",
-  //       data: collaborationView || [],
-  //       diskResolution: 32,
-  //       radius: BAR_RADIUS,
-  //       getPosition: (d) => [d.geolocation[0], d.geolocation[1]],
-  //       getElevation: (d) => {
-  //         return (d.collaboration_weight / MAX_COLLAB_WEIGHT) * MAX_HEIGHT;
-  //       },
-  //       getFillColor: (d) => {
-  //         const normalizedFunding = d.collaboration_weight / MAX_COLLAB_WEIGHT;
-  //         const adjustedValue = Math.pow(normalizedFunding, COLOR_GAMMA);
-  //         return [
-  //           50 + (255 - 50) * adjustedValue,
-  //           50 - 50 * adjustedValue,
-  //           50 - 50 * adjustedValue,
-  //           200,
-  //         ];
-  //       },
-  //       pickable: true,
-  //       autoHighlight: true,
-  //       extruded: true,
-  //       material: {
-  //         ambient: 0.64,
-  //         diffuse: 0.6,
-  //         shininess: 32,
-  //         specularColor: [51, 51, 51],
-  //       },
-  //       onClick: handleMapOnClick,
-  //       onHover: handleHover,
-  //       updateTriggers: {
-  //         getPosition: collaborationView,
-  //         getElevation: [collaborationView, MAX_COLLAB_WEIGHT],
-  //         getFillColor: [collaborationView, MAX_COLLAB_WEIGHT],
-  //       },
-  //     });
-  //   }, [
-  //     collaborationView,
-  //     MAX_COLLAB_WEIGHT,
-  //     BAR_RADIUS,
-  //     MAX_HEIGHT,
-  //     handleMapOnClick,
-  //     handleHover,
-  //   ]);
 
-  const handleScatterOnClick = useCallback(
-    (info: PickingInfo) => {
-      console.log(info.object);
-      if (info.object?.id) {
-        setSelectedInstitutionId(info.object.id);
-        setSelectedInfo(true);
-      }
-    },
-    [uniqueInstitutions],
+  const groupedData = useMemo(
+    () => groupByGeolocation(filteredData),
+    [filteredData],
   );
 
-  const scatterLayer = useMemo(() => {
-    return new ScatterplotLayer({
-      ...baseLayerProps,
-      id: "scatter-projects",
-      data: uniqueInstitutions,
-      getFillColor: [255, 140, 0],
-      getPosition: (d) => d.geolocation,
-      onClick: handleScatterOnClick,
-      updateTriggers: {
-        getPosition: uniqueInstitutions,
-        getFillColor: uniqueInstitutions,
-      },
-    });
-  }, [uniqueInstitutions, handleScatterOnClick]);
+  const sourcePosition = useMemo(() => {
+    if (!selectedInstitutionId) return undefined;
+    const inst = filteredData.find(
+      (d) => d.institution_id === selectedInstitutionId,
+    );
+    return inst?.geolocation ?? undefined;
+  }, [selectedInstitutionId, filteredData]);
 
-  const arcLayer = useMemo(() => {
-    return new ArcLayer({
-      id: "collaboration-arcs-all",
-      data: filteredDataView,
-      pickable: true,
-      getSourcePosition: (c) => c.a_geolocation,
-      getTargetPosition: (c) => c.b_geolocation,
-      getSourceColor: (c) => getTopicColor(c.project_id),
-      getTargetColor: (c) => getTopicColor(c.project_id),
-      getWidth: 1,
-      widthScale: 1,
-      widthMinPixels: 0.5,
-      updateTriggers: {
-        getSourcePosition: filteredDataView,
-        getTargetPosition: filteredDataView,
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
+  const layerConfigs: LayerConfig[] = useMemo(
+    () => [
+      {
+        id: "individual-icons",
+        title: "Individual",
+        description: "Click on an institution to reveal its network.",
+        previewImage: "/images/settings/mapbox-dark.png",
+        createLayers: () => [
+          new CollaborationNetworkLayer({
+            id: "collaboration-network",
+            data: groupedData,
+            isDark,
+            onClick: handleMapOnClick,
+            networkData,
+            sourcePosition,
+          }),
+        ],
       },
-    });
-  }, [filteredDataView]);
+    ],
+    [groupedData, isDark, handleMapOnClick, networkData, sourcePosition],
+  );
+
+  // const scatterLayer = useMemo(() => {
+  //   return new ScatterplotLayer({
+  //     ...baseLayerProps,
+  //     id: "scatter-projects",
+  //     data: uniqueInstitutions,
+  //     getFillColor: [255, 140, 0],
+  //     getPosition: (d) => d.geolocation,
+  //     onClick: handleScatterOnClick,
+  //     updateTriggers: {
+  //       getPosition: uniqueInstitutions,
+  //       getFillColor: uniqueInstitutions,
+  //     },
+  //   });
+  // }, [uniqueInstitutions, handleScatterOnClick]);
+  //
+  // const arcLayer = useMemo(() => {
+  //   return new ArcLayer({
+  //     id: "collaboration-arcs-all",
+  //     data: filteredDataView,
+  //     pickable: true,
+  //     getSourcePosition: (c) => c.a_geolocation,
+  //     getTargetPosition: (c) => c.b_geolocation,
+  //     getSourceColor: (c) => getTopicColor(c.project_id),
+  //     getTargetColor: (c) => getTopicColor(c.project_id),
+  //     getWidth: 1,
+  //     widthScale: 1,
+  //     widthMinPixels: 0.5,
+  //     updateTriggers: {
+  //       getSourcePosition: filteredDataView,
+  //       getTargetPosition: filteredDataView,
+  //     },
+  //   });
+  // }, [filteredDataView]);
 
   /** Hover Tooltip */
   //   const hoverTooltip = hoverInfo && (
@@ -279,32 +330,20 @@ function CollaborationScenarioContent() {
   //     </div>
   //   );
 
-  const filters: ReactNode = (
-    <div className="space-y-6">
-      {YearRangeFilter}
-      {/*{ProjectSearchFilter}*/}
-      {CountryFilter}
-      {TopicFilter}
-      {/* {TypeAndSmeFilter}
-        {InstitutionSearchFilter}
-        {FrameworkProgrammeFilter}
-        {NutsFilter} */}
-    </div>
-  );
-
   return (
     <MapController
-      layerConfigs={[{ id: "collaboration", title: "Collaboration", description: "", previewImage: "", createLayers: () => [arcLayer, scatterLayer] }]}
-      filters={filters}
+      layerConfigs={layerConfigs}
+      search={SearchFilter}
+      filters={Filters}
       defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
       initialViewState={filterValues.viewState}
       onViewStateChange={debouncedSetViewState}
       onResetAll={resetAll}
       loading={isPending}
+      error={error}
+      onEmptyMapClick={handleEmptyMapClick}
       scenarioName="collaboration"
       scenarioTitle="Collaboration"
-      error={error}
-      search={undefined}
     />
   );
 }
