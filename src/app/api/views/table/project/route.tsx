@@ -1,7 +1,7 @@
 import { withApiWrapper } from "app/api/apiClient";
 import { apiSuccess } from "app/api/response";
 import { db } from "db/client";
-import { tableViewProject } from "db/schemas/core";
+import { tableViewProject } from "db/schemas/core-table-view";
 import {
   and,
   arrayOverlaps,

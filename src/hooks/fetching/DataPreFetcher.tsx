@@ -7,7 +7,6 @@ export const useDataPreFetcher = () => {
   useEffect(() => {
     const prefetchData = async () => {
       const queries = [
-        { key: ["views-project"], url: "/api/views/map/project" },
         { key: ["views-institution"], url: "/api/views/map/institution" },
         { key: ["j_project_topic"], url: "/api/topic/j_project_topic" },
         { key: ["topic"], url: "/api/topic/topics" },

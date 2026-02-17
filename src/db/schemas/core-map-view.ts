@@ -10,6 +10,7 @@ import {
 
 export const coreMatsSchema = pgSchema("core_mats");
 
+/** ToDo: Not used for the scenarios anymore, but the YearRangeFilter has a dependency on it -> Remove it */
 export const mapViewProject = coreMatsSchema
   .materializedView("project_view", {
     project_id: text("project_id").notNull(),
@@ -52,21 +53,6 @@ export const mapViewInstitution = coreMatsSchema
   .existing();
 
 export type MapViewInstitutionType = typeof mapViewInstitution.$inferSelect;
-
-export const mapViewCollaborations = coreMatsSchema
-  .materializedView("collaborations", {
-    // country, type, sme, cost
-    // project_count
-    a_institution_id: text("a_institution_id").notNull(),
-    b_institution_id: text("b_institution_id").notNull(),
-    a_geolocation: doublePrecision("a_geolocation").array().notNull(),
-    b_geolocation: doublePrecision("b_geolocation").array().notNull(),
-    project_id: text("project_id").notNull(),
-  })
-  .existing();
-
-export type MapViewCollaborationsType =
-  typeof mapViewCollaborations.$inferSelect;
 
 export const mapViewcollaborationNetwork = coreMatsSchema
   .materializedView("collaboration_network_view", {

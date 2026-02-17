@@ -1,6 +1,6 @@
 "use client";
 
-import { useProjectTopicsEnriched } from "hooks/queries/topic/useProjectTopicsEnriched";
+import { useProjectTopicsEnriched } from "@/hooks/queries/topic/useProjectTopicsEnriched";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Box, IconButton, Checkbox, Typography, Button } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
