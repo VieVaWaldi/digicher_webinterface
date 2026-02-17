@@ -24,6 +24,7 @@ function BaseScenarioContent() {
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
+  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
 
   /** Filters */
 
@@ -103,23 +104,26 @@ function BaseScenarioContent() {
     [filteredData],
   );
 
+  const Title: ReactNode = (
+    <Typography
+      variant="h5"
+      color="text.secondary"
+      sx={{ textAlign: "center", mt: 1 }}
+    >
+      Displaying{" "}
+      <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+        {filteredData?.length.toLocaleString()}
+      </Box>{" "}
+      institutions &{" "}
+      <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+        {totalProjects.toLocaleString()}
+      </Box>{" "}
+      projects
+    </Typography>
+  );
+
   const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <Typography
-        variant="h5"
-        color="text.secondary"
-        sx={{ textAlign: "center", mt: 1 }}
-      >
-        Displaying{" "}
-        <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
-          {filteredData?.length.toLocaleString()}
-        </Box>{" "}
-        institutions &{" "}
-        <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
-          {totalProjects.toLocaleString()}
-        </Box>{" "}
-        projects
-      </Typography>
 
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
 
@@ -198,6 +202,9 @@ function BaseScenarioContent() {
   return (
     <MapController
       layerConfigs={layerConfigs}
+      activeLayerIndex={activeLayerIndex}
+      onLayerChange={setActiveLayerIndex}
+      title={Title}
       search={SearchFilter}
       filters={Filters}
       defaultViewState={INITIAL_VIEW_STATE_EU}

@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useMemo, useRef, useState } from "react";
+import React, { ReactNode, useMemo, useRef, useState } from "react";
 import { FlyToInterpolator } from "@deck.gl/core";
 import DeckGLMap from "@/components/deckgl/DeckGLMap";
 import Navbar from "@/components/layout/Navbar";
@@ -8,7 +8,14 @@ import Feedback, { FeedbackButton } from "../layout/Feedback";
 import { IconTextButton } from "@/components/mui/IconTextButton";
 import { LayerSwitcher, LayerConfig } from "@/components/mui/LayerSwitcher";
 import { SideMenu } from "@/components/mui/SideMenu";
-import { Box, Button, Paper, Stack, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  Paper,
+  Stack,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import AddIcon from "@mui/icons-material/Add";
@@ -22,6 +29,9 @@ import { ScenarioSelector } from "@/components/mui";
 
 interface BaseUIProps {
   layerConfigs: LayerConfig[];
+  activeLayerIndex: number;
+  onLayerChange: (index: number) => void;
+  title: ReactNode;
   search: ReactNode;
   filters: ReactNode;
   /** Default view state for a given scenario */
@@ -41,6 +51,9 @@ interface BaseUIProps {
 
 export default function MapController({
   layerConfigs,
+  activeLayerIndex,
+  onLayerChange,
+  title,
   search,
   filters,
   defaultViewState,
@@ -65,7 +78,6 @@ export default function MapController({
   const [showBanner, setShowBanner] = useState(false);
 
   const [isGlobe, setIsGlobe] = useState(false);
-  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
 
   /** Create fresh layer instances for the active config (deck.gl layers are single-use) */
   const activeLayers = useMemo(
@@ -152,7 +164,9 @@ export default function MapController({
         <Navbar>
           <Box sx={{ flexGrow: 1 }} />
           <ScenarioSelector canRoute={true} />
-          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}>
+          <Box
+            sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}
+          >
             <FeedbackButton
               showBanner={showBanner}
               setShowBanner={setShowBanner}
@@ -193,6 +207,29 @@ export default function MapController({
             "& > *": { pointerEvents: "auto" }, // Trick to enable UI interaction
           }}
         >
+          {/* Top Center: Title Placeholder */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+            }}
+          >
+            <Paper
+              elevation={3}
+              sx={{
+                borderRadius: "0 0 12px 12px",
+                px: 3,
+                py: 1,
+                minWidth: 200,
+                minHeight: 40,
+              }}
+            >
+              {title}
+            </Paper>
+          </Box>
+
           {/* Top Left: Search Bar and Filter Button */}
           {showSearchbar && (
             <Box
@@ -272,7 +309,7 @@ export default function MapController({
               <LayerSwitcher
                 layerConfigs={layerConfigs}
                 activeIndex={activeLayerIndex}
-                onChange={setActiveLayerIndex}
+                onChange={onLayerChange}
               />
             </Box>
           )}
@@ -286,7 +323,7 @@ export default function MapController({
             }}
           >
             <Stack direction="column" spacing={1}>
-              <Paper elevation={3} sx={{ borderRadius: "20%" }}>
+              <Paper elevation={9} sx={{ borderRadius: "20%" }}>
                 <IconTextButton
                   placement={"left"}
                   onClick={handleReset}
@@ -298,7 +335,7 @@ export default function MapController({
                 onClick={() => {
                   setIsGlobe(!isGlobe);
                 }}
-                elevation={3}
+                elevation={9}
                 sx={{ borderRadius: "20%" }}
               >
                 {isGlobe ? (
@@ -315,7 +352,7 @@ export default function MapController({
                   />
                 )}
               </Paper>
-              <Paper elevation={3} sx={{ borderRadius: "20%" }}>
+              <Paper elevation={9} sx={{ borderRadius: "20%" }}>
                 <IconTextButton
                   placement={"left"}
                   icon={<MyLocationIcon />}
@@ -324,7 +361,7 @@ export default function MapController({
                 />
               </Paper>
 
-              <Paper elevation={3} sx={{ borderRadius: "8px" }}>
+              <Paper elevation={9} sx={{ borderRadius: "8px" }}>
                 <Stack direction="column" spacing={0}>
                   <IconTextButton
                     placement={"left"}

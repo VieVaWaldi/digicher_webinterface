@@ -24,15 +24,18 @@ import { Box, Typography, useTheme } from "@mui/material";
 import { groupByGeolocation } from "@/app/scenarios/scenario_data";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
 import { CollaborationNetworkLayer } from "@/components/deckgl/layers/CollaborationNetworkLayer";
+import { TopicNetworkLayer } from "@/components/deckgl/layers/TopicNetworkLayer";
 import { useCollaborationNetworkById } from "@/hooks/queries/collaboration/useCollaborationNetworkById";
 import { useMapViewCollaborationByTopic } from "@/hooks/queries/views/map/useMapViewCollaborationByTopic";
 
+/** ToDo: If performance becomes an issue, useMapViewInstitution and useMapViewCollaborationByTopic both run and get filtered always */
 function CollaborationScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
 
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
+  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
 
   /** Hover State */
   //   const [hoverInfo, setHoverInfo] = useState<{
@@ -80,7 +83,14 @@ function CollaborationScenarioContent() {
       initialValue: filterValues.frameworkProgrammes,
       onChange: setters.setFrameworkProgrammes,
     });
-  const { TopicFilter, topicPredicate } = useTopicFilter();
+  const {
+    TopicFilter,
+    topicPredicate,
+    getTopicColor,
+    selectedFields,
+    selectedSubfields,
+    selectedTopics,
+  } = useTopicFilter();
 
   /** Apply Filters */
 
@@ -113,6 +123,36 @@ function CollaborationScenarioContent() {
     yearRangePredicate,
   ]);
 
+  /** Topic Network Data */
+
+  const {
+    data: topicCollabData,
+    isLoading: isTopicCollabLoading,
+    error: topicCollabError,
+  } = useMapViewCollaborationByTopic({
+    topicIds: selectedTopics.map(String),
+    subfieldIds: selectedSubfields,
+    fieldIds: selectedFields,
+  });
+
+  const filteredTopicCollabData = useMemo(() => {
+    if (!topicCollabData?.length) return [];
+    return topicCollabData.filter(
+      (row) =>
+        (!row.start_date ||
+          !row.end_date ||
+          yearRangePredicate(row.start_date, row.end_date)) &&
+        countryPredicate(row.a_country) &&
+        countryPredicate(row.b_country) &&
+        frameworkProgrammePredicate(row.framework_programmes),
+    );
+  }, [
+    topicCollabData,
+    yearRangePredicate,
+    countryPredicate,
+    frameworkProgrammePredicate,
+  ]);
+
   /** UI Components */
 
   const totalProjects = useMemo(
@@ -120,23 +160,48 @@ function CollaborationScenarioContent() {
     [filteredData],
   );
 
+  const hasSelectedTopic =
+    selectedTopics.length > 0 ||
+    selectedSubfields.length > 0 ||
+    selectedFields.length > 0;
+
+  const Title: ReactNode = (
+    <Typography
+      variant="h5"
+      color="text.secondary"
+      sx={{ textAlign: "center", mt: 1 }}
+    >
+      {activeLayerIndex === 0 && !selectedInstitutionId &&
+        "Click on an institution to see its network"}
+      {activeLayerIndex === 1 && !hasSelectedTopic &&
+        "Please select a topic in Filters"}
+      {activeLayerIndex === 0 && selectedInstitutionId && (
+        <>
+          Displaying{" "}
+          <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+            {filteredData?.length.toLocaleString()}
+          </Box>{" "}
+          institutions &{" "}
+          <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+            {totalProjects.toLocaleString()}
+          </Box>{" "}
+          projects
+        </>
+      )}
+      {activeLayerIndex === 1 && hasSelectedTopic && (
+        <>
+          Displaying{" "}
+          <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+            {filteredTopicCollabData.length.toLocaleString()}
+          </Box>{" "}
+          collaborations
+        </>
+      )}
+    </Typography>
+  );
+
   const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <Typography
-        variant="h5"
-        color="text.secondary"
-        sx={{ textAlign: "center", mt: 1 }}
-      >
-        Displaying{" "}
-        <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
-          {filteredData?.length.toLocaleString()}
-        </Box>{" "}
-        institutions &{" "}
-        <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
-          {totalProjects.toLocaleString()}
-        </Box>{" "}
-        projects
-      </Typography>
 
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
 
@@ -265,8 +330,31 @@ function CollaborationScenarioContent() {
           }),
         ],
       },
+      {
+        id: "topic-network",
+        title: "Topic Network",
+        description:
+          "Arcs between institutions sharing selected topics, colored by topic.",
+        previewImage: "/images/settings/mapbox-dark.png",
+        createLayers: () => [
+          new TopicNetworkLayer({
+            id: "topic-network-layer",
+            data: filteredTopicCollabData,
+            isDark,
+            getTopicColor,
+          }),
+        ],
+      },
     ],
-    [groupedData, isDark, handleMapOnClick, networkData, sourcePosition],
+    [
+      groupedData,
+      isDark,
+      handleMapOnClick,
+      networkData,
+      sourcePosition,
+      filteredTopicCollabData,
+      getTopicColor,
+    ],
   );
 
   // const scatterLayer = useMemo(() => {
@@ -327,14 +415,17 @@ function CollaborationScenarioContent() {
   return (
     <MapController
       layerConfigs={layerConfigs}
+      activeLayerIndex={activeLayerIndex}
+      onLayerChange={setActiveLayerIndex}
+      title={Title}
       search={SearchFilter}
       filters={Filters}
       defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
       initialViewState={filterValues.viewState}
       onViewStateChange={debouncedSetViewState}
       onResetAll={resetAll}
-      loading={isPending}
-      error={error}
+      loading={isPending || isTopicCollabLoading}
+      error={error || topicCollabError}
       onEmptyMapClick={handleEmptyMapClick}
       scenarioName="collaboration"
       scenarioTitle="Collaboration"
