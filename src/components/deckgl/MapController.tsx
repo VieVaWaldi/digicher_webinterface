@@ -26,6 +26,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { ViewState } from "react-map-gl/mapbox";
 import { Map, Public } from "@mui/icons-material";
 import { ScenarioSelector } from "@/components/mui";
+import { SIDE_MENU_WIDTH } from "@/components/mui/SideMenu";
 
 interface BaseUIProps {
   layerConfigs: LayerConfig[];
@@ -303,7 +304,8 @@ export default function MapController({
               sx={{
                 position: "absolute",
                 bottom: 22,
-                left: 22,
+                left: filtersOpen ? SIDE_MENU_WIDTH + 22 : 22,
+                transition: "left 0.3s ease",
               }}
             >
               <LayerSwitcher
@@ -319,7 +321,8 @@ export default function MapController({
             sx={{
               position: "absolute",
               bottom: 16,
-              right: 16,
+              right: listOpen ? SIDE_MENU_WIDTH + 16 : 16,
+              transition: "right 0.3s ease",
             }}
           >
             <Stack direction="column" spacing={1}>

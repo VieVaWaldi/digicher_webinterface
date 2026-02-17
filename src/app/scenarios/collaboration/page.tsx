@@ -35,8 +35,6 @@ function CollaborationScenarioContent() {
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
-  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
-
   /** Hover State */
   //   const [hoverInfo, setHoverInfo] = useState<{
   //     x: number;
@@ -90,7 +88,14 @@ function CollaborationScenarioContent() {
     selectedFields,
     selectedSubfields,
     selectedTopics,
-  } = useTopicFilter();
+  } = useTopicFilter({
+    initialFields: filterValues.topicFields,
+    initialSubfields: filterValues.topicSubfields,
+    initialTopics: filterValues.topicTopics,
+    onFieldsChange: setters.setTopicFields,
+    onSubfieldsChange: setters.setTopicSubfields,
+    onTopicsChange: setters.setTopicTopics,
+  });
 
   /** Apply Filters */
 
@@ -171,11 +176,11 @@ function CollaborationScenarioContent() {
       color="text.secondary"
       sx={{ textAlign: "center", mt: 1 }}
     >
-      {activeLayerIndex === 0 && !selectedInstitutionId &&
+      {filterValues.activeLayerIndex === 0 && !selectedInstitutionId &&
         "Click on an institution to see its network"}
-      {activeLayerIndex === 1 && !hasSelectedTopic &&
+      {filterValues.activeLayerIndex === 1 && !hasSelectedTopic &&
         "Please select a topic in Filters"}
-      {activeLayerIndex === 0 && selectedInstitutionId && (
+      {filterValues.activeLayerIndex === 0 && selectedInstitutionId && (
         <>
           Displaying{" "}
           <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
@@ -188,7 +193,7 @@ function CollaborationScenarioContent() {
           projects
         </>
       )}
-      {activeLayerIndex === 1 && hasSelectedTopic && (
+      {filterValues.activeLayerIndex === 1 && hasSelectedTopic && (
         <>
           Displaying{" "}
           <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
@@ -415,8 +420,8 @@ function CollaborationScenarioContent() {
   return (
     <MapController
       layerConfigs={layerConfigs}
-      activeLayerIndex={activeLayerIndex}
-      onLayerChange={setActiveLayerIndex}
+      activeLayerIndex={filterValues.activeLayerIndex}
+      onLayerChange={setters.setActiveLayerIndex}
       title={Title}
       search={SearchFilter}
       filters={Filters}

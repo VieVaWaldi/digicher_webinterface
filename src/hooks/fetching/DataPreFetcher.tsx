@@ -10,7 +10,6 @@ export const useDataPreFetcher = () => {
         { key: ["views-institution"], url: "/api/views/map/institution" },
         { key: ["j_project_topic"], url: "/api/topic/j_project_topic" },
         { key: ["topic"], url: "/api/topic/topics" },
-        { key: ["topic"], url: "/api/views/map/collaboration" },
       ];
 
       await Promise.all(

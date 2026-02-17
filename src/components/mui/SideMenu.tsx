@@ -4,6 +4,8 @@ import { Box, IconButton, Paper, Typography, Slide } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { ReactNode } from "react";
 
+export const SIDE_MENU_WIDTH = 400;
+
 export interface SideMenuProps {
   /** Which side the menu appears on */
   side: "left" | "right";
@@ -28,7 +30,7 @@ export const SideMenu = ({
   children,
   open,
   onClose,
-  width = 400,
+  width = SIDE_MENU_WIDTH,
 }: SideMenuProps) => {
   const isLeft = side === "left";
   const slideDirection = isLeft ? "right" : "left";

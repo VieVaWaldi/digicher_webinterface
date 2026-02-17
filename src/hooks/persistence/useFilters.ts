@@ -4,6 +4,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { SearchEntity } from "@/components/filter/useUnifiedSearchFilter";
 
+/** Max total topic selections (fields + subfields + topics) persisted in URL */
+export const MAX_URL_TOPICS = 20;
+
 /** URL parameter keys for filter persistence */
 const PARAM_KEYS = {
   years: "years",
@@ -14,6 +17,10 @@ const PARAM_KEYS = {
   query: "q",
   minorities: "minorities",
   view: "view", // format: "lat,lng,zoom"
+  layer: "layer",
+  topicFields: "tf",
+  topicSubfields: "tsf",
+  topicTopics: "tt",
 } as const;
 
 /** ViewState stored in URL */
@@ -35,6 +42,10 @@ export interface FilterValues {
     minorityGroups: string[];
   };
   viewState: UrlViewState | null;
+  activeLayerIndex: number;
+  topicFields: string[];
+  topicSubfields: string[];
+  topicTopics: number[];
 }
 
 /** Setters for updating filter values (updates URL) */
@@ -47,6 +58,10 @@ export interface FilterSetters {
   setQuery: (value: string) => void;
   setMinorityGroups: (value: string[]) => void;
   setViewState: (value: UrlViewState | null) => void;
+  setActiveLayerIndex: (value: number) => void;
+  setTopicFields: (value: string[]) => void;
+  setTopicSubfields: (value: string[]) => void;
+  setTopicTopics: (value: number[]) => void;
 }
 
 export interface UseFiltersResult {
@@ -112,6 +127,22 @@ export function useFilters(): UseFiltersResult {
       }
     }
 
+    // Parse layer index (default: 0)
+    const layerParam = searchParams.get(PARAM_KEYS.layer);
+    const activeLayerIndex =
+      layerParam !== null && !isNaN(Number(layerParam))
+        ? Number(layerParam)
+        : 0;
+
+    // Parse topic selections
+    const topicFields = parseArray(searchParams.get(PARAM_KEYS.topicFields));
+    const topicSubfields = parseArray(
+      searchParams.get(PARAM_KEYS.topicSubfields),
+    );
+    const topicTopics = parseArray(searchParams.get(PARAM_KEYS.topicTopics))
+      .map(Number)
+      .filter((n) => !isNaN(n));
+
     return {
       yearRange,
       countries,
@@ -123,6 +154,10 @@ export function useFilters(): UseFiltersResult {
         minorityGroups,
       },
       viewState,
+      activeLayerIndex,
+      topicFields,
+      topicSubfields,
+      topicTopics,
     };
   }, [searchParams]);
 
@@ -221,6 +256,43 @@ export function useFilters(): UseFiltersResult {
       updateUrl(params);
     };
 
+    const setActiveLayerIndex = (value: number) => {
+      const params = buildParams({
+        layer: value !== 0 ? String(value) : null,
+      });
+      updateUrl(params);
+    };
+
+    const setTopicFields = (value: string[]) => {
+      const params = buildParams({
+        topicFields:
+          value.length > 0
+            ? value.slice(0, MAX_URL_TOPICS).join(",")
+            : null,
+      });
+      updateUrl(params);
+    };
+
+    const setTopicSubfields = (value: string[]) => {
+      const params = buildParams({
+        topicSubfields:
+          value.length > 0
+            ? value.slice(0, MAX_URL_TOPICS).join(",")
+            : null,
+      });
+      updateUrl(params);
+    };
+
+    const setTopicTopics = (value: number[]) => {
+      const params = buildParams({
+        topicTopics:
+          value.length > 0
+            ? value.slice(0, MAX_URL_TOPICS).map(String).join(",")
+            : null,
+      });
+      updateUrl(params);
+    };
+
     return {
       setYearRange,
       setCountries,
@@ -230,6 +302,10 @@ export function useFilters(): UseFiltersResult {
       setQuery,
       setMinorityGroups,
       setViewState,
+      setActiveLayerIndex,
+      setTopicFields,
+      setTopicSubfields,
+      setTopicTopics,
     };
   }, [buildParams, updateUrl]);
 
@@ -291,6 +367,27 @@ export function useFilters(): UseFiltersResult {
         PARAM_KEYS.view,
         [v.latitude, v.longitude, v.zoom].map((n) => n.toFixed(4)).join(","),
       );
+    }
+
+    // Note: layer is intentionally excluded — it's scenario-specific
+    // and should reset when navigating between scenarios.
+
+    // Topic selections with shared cap (topics > subfields > fields priority)
+    let budget = MAX_URL_TOPICS;
+    const tt = filters.topicTopics.slice(0, budget);
+    budget -= tt.length;
+    const tsf = filters.topicSubfields.slice(0, budget);
+    budget -= tsf.length;
+    const tf = filters.topicFields.slice(0, budget);
+
+    if (tt.length > 0) {
+      params.set(PARAM_KEYS.topicTopics, tt.map(String).join(","));
+    }
+    if (tsf.length > 0) {
+      params.set(PARAM_KEYS.topicSubfields, tsf.join(","));
+    }
+    if (tf.length > 0) {
+      params.set(PARAM_KEYS.topicFields, tf.join(","));
     }
 
     return params.toString();

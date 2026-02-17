@@ -23,6 +23,16 @@ interface SelectedCounts {
   topics: number;
 }
 
+interface TopicFilterOptions {
+  defaultOpenSubfieldId?: string | null;
+  initialFields?: string[];
+  initialSubfields?: string[];
+  initialTopics?: number[];
+  onFieldsChange?: (fields: string[]) => void;
+  onSubfieldsChange?: (subfields: string[]) => void;
+  onTopicsChange?: (topics: number[]) => void;
+}
+
 interface TopicFilterResult {
   TopicFilter: ReactNode;
   topicPredicate: (projectId: string) => boolean;
@@ -33,13 +43,25 @@ interface TopicFilterResult {
 }
 
 export const useTopicFilter = (
-  defaultOpenSubfieldId: string | null = null,
+  options: TopicFilterOptions = {},
 ): TopicFilterResult => {
+  const {
+    defaultOpenSubfieldId = null,
+    initialFields = [],
+    initialSubfields = [],
+    initialTopics = [],
+    onFieldsChange,
+    onSubfieldsChange,
+    onTopicsChange,
+  } = options;
+
   const enrichedData = useProjectTopicsEnriched();
 
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
-  const [selectedSubfields, setSelectedSubfields] = useState<string[]>([]);
-  const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
+  const [selectedFields, setSelectedFields] = useState<string[]>(initialFields);
+  const [selectedSubfields, setSelectedSubfields] =
+    useState<string[]>(initialSubfields);
+  const [selectedTopics, setSelectedTopics] =
+    useState<number[]>(initialTopics);
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
@@ -180,29 +202,38 @@ export const useTopicFilter = (
     return treeData.map(filterNode).filter(Boolean) as TopicTreeNode[];
   }, [treeData, searchQuery]);
 
-  const handleFieldToggle = useCallback((fieldId: string) => {
-    setSelectedFields((prev) =>
-      prev.includes(fieldId)
-        ? prev.filter((id) => id !== fieldId)
-        : [...prev, fieldId],
-    );
-  }, []);
+  const handleFieldToggle = useCallback(
+    (fieldId: string) => {
+      const next = selectedFields.includes(fieldId)
+        ? selectedFields.filter((id) => id !== fieldId)
+        : [...selectedFields, fieldId];
+      setSelectedFields(next);
+      onFieldsChange?.(next);
+    },
+    [selectedFields, onFieldsChange],
+  );
 
-  const handleSubfieldToggle = useCallback((subfieldId: string) => {
-    setSelectedSubfields((prev) =>
-      prev.includes(subfieldId)
-        ? prev.filter((id) => id !== subfieldId)
-        : [...prev, subfieldId],
-    );
-  }, []);
+  const handleSubfieldToggle = useCallback(
+    (subfieldId: string) => {
+      const next = selectedSubfields.includes(subfieldId)
+        ? selectedSubfields.filter((id) => id !== subfieldId)
+        : [...selectedSubfields, subfieldId];
+      setSelectedSubfields(next);
+      onSubfieldsChange?.(next);
+    },
+    [selectedSubfields, onSubfieldsChange],
+  );
 
-  const handleTopicToggle = useCallback((topicId: number) => {
-    setSelectedTopics((prev) =>
-      prev.includes(topicId)
-        ? prev.filter((id) => id !== topicId)
-        : [...prev, topicId],
-    );
-  }, []);
+  const handleTopicToggle = useCallback(
+    (topicId: number) => {
+      const next = selectedTopics.includes(topicId)
+        ? selectedTopics.filter((id) => id !== topicId)
+        : [...selectedTopics, topicId];
+      setSelectedTopics(next);
+      onTopicsChange?.(next);
+    },
+    [selectedTopics, onTopicsChange],
+  );
 
   const toggleNodeExpansion = useCallback((nodeKey: string) => {
     setExpandedNodes((prev) => {
@@ -245,7 +276,10 @@ export const useTopicFilter = (
     setSelectedFields([]);
     setSelectedSubfields([]);
     setSelectedTopics([]);
-  }, []);
+    onFieldsChange?.([]);
+    onSubfieldsChange?.([]);
+    onTopicsChange?.([]);
+  }, [onFieldsChange, onSubfieldsChange, onTopicsChange]);
 
   function simpleTopicColor(topicId: number): [number, number, number, number] {
     // Simple hash to get pseudo-random but consistent colors

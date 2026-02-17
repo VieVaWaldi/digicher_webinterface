@@ -28,8 +28,6 @@ function FundingScenarioContent() {
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
-  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
-
   /** Hover State */
   const [hoverInfo, setHoverInfo] = useState<{
     x: number;
@@ -76,7 +74,14 @@ function FundingScenarioContent() {
       initialValue: filterValues.frameworkProgrammes,
       onChange: setters.setFrameworkProgrammes,
     });
-  const { TopicFilter, topicPredicate } = useTopicFilter();
+  const { TopicFilter, topicPredicate } = useTopicFilter({
+    initialFields: filterValues.topicFields,
+    initialSubfields: filterValues.topicSubfields,
+    initialTopics: filterValues.topicTopics,
+    onFieldsChange: setters.setTopicFields,
+    onSubfieldsChange: setters.setTopicSubfields,
+    onTopicsChange: setters.setTopicTopics,
+  });
 
   /** Apply Filters */
 
@@ -294,8 +299,8 @@ function FundingScenarioContent() {
     <>
       <MapController
         layerConfigs={layerConfigs}
-        activeLayerIndex={activeLayerIndex}
-        onLayerChange={setActiveLayerIndex}
+        activeLayerIndex={filterValues.activeLayerIndex}
+        onLayerChange={setters.setActiveLayerIndex}
         title={Title}
         search={SearchFilter}
         defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
