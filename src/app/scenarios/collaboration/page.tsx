@@ -25,16 +25,10 @@ import { groupByGeolocation } from "@/app/scenarios/scenario_data";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
 import { CollaborationNetworkLayer } from "@/components/deckgl/layers/CollaborationNetworkLayer";
 import { useCollaborationNetworkById } from "@/hooks/queries/collaboration/useCollaborationNetworkById";
+import { useMapViewCollaborationByTopic } from "@/hooks/queries/views/map/useMapViewCollaborationByTopic";
 
 function CollaborationScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
-
-  /** ToDo, the 2nd Layer */
-  // const {
-  //   data: mapViewCollaborations,
-  //   isPending,
-  //   error,
-  // } = useCollaborationsEnriched(); // loses projects not in scenarios view
 
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null

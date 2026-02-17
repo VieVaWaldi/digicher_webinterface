@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   doublePrecision,
+  integer,
   jsonb,
   pgSchema,
   text,
@@ -86,3 +87,24 @@ export const mapViewcollaborationNetwork = coreMatsSchema
 
 export type MapViewCollaborationNetworkType =
   typeof mapViewcollaborationNetwork.$inferSelect;
+
+export const mapViewCollaborationByTopic = coreMatsSchema
+  .materializedView("collaboration_by_topic", {
+    a_institution_id: text("a_institution_id").notNull(),
+    b_institution_id: text("b_institution_id").notNull(),
+    a_geolocation: doublePrecision("a_geolocation").array().notNull(),
+    b_geolocation: doublePrecision("b_geolocation").array().notNull(),
+    a_country: text("a_country"),
+    b_country: text("b_country"),
+    project_id: text("project_id").notNull(),
+    start_date: date("start_date"),
+    end_date: date("end_date"),
+    topic_id: text("topic_id").notNull(),
+    subfield_id: text("subfield_id"),
+    field_id: text("field_id"),
+    framework_programmes: text("framework_programmes").array(),
+  })
+  .existing();
+
+export type MapViewCollaborationByTopicType =
+  typeof mapViewCollaborationByTopic.$inferSelect;
