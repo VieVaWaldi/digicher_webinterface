@@ -25,6 +25,9 @@ export type { MultiSelectDropdownProps, MultiSelectOption } from "./MultiSelectD
 export { FilterSection } from "./FilterSection";
 export type { FilterSectionProps } from "./FilterSection";
 
+export { FilterChip } from "./FilterChip";
+export type { FilterChipProps } from "./FilterChip";
+
 export { default as useUnifiedSearchFilter } from "../filter/useUnifiedSearchFilter";
 export type {
   SearchEntity,

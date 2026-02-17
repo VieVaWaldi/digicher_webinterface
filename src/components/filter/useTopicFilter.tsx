@@ -8,6 +8,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { SearchBar } from "components/mui/SearchBar";
+import { FilterChip } from "components/mui/FilterChip";
 
 interface TopicTreeNode {
   id: string;
@@ -281,6 +282,45 @@ export const useTopicFilter = (
     onTopicsChange?.([]);
   }, [onFieldsChange, onSubfieldsChange, onTopicsChange]);
 
+  // Resolve all selected fields/subfields/topics down to individual topic entries
+  const resolvedTopics = useMemo(() => {
+    const topics: { id: number; name: string }[] = [];
+    const seen = new Set<number>();
+
+    const collectTopics = (node: TopicTreeNode) => {
+      if (node.type === "topic") {
+        const numId = parseInt(node.id);
+        if (!seen.has(numId)) {
+          seen.add(numId);
+          topics.push({ id: numId, name: node.name });
+        }
+        return;
+      }
+      node.children?.forEach(collectTopics);
+    };
+
+    // Directly selected topics
+    for (const field of treeData) {
+      if (selectedSets.fields.has(field.id)) {
+        collectTopics(field);
+      } else {
+        for (const subfield of field.children ?? []) {
+          if (selectedSets.subfields.has(subfield.id)) {
+            collectTopics(subfield);
+          } else {
+            for (const topic of subfield.children ?? []) {
+              if (selectedSets.topics.has(parseInt(topic.id))) {
+                collectTopics(topic);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return topics.sort((a, b) => a.name.localeCompare(b.name));
+  }, [treeData, selectedSets]);
+
   function simpleTopicColor(topicId: number): [number, number, number, number] {
     // Simple hash to get pseudo-random but consistent colors
     const hash = topicId * 2654435761; // Large prime for better distribution
@@ -444,33 +484,47 @@ export const useTopicFilter = (
 
   const TopicFilter = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {/* Selection summary */}
-      {selectedCounts.fields +
-        selectedCounts.subfields +
-        selectedCounts.topics >
-        0 && (
+      {/* Selection summary as resolved topic chips */}
+      {resolvedTopics.length > 0 && (
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
             borderRadius: 1,
             backgroundColor: "action.hover",
             p: 1,
           }}
         >
-          <Typography variant="caption" color="text.secondary">
-            Selected: {selectedCounts.fields}, {selectedCounts.subfields},{" "}
-            {selectedCounts.topics}
-          </Typography>
-          <Button
-            variant="text"
-            size="small"
-            onClick={clearAllSelections}
-            sx={{ minWidth: "auto", fontSize: "0.75rem" }}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 1,
+            }}
           >
-            Clear
-          </Button>
+            <Typography variant="caption" color="text.secondary">
+              {resolvedTopics.length} topic{resolvedTopics.length !== 1 && "s"} selected
+            </Typography>
+            <Button
+              variant="text"
+              size="small"
+              onClick={clearAllSelections}
+              sx={{ minWidth: "auto", fontSize: "0.75rem" }}
+            >
+              Clear
+            </Button>
+          </Box>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {resolvedTopics.map(({ id, name }) => {
+              const [r, g, b] = simpleTopicColor(id);
+              return (
+                <FilterChip
+                  key={id}
+                  label={name}
+                  color={[r, g, b]}
+                />
+              );
+            })}
+          </Box>
         </Box>
       )}
 
