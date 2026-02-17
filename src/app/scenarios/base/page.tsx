@@ -104,10 +104,12 @@ function BaseScenarioContent() {
 
   /** UI Components */
 
-  const totalProjects = useMemo(
-    () => filteredData.reduce((sum, p) => sum + p.projects.length, 0),
-    [filteredData],
-  );
+  const totalProjects = useMemo(() => {
+    const seen = new Set<string>();
+    for (const p of filteredData)
+      for (const proj of p.projects) seen.add(proj.id);
+    return seen.size;
+  }, [filteredData]);
 
   const Title: ReactNode = (
     <Typography
@@ -175,7 +177,7 @@ function BaseScenarioContent() {
         id: "grouped-icons",
         title: "Grouped",
         description:
-          "Institutions grouped by location with cluster indicators.",
+          "Institutions clustered by distance",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           new GroupedIconLayer({
@@ -189,7 +191,7 @@ function BaseScenarioContent() {
       {
         id: "individual-icons",
         title: "Individual",
-        description: "Each institution displayed as an individual icon.",
+        description: "All individual institutions",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           createIconLayer({

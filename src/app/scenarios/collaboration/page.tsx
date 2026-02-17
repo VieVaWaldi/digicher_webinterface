@@ -35,6 +35,10 @@ function CollaborationScenarioContent() {
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
+
+  const { data: networkData } = useCollaborationNetworkById(
+    selectedInstitutionId,
+  );
   /** Hover State */
   //   const [hoverInfo, setHoverInfo] = useState<{
   //     x: number;
@@ -160,10 +164,13 @@ function CollaborationScenarioContent() {
 
   /** UI Components */
 
-  const totalProjects = useMemo(
-    () => filteredData.reduce((sum, p) => sum + p.projects.length, 0),
-    [filteredData],
-  );
+  const totalProjects = useMemo(() => {
+    if (!networkData?.length) return 0;
+    const seen = new Set<string>();
+    for (const p of networkData)
+      for (const proj of p.projects ?? []) seen.add(proj.project_id);
+    return seen.size;
+  }, [networkData]);
 
   const hasSelectedTopic =
     selectedTopics.length > 0 ||
@@ -176,18 +183,26 @@ function CollaborationScenarioContent() {
       color="text.secondary"
       sx={{ textAlign: "center", mt: 1 }}
     >
-      {filterValues.activeLayerIndex === 0 && !selectedInstitutionId &&
+      {filterValues.activeLayerIndex === 0 &&
+        !selectedInstitutionId &&
         "Click on an institution to see its network"}
-      {filterValues.activeLayerIndex === 1 && !hasSelectedTopic &&
+      {filterValues.activeLayerIndex === 1 &&
+        !hasSelectedTopic &&
         "Please select a topic in Filters"}
       {filterValues.activeLayerIndex === 0 && selectedInstitutionId && (
         <>
           Displaying{" "}
-          <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
-            {filteredData?.length.toLocaleString()}
+          <Box
+            component="span"
+            sx={{ color: "secondary.main", fontWeight: 500 }}
+          >
+            {networkData?.length.toLocaleString()}
           </Box>{" "}
-          institutions &{" "}
-          <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+          collaborations across{" "}
+          <Box
+            component="span"
+            sx={{ color: "secondary.main", fontWeight: 500 }}
+          >
             {totalProjects.toLocaleString()}
           </Box>{" "}
           projects
@@ -196,7 +211,10 @@ function CollaborationScenarioContent() {
       {filterValues.activeLayerIndex === 1 && hasSelectedTopic && (
         <>
           Displaying{" "}
-          <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
+          <Box
+            component="span"
+            sx={{ color: "secondary.main", fontWeight: 500 }}
+          >
             {filteredTopicCollabData.length.toLocaleString()}
           </Box>{" "}
           collaborations
@@ -207,7 +225,6 @@ function CollaborationScenarioContent() {
 
   const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
 
       <FilterSection title="Project Time" showDivider={true}>
@@ -230,22 +247,7 @@ function CollaborationScenarioContent() {
 
   /** Calculations */
 
-  // const uniqueInstitutions = useMemo(() => {
-  //   if (!filteredDataView) return [];
-  //
-  //   const institutionMap = new Map();
-  //
-  //   filteredDataView
-  //     .flatMap((collab) => [
-  //       { id: collab?.a_institution_id, geolocation: collab?.a_geolocation },
-  //       { id: collab?.b_institution_id, geolocation: collab?.b_geolocation },
-  //     ])
-  //     .forEach((inst) => {
-  //       institutionMap.set(inst.id, inst);
-  //     });
-  //
-  //   return Array.from(institutionMap.values());
-  // }, [filteredDataView]);
+  /** ToDo: A Layer that shows highest collaborator would be cool */
 
   //   const MAX_COLLAB_WEIGHT = useMemo(() => {
   //     if (!collaborationView) return 0;
@@ -254,13 +256,12 @@ function CollaborationScenarioContent() {
 
   /** Event Handlers */
 
-  const { data: networkData } = useCollaborationNetworkById(
-    selectedInstitutionId,
-  );
+
 
   useEffect(() => {
+    /** We treate this as the onClick for the institution network */
     if (networkData) {
-      /** ToDo: This is where we open the SideMenu from */
+      /** ToDo: This is where we open the InfoPanel from */
       console.log("Network data:", networkData);
     }
   }, [networkData]);
@@ -274,17 +275,6 @@ function CollaborationScenarioContent() {
   const handleEmptyMapClick = useCallback(() => {
     setSelectedInstitutionId(null);
   }, []);
-
-  // const handleScatterOnClick = useCallback(
-  //   (info: PickingInfo) => {
-  //     console.log(info.object);
-  //     if (info.object?.id) {
-  //       setSelectedInstitutionId(info.object.id);
-  //       setSelectedInfo(true);
-  //     }
-  //   },
-  //   [uniqueInstitutions],
-  // );
 
   //   const handleHover = useCallback((info: PickingInfo) => {
   //     if (info.object) {
@@ -322,7 +312,7 @@ function CollaborationScenarioContent() {
       {
         id: "individual-icons",
         title: "Individual",
-        description: "Click on an institution to reveal its network.",
+        description: "Click on an institution to reveal its network",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           new CollaborationNetworkLayer({
@@ -337,9 +327,9 @@ function CollaborationScenarioContent() {
       },
       {
         id: "topic-network",
-        title: "Topic Network",
+        title: "Topic",
         description:
-          "Arcs between institutions sharing selected topics, colored by topic.",
+          "Select a topic to shows its collaboration network",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           new TopicNetworkLayer({
@@ -361,40 +351,6 @@ function CollaborationScenarioContent() {
       getTopicColor,
     ],
   );
-
-  // const scatterLayer = useMemo(() => {
-  //   return new ScatterplotLayer({
-  //     ...baseLayerProps,
-  //     id: "scatter-projects",
-  //     data: uniqueInstitutions,
-  //     getFillColor: [255, 140, 0],
-  //     getPosition: (d) => d.geolocation,
-  //     onClick: handleScatterOnClick,
-  //     updateTriggers: {
-  //       getPosition: uniqueInstitutions,
-  //       getFillColor: uniqueInstitutions,
-  //     },
-  //   });
-  // }, [uniqueInstitutions, handleScatterOnClick]);
-  //
-  // const arcLayer = useMemo(() => {
-  //   return new ArcLayer({
-  //     id: "collaboration-arcs-all",
-  //     data: filteredDataView,
-  //     pickable: true,
-  //     getSourcePosition: (c) => c.a_geolocation,
-  //     getTargetPosition: (c) => c.b_geolocation,
-  //     getSourceColor: (c) => getTopicColor(c.project_id),
-  //     getTargetColor: (c) => getTopicColor(c.project_id),
-  //     getWidth: 1,
-  //     widthScale: 1,
-  //     widthMinPixels: 0.5,
-  //     updateTriggers: {
-  //       getSourcePosition: filteredDataView,
-  //       getTargetPosition: filteredDataView,
-  //     },
-  //   });
-  // }, [filteredDataView]);
 
   /** Hover Tooltip */
   //   const hoverTooltip = hoverInfo && (

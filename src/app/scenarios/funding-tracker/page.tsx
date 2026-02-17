@@ -118,14 +118,14 @@ function FundingScenarioContent() {
   /** Calculations */
 
   const maxTotalCost = useMemo(() => {
-    return filteredData.reduce((max, p) => {
-      const cost = p.total_cost || 0;
+    return filteredData.reduce((max, i) => {
+      const cost = i.total_cost || 0;
       return Math.max(max, cost);
     }, 0);
   }, [filteredData]);
 
   const totalFunding = useMemo(() => {
-    return filteredData.reduce((sum, p) => sum + (p.total_cost || 0), 0);
+    return filteredData.reduce((sum, i) => sum + (i.total_cost || 0), 0);
   }, [filteredData]);
 
   /** UI Components */
@@ -140,7 +140,7 @@ function FundingScenarioContent() {
       <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
         {filteredData?.length.toLocaleString()}
       </Box>{" "}
-      institutions and{" "}
+      institutions &{" "}
       <Box component="span" sx={{ color: "secondary.main", fontWeight: 500 }}>
         {Math.round(totalFunding).toLocaleString()}€
       </Box>{" "}
@@ -214,8 +214,8 @@ function FundingScenarioContent() {
     () => [
       {
         id: "hexagon",
-        title: "Hexagon",
-        description: "Aggregated hexagonal bins showing funding density.",
+        title: "Binned",
+        description: "Aggregated hexagonal bins showing funding density",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           createHexagonLayer({
@@ -228,8 +228,8 @@ function FundingScenarioContent() {
       },
       {
         id: "column",
-        title: "Column",
-        description: "3D columns showing funding amounts as height.",
+        title: "Individual",
+        description: "All individual institutions funding",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           createColumnLayer({
@@ -245,7 +245,7 @@ function FundingScenarioContent() {
         id: "extruded-countries",
         title: "Countries",
         description:
-          "Extruded country shapes showing aggregated funding per country.",
+          "Aggregated funding for each country",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           createExtrudedCountryLayer({
