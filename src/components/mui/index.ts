@@ -19,6 +19,9 @@ export type { SideMenuProps } from "./SideMenu";
 export { DualSlider } from "./DualSlider";
 export type { DualSliderProps } from "./DualSlider";
 
+export { Slider } from "./Slider";
+export type { SliderProps } from "./Slider";
+
 export { MultiSelectDropdown } from "./MultiSelectDropdown";
 export type { MultiSelectDropdownProps, MultiSelectOption } from "./MultiSelectDropdown";
 

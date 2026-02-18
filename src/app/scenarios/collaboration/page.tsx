@@ -28,6 +28,7 @@ import { TopicNetworkLayer } from "@/components/deckgl/layers/TopicNetworkLayer"
 import { useCollaborationNetworkById } from "@/hooks/queries/collaboration/useCollaborationNetworkById";
 import { useMapViewCollaborationByTopic } from "@/hooks/queries/views/map/useMapViewCollaborationByTopic";
 import { useMapHover } from "@/components/deckgl/hover/useMapHover";
+import useMinConnectionsFilter from "@/components/filter/useMinConnectionsFilter";
 
 /** ToDo: If performance becomes an issue, useMapViewInstitution and useMapViewCollaborationByTopic both run and get filtered always */
 function CollaborationScenarioContent() {
@@ -156,6 +157,11 @@ function CollaborationScenarioContent() {
     frameworkProgrammePredicate,
   ]);
 
+  /** Min Connections Filter (Topic layer only) */
+
+  const { MinConnectionsFilter, connectionFilteredData } =
+    useMinConnectionsFilter({ data: filteredTopicCollabData });
+
   /** UI Components */
 
   const totalProjects = useMemo(() => {
@@ -209,9 +215,9 @@ function CollaborationScenarioContent() {
             component="span"
             sx={{ color: "secondary.main", fontWeight: 500 }}
           >
-            {filteredTopicCollabData.length.toLocaleString()}
+            {connectionFilteredData.length.toLocaleString()}
           </Box>{" "}
-          collaborations
+          project collaborations
         </>
       )}
     </Typography>
@@ -220,6 +226,10 @@ function CollaborationScenarioContent() {
   const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
+
+      {filterValues.activeLayerIndex === 1 && (
+        <FilterSection title="Network">{MinConnectionsFilter}</FilterSection>
+      )}
 
       <FilterSection title="Project Time" showDivider={true}>
         {YearRangeFilter}
@@ -325,7 +335,7 @@ function CollaborationScenarioContent() {
         createLayers: () => [
           new TopicNetworkLayer({
             id: "topic-network-layer",
-            data: filteredTopicCollabData,
+            data: connectionFilteredData,
             isDark,
             getTopicColor,
           }),
@@ -338,7 +348,7 @@ function CollaborationScenarioContent() {
       handleMapOnClick,
       networkData,
       sourcePosition,
-      filteredTopicCollabData,
+      connectionFilteredData,
       getTopicColor,
     ],
   );
