@@ -28,6 +28,10 @@ import { TopicNetworkLayer } from "@/components/deckgl/layers/TopicNetworkLayer"
 import { useCollaborationNetworkById } from "@/hooks/queries/collaboration/useCollaborationNetworkById";
 import { useMapViewCollaborationByTopic } from "@/hooks/queries/views/map/useMapViewCollaborationByTopic";
 import { useMapHover } from "@/components/deckgl/hover/useMapHover";
+import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
+import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
+import { ArcTooltip } from "@/components/deckgl/hover/ArcTooltip";
+import { ArcProjectItem } from "@/components/deckgl/hover/ArcProjectItem";
 import useMinConnectionsFilter from "@/components/filter/useMinConnectionsFilter";
 
 /** ToDo: If performance becomes an issue, useMapViewInstitution and useMapViewCollaborationByTopic both run and get filtered always */
@@ -280,13 +284,20 @@ function CollaborationScenarioContent() {
 
   /** Hover */
 
-  const { hoverState, makeHoverHandler } = useMapHover<GeoGroup>();
+  type CollaborationHoverData =
+    | { type: "icon"; group: GeoGroup }
+    | { type: "arc"; projects: { project_id: string; total_cost: number | null }[] }
+    | { type: "topic-arc"; project_id: string; total_cost: number | null };
 
-  const handleIconHover = useMemo(
+  const { hoverState, makeHoverHandler } = useMapHover<CollaborationHoverData>();
+
+  const handleHover = useMemo(
     () =>
-      makeHoverHandler((obj: any): GeoGroup | null => {
-        if (!obj?.institutions) return null;
-        return obj as GeoGroup;
+      makeHoverHandler((obj: any): CollaborationHoverData | null => {
+        if (obj?.institutions) return { type: "icon", group: obj as GeoGroup };
+        if (obj?.projects) return { type: "arc", projects: obj.projects };
+        if (obj?.project_id) return { type: "topic-arc", project_id: obj.project_id, total_cost: obj.total_cost ?? null };
+        return null;
       }),
     [makeHoverHandler],
   );
@@ -322,6 +333,8 @@ function CollaborationScenarioContent() {
             data: groupedData,
             isDark,
             onClick: handleMapOnClick,
+            onHover: handleHover,
+            getTopicColor,
             networkData,
             sourcePosition,
           }),
@@ -338,6 +351,7 @@ function CollaborationScenarioContent() {
             data: connectionFilteredData,
             isDark,
             getTopicColor,
+            onHover: handleHover,
           }),
         ],
       },
@@ -346,6 +360,7 @@ function CollaborationScenarioContent() {
       groupedData,
       isDark,
       handleMapOnClick,
+      handleHover,
       networkData,
       sourcePosition,
       connectionFilteredData,
@@ -354,23 +369,36 @@ function CollaborationScenarioContent() {
   );
 
   return (
-    <MapController
-      layerConfigs={layerConfigs}
-      activeLayerIndex={filterValues.activeLayerIndex}
-      onLayerChange={setters.setActiveLayerIndex}
-      title={Title}
-      search={SearchFilter}
-      filters={Filters}
-      defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
-      initialViewState={filterValues.viewState}
-      onViewStateChange={debouncedSetViewState}
-      onResetAll={resetAll}
-      loading={isPending || isTopicCollabLoading}
-      error={error || topicCollabError}
-      onEmptyMapClick={handleEmptyMapClick}
-      scenarioName="collaboration"
-      scenarioTitle="Collaboration"
-    />
+    <>
+      <MapController
+        layerConfigs={layerConfigs}
+        activeLayerIndex={filterValues.activeLayerIndex}
+        onLayerChange={setters.setActiveLayerIndex}
+        title={Title}
+        search={SearchFilter}
+        filters={Filters}
+        defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
+        initialViewState={filterValues.viewState}
+        onViewStateChange={debouncedSetViewState}
+        onResetAll={resetAll}
+        loading={isPending || isTopicCollabLoading}
+        error={error || topicCollabError}
+        onEmptyMapClick={handleEmptyMapClick}
+        scenarioName="collaboration"
+        scenarioTitle="Collaboration"
+      />
+      {hoverState && (
+        <MapTooltip position={hoverState}>
+          {hoverState.data.type === "arc" ? (
+            <ArcTooltip projects={hoverState.data.projects} />
+          ) : hoverState.data.type === "topic-arc" ? (
+            <ArcProjectItem project_id={hoverState.data.project_id} total_cost={hoverState.data.total_cost} />
+          ) : (
+            <GeoGroupTooltip group={hoverState.data.group} />
+          )}
+        </MapTooltip>
+      )}
+    </>
   );
 }
 

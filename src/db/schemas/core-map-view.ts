@@ -83,6 +83,7 @@ export const mapViewCollaborationByTopic = coreMatsSchema
     a_country: text("a_country"),
     b_country: text("b_country"),
     project_id: text("project_id").notNull(),
+    total_cost: doublePrecision("total_cost"),
     start_date: date("start_date"),
     end_date: date("end_date"),
     topic_id: text("topic_id").notNull(),

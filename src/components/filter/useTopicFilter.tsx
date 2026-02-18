@@ -1,6 +1,14 @@
 "use client";
 
 import { useProjectTopicsEnriched } from "@/hooks/queries/topic/useProjectTopicsEnriched";
+
+export function topicIdToColor(topicId: number): [number, number, number, number] {
+  const hash = topicId * 2654435761; // Large prime for better distribution
+  const r = (hash & 0xff0000) >> 16;
+  const g = (hash & 0x00ff00) >> 8;
+  const b = hash & 0x0000ff;
+  return [r, g, b, 140];
+}
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Box, IconButton, Checkbox, Typography, Button } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -337,13 +345,7 @@ export const useTopicFilter = (
   }, [treeData, selectedSets]);
 
   function simpleTopicColor(topicId: number): [number, number, number, number] {
-    // Simple hash to get pseudo-random but consistent colors
-    const hash = topicId * 2654435761; // Large prime for better distribution
-    const r = (hash & 0xff0000) >> 16;
-    const g = (hash & 0x00ff00) >> 8;
-    const b = hash & 0x0000ff;
-
-    return [r, g, b, 140];
+    return topicIdToColor(topicId);
   }
 
   const getTopicColor = useCallback(
