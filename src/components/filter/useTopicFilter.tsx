@@ -64,6 +64,21 @@ export const useTopicFilter = (
   const [selectedTopics, setSelectedTopics] =
     useState<number[]>(initialTopics);
 
+  useEffect(() => {
+    setSelectedFields(initialFields);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFields.join(",")]);
+
+  useEffect(() => {
+    setSelectedSubfields(initialSubfields);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSubfields.join(",")]);
+
+  useEffect(() => {
+    setSelectedTopics(initialTopics);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTopics.join(",")]);
+
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 

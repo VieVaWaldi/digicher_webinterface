@@ -2,16 +2,18 @@ import { IconLayer, Position } from "deck.gl";
 import { institutionIconUrl } from "./icons";
 import { palette } from "@/lib/theme";
 
-export interface InstitutionPoint {
+// Minimal structural type — both GeoGroup and GroupedIconLayer's RenderPoint satisfy this
+interface IconLayerInput {
   geolocation: Position | number[];
   count: number;
 }
 
 interface InstitutionIconLayerProps {
   id: string;
-  data: InstitutionPoint[];
+  data: IconLayerInput[];
   isDark: boolean;
-  onClick?: (info: unknown) => void;
+  onClick?: (info: any) => void;
+  onHover?: (info: any) => void;
 }
 
 export function createIconLayer({
@@ -19,12 +21,13 @@ export function createIconLayer({
   data,
   isDark,
   onClick,
+  onHover,
 }: InstitutionIconLayerProps) {
-  return new IconLayer<InstitutionPoint>({
+  return new IconLayer<IconLayerInput>({
     id,
     data,
     pickable: true,
-    getPosition: (d) => d.geolocation? d.geolocation as Position : [10,10],
+    getPosition: (d) => d.geolocation ? d.geolocation as Position : [10, 10],
     getIcon: (d) => ({
       url: institutionIconUrl(
         isDark
@@ -41,9 +44,10 @@ export function createIconLayer({
     }),
     getSize: 400,
     sizeUnits: "meters",
-    sizeMinPixels: 12, // floor when zoomed out
-    sizeMaxPixels: 40, // cap when zoomed in
+    sizeMinPixels: 12,
+    sizeMaxPixels: 40,
     onClick,
+    onHover,
     updateTriggers: {
       getIcon: isDark,
     },

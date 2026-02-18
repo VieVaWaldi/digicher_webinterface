@@ -27,7 +27,8 @@ interface GroupedIconLayerProps {
   data: GeoGroup[];
   isDark: boolean;
   pickable?: boolean;
-  onClick?: (info: unknown) => void;
+  onClick?: (info: any) => void;
+  onHover?: (info: any) => void;
 }
 
 const ZOOM_THRESHOLD: number = 6;
@@ -107,7 +108,7 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
   }
 
   renderLayers() {
-    const { isDark } = this.props;
+    const { isDark, onHover } = this.props;
     const zoom = Math.floor(this.context.viewport.zoom);
     const clusters = this.state.index.getClusters([-180, -85, 180, 85], zoom);
 
@@ -136,6 +137,7 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
       id: `${this.props.id}-singles`,
       data: singles,
       isDark,
+      onHover,
     });
 
     const clusterLayer = new IconLayer<RenderPoint>({

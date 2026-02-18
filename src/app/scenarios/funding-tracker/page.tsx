@@ -6,7 +6,6 @@ import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgramme
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
-import { PickingInfo } from "deck.gl";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
@@ -21,20 +20,21 @@ import { createExtrudedCountryLayer } from "@/components/deckgl/layers/ExtrudedC
 import { useCountryGeoData } from "@/hooks/queries/useCountryGeoData";
 import { useSettings } from "@/context/SettingsContext";
 import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
-import { groupByGeolocation } from "@/app/scenarios/scenario_data";
+import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
+import { useMapHover } from "@/components/deckgl/hover/useMapHover";
+import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
+import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
+import { CountryTooltip } from "@/components/deckgl/hover/CountryTooltip";
+
+type FundingHoverData =
+  | { type: "geoGroup"; group: GeoGroup }
+  | { type: "country"; countryCode: string; funding: number };
 
 function FundingScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
-  /** Hover State */
-  const [hoverInfo, setHoverInfo] = useState<{
-    x: number;
-    y: number;
-    funding: number;
-    object: any;
-  } | null>(null);
 
   /** Filters */
 
@@ -150,7 +150,6 @@ function FundingScenarioContent() {
 
   const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
 
       <FilterSection title="Project Time" showDivider={true}>
@@ -173,7 +172,7 @@ function FundingScenarioContent() {
 
   /** Event Handlers */
 
-  const handleMapOnClick = useCallback((info: PickingInfo) => {
+  const handleMapOnClick = useCallback((info: any) => {
     if (info.object.points) {
       // ToDo: Is not in grouped format, but flat institution array
       const institutions = info.object.points.flatMap(
@@ -187,18 +186,47 @@ function FundingScenarioContent() {
     }
   }, []);
 
-  const handleHover = useCallback((info: PickingInfo) => {
-    if (info.object) {
-      setHoverInfo({
-        x: info.x,
-        y: info.y,
-        funding: info.object.total_cost || 0,
-        object: info.object,
-      });
-    } else {
-      setHoverInfo(null);
-    }
-  }, []);
+  /** Hover */
+
+  const { hoverState, makeHoverHandler } = useMapHover<FundingHoverData>();
+
+  const handleColumnHover = useMemo(
+    () =>
+      makeHoverHandler((obj: any): FundingHoverData | null => {
+        if (!obj?.institutions) return null;
+        return { type: "geoGroup", group: obj as GeoGroup };
+      }),
+    [makeHoverHandler],
+  );
+
+  const handleHexHover = useMemo(
+    () =>
+      makeHoverHandler((obj: any): FundingHoverData | null => {
+        if (!obj?.points) return null;
+        const institutions = (obj.points as GeoGroup[]).flatMap(
+          (p) => p.institutions,
+        );
+        const geolocation = (obj.points as GeoGroup[])[0]?.geolocation ?? [0, 0];
+        return {
+          type: "geoGroup",
+          group: { geolocation, institutions, count: institutions.length },
+        };
+      }),
+    [makeHoverHandler],
+  );
+
+  const handleCountryHover = useMemo(
+    () =>
+      makeHoverHandler((obj: any): FundingHoverData | null => {
+        if (!obj?.countryCode) return null;
+        return {
+          type: "country",
+          countryCode: obj.countryCode,
+          funding: obj.funding ?? 0,
+        };
+      }),
+    [makeHoverHandler],
+  );
 
   /** Layer */
 
@@ -222,7 +250,7 @@ function FundingScenarioContent() {
             data: groupedData,
             isGlobe,
             onClick: handleMapOnClick,
-            onHover: handleHover,
+            onHover: handleHexHover,
           }),
         ],
       },
@@ -237,15 +265,14 @@ function FundingScenarioContent() {
             maxTotalCost,
             isGlobe,
             onClick: handleMapOnClick,
-            onHover: handleHover,
+            onHover: handleColumnHover,
           }),
         ],
       },
       {
         id: "extruded-countries",
         title: "Countries",
-        description:
-          "Aggregated funding for each country",
+        description: "Aggregated funding for each country",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           createExtrudedCountryLayer({
@@ -253,7 +280,7 @@ function FundingScenarioContent() {
             countryGeoData,
             isGlobe,
             onClick: handleMapOnClick,
-            onHover: handleHover,
+            onHover: handleCountryHover,
           }),
         ],
       },
@@ -263,36 +290,12 @@ function FundingScenarioContent() {
       maxTotalCost,
       isGlobe,
       handleMapOnClick,
-      handleHover,
+      handleColumnHover,
+      handleHexHover,
+      handleCountryHover,
       countryGeoData,
+      groupedData,
     ],
-  );
-
-  /** Hover Tooltip */
-  const hoverTooltip = hoverInfo && (
-    <div
-      style={{
-        position: "absolute",
-        pointerEvents: "none",
-        left: hoverInfo.x,
-        top: hoverInfo.y,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        color: "#fff",
-        padding: "8px",
-        borderRadius: "4px",
-        transform: "translate(-50%, -100%)",
-        marginTop: "-15px",
-        zIndex: 1000,
-      }}
-    >
-      <div>
-        Total Cost:{" "}
-        {new Intl.NumberFormat("de-DE", {
-          style: "currency",
-          currency: "EUR",
-        }).format(hoverInfo.funding)}
-      </div>
-    </div>
   );
 
   return (
@@ -313,7 +316,18 @@ function FundingScenarioContent() {
         scenarioTitle="Funding Tracker"
         filters={Filters}
       />
-      {hoverTooltip}
+      {hoverState && (
+        <MapTooltip position={hoverState}>
+          {hoverState.data.type === "country" ? (
+            <CountryTooltip
+              countryCode={hoverState.data.countryCode}
+              funding={hoverState.data.funding}
+            />
+          ) : (
+            <GeoGroupTooltip group={hoverState.data.group} showFunding />
+          )}
+        </MapTooltip>
+      )}
     </>
   );
 }

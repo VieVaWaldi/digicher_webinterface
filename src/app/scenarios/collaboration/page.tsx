@@ -21,12 +21,13 @@ import { FilterSection, useUnifiedSearchFilter } from "@/components/mui";
 import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
 import useFrameworkProgrammeFilter from "@/components/filter/useFrameworkProgrammeFilter";
 import { Box, Typography, useTheme } from "@mui/material";
-import { groupByGeolocation } from "@/app/scenarios/scenario_data";
+import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
 import { CollaborationNetworkLayer } from "@/components/deckgl/layers/CollaborationNetworkLayer";
 import { TopicNetworkLayer } from "@/components/deckgl/layers/TopicNetworkLayer";
 import { useCollaborationNetworkById } from "@/hooks/queries/collaboration/useCollaborationNetworkById";
 import { useMapViewCollaborationByTopic } from "@/hooks/queries/views/map/useMapViewCollaborationByTopic";
+import { useMapHover } from "@/components/deckgl/hover/useMapHover";
 
 /** ToDo: If performance becomes an issue, useMapViewInstitution and useMapViewCollaborationByTopic both run and get filtered always */
 function CollaborationScenarioContent() {
@@ -39,13 +40,6 @@ function CollaborationScenarioContent() {
   const { data: networkData } = useCollaborationNetworkById(
     selectedInstitutionId,
   );
-  /** Hover State */
-  //   const [hoverInfo, setHoverInfo] = useState<{
-  //     x: number;
-  //     y: number;
-  //     weight: number;
-  //     object: any;
-  //   } | null>(null);
 
   /** URL Filter State */
 
@@ -256,8 +250,6 @@ function CollaborationScenarioContent() {
 
   /** Event Handlers */
 
-
-
   useEffect(() => {
     /** We treate this as the onClick for the institution network */
     if (networkData) {
@@ -276,18 +268,18 @@ function CollaborationScenarioContent() {
     setSelectedInstitutionId(null);
   }, []);
 
-  //   const handleHover = useCallback((info: PickingInfo) => {
-  //     if (info.object) {
-  //       setHoverInfo({
-  //         x: info.x,
-  //         y: info.y,
-  //         weight: info.object.collaboration_weight,
-  //         object: info.object,
-  //       });
-  //     } else {
-  //       setHoverInfo(null);
-  //     }
-  //   }, []);
+  /** Hover */
+
+  const { hoverState, makeHoverHandler } = useMapHover<GeoGroup>();
+
+  const handleIconHover = useMemo(
+    () =>
+      makeHoverHandler((obj: any): GeoGroup | null => {
+        if (!obj?.institutions) return null;
+        return obj as GeoGroup;
+      }),
+    [makeHoverHandler],
+  );
 
   /** Layers */
 
@@ -328,8 +320,7 @@ function CollaborationScenarioContent() {
       {
         id: "topic-network",
         title: "Topic",
-        description:
-          "Select a topic to shows its collaboration network",
+        description: "Select a topic to shows its collaboration network",
         previewImage: "/images/settings/mapbox-dark.png",
         createLayers: () => [
           new TopicNetworkLayer({
@@ -351,27 +342,6 @@ function CollaborationScenarioContent() {
       getTopicColor,
     ],
   );
-
-  /** Hover Tooltip */
-  //   const hoverTooltip = hoverInfo && (
-  //     <div
-  //       style={{
-  //         position: "absolute",
-  //         pointerEvents: "none",
-  //         left: hoverInfo.x,
-  //         top: hoverInfo.y,
-  //         backgroundColor: "rgba(0, 0, 0, 0.8)",
-  //         color: "#fff",
-  //         padding: "8px",
-  //         borderRadius: "4px",
-  //         transform: "translate(-50%, -100%)",
-  //         marginTop: "-15px",
-  //         zIndex: 1000,
-  //       }}
-  //     >
-  //       <div>Total Collaborators: {hoverInfo.weight}</div>
-  //     </div>
-  //   );
 
   return (
     <MapController

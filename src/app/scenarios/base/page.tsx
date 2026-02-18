@@ -17,13 +17,17 @@ import { GroupedIconLayer } from "@/components/deckgl/layers/GroupedIconLayer";
 import { createIconLayer } from "@/components/deckgl/layers/IconLayer";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
 import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
-import { groupByGeolocation } from "@/app/scenarios/scenario_data";
+import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
+import { useMapHover } from "@/components/deckgl/hover/useMapHover";
+import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
+import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
 
 function BaseScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
+
   /** Filters */
 
   const { filters: filterValues, setters, resetAll } = useFilters();
@@ -161,6 +165,19 @@ function BaseScenarioContent() {
     }
   }, []);
 
+  /** Hover */
+
+  const { hoverState, makeHoverHandler } = useMapHover<GeoGroup>();
+
+  const handleIconHover = useMemo(
+    () =>
+      makeHoverHandler((obj: any): GeoGroup | null => {
+        if (!obj?.institutions) return null;
+        return obj as GeoGroup;
+      }),
+    [makeHoverHandler],
+  );
+
   /** Layer */
 
   const groupedData = useMemo(
@@ -185,6 +202,7 @@ function BaseScenarioContent() {
             data: groupedData,
             isDark,
             onClick: handleMapOnClick,
+            onHover: handleIconHover,
           }),
         ],
       },
@@ -199,30 +217,38 @@ function BaseScenarioContent() {
             data: groupedData,
             isDark,
             onClick: handleMapOnClick,
+            onHover: handleIconHover,
           }),
         ],
       },
     ],
-    [groupedData, isDark, handleMapOnClick],
+    [groupedData, isDark, handleMapOnClick, handleIconHover],
   );
 
   return (
-    <MapController
-      layerConfigs={layerConfigs}
-      activeLayerIndex={filterValues.activeLayerIndex}
-      onLayerChange={setters.setActiveLayerIndex}
-      title={Title}
-      search={SearchFilter}
-      filters={Filters}
-      defaultViewState={INITIAL_VIEW_STATE_EU}
-      initialViewState={filterValues.viewState}
-      onViewStateChange={debouncedSetViewState}
-      onResetAll={resetAll}
-      loading={isPending}
-      error={error}
-      scenarioName={"Base"}
-      scenarioTitle={"Base"}
-    />
+    <>
+      <MapController
+        layerConfigs={layerConfigs}
+        activeLayerIndex={filterValues.activeLayerIndex}
+        onLayerChange={setters.setActiveLayerIndex}
+        title={Title}
+        search={SearchFilter}
+        filters={Filters}
+        defaultViewState={INITIAL_VIEW_STATE_EU}
+        initialViewState={filterValues.viewState}
+        onViewStateChange={debouncedSetViewState}
+        onResetAll={resetAll}
+        loading={isPending}
+        error={error}
+        scenarioName={"Base"}
+        scenarioTitle={"Base"}
+      />
+      {hoverState && (
+        <MapTooltip position={hoverState}>
+          <GeoGroupTooltip group={hoverState.data} />
+        </MapTooltip>
+      )}
+    </>
   );
 }
 
