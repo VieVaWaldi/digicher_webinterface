@@ -165,8 +165,12 @@ function CollaborationScenarioContent() {
 
   /** Min Connections Filter (Topic layer only) */
 
+  /** ToDo: Refactor this to the style of the other filters with predicates */
+
   const { MinConnectionsFilter, connectionFilteredData } =
     useMinConnectionsFilter({ data: filteredTopicCollabData });
+
+  console.log(filteredData);
 
   /** UI Components */
 
@@ -189,12 +193,16 @@ function CollaborationScenarioContent() {
       color="text.secondary"
       sx={{ textAlign: "center", mt: 1 }}
     >
-      {filterValues.activeLayerIndex === 0 &&
-        !selectedInstitutionId &&
-        "Click on an institution to see its network"}
-      {filterValues.activeLayerIndex === 1 &&
-        !hasSelectedTopic &&
-        "Please select a topic in Filters"}
+      {filterValues.activeLayerIndex === 0 && !selectedInstitutionId && (
+        <Box component="span" sx={{ color: "warning.main" }}>
+          Click on an institution to see its network
+        </Box>
+      )}
+      {filterValues.activeLayerIndex === 1 && !hasSelectedTopic && (
+        <Box component="span" sx={{ color: "warning.main" }}>
+          Please select a topic in Filter
+        </Box>
+      )}
       {filterValues.activeLayerIndex === 0 && selectedInstitutionId && (
         <>
           Displaying{" "}

@@ -293,8 +293,8 @@ export default function MapController({
             <Paper elevation={3} sx={{ borderRadius: 4 }}>
               <IconTextButton
                 icon={<FormatListBulletedIcon />}
-                label="List"
-                tooltip="Open Data List Panel"
+                label="Institutions"
+                tooltip="Open Institutions Panel"
                 onClick={() => setListOpen(true)}
               />
             </Paper>
@@ -410,10 +410,10 @@ export default function MapController({
           {/* Filter content will go here */}
         </SideMenu>
 
-        {/* Left Side Menu: List */}
+        {/* Right Side Menu: List */}
         <SideMenu
           side="right"
-          title="List"
+          title="Institutions"
           open={listOpen}
           onClose={() => setListOpen(false)}
           headerActions={undefined}

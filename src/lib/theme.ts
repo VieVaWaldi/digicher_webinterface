@@ -14,6 +14,9 @@ export const palette = {
     secondary: "#8B6914", // warm gold/amber for heritage feel
     secondaryLight: "#a8822a",
     secondaryDark: "#6b500f",
+    warning: "#A8293C", // heritage crimson — warning
+    warningLight: "#c44058",
+    warningDark: "#7A2232",
     border: "#e0e0e0",
     divider: "#e8e8e8",
   },
@@ -28,6 +31,9 @@ export const palette = {
     secondary: "#d4a84b", // brighter gold for dark mode
     secondaryLight: "#e0bc6e",
     secondaryDark: "#8B6914",
+    warning: "#c4445a", // lighter crimson for dark mode
+    warningLight: "#d96878",
+    warningDark: "#7A2232",
     border: "#333333",
     divider: "#2a2a2a",
   },
@@ -203,6 +209,12 @@ export const lightTheme = createTheme({
       secondary: palette.light.textSecondary,
     },
     divider: palette.light.divider,
+    warning: {
+      main: palette.light.warning,
+      light: palette.light.warningLight,
+      dark: palette.light.warningDark,
+      contrastText: "#ffffff",
+    },
   },
   typography: baseTypography,
   shape: {
@@ -236,6 +248,12 @@ export const darkTheme = createTheme({
       secondary: palette.dark.textSecondary,
     },
     divider: palette.dark.divider,
+    warning: {
+      main: palette.dark.warning,
+      light: palette.dark.warningLight,
+      dark: palette.dark.warningDark,
+      contrastText: "#ffffff",
+    },
   },
   typography: baseTypography,
   shape: {
