@@ -8,7 +8,7 @@ import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import { FilterSection, useUnifiedSearchFilter } from "components/mui";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
-import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
+import { ReactNode, Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { INITIAL_VIEW_STATE_EU } from "@/components/deckgl/viewports";
 import { Box, Typography, useTheme } from "@mui/material";
 import { useFilters } from "@/hooks/persistence/useFilters";
@@ -21,6 +21,7 @@ import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
 import { useMapHover } from "@/components/deckgl/hover/useMapHover";
 import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
 import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
+import { useInstitutionListView } from "@/components/maplistview";
 
 function BaseScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
@@ -156,6 +157,21 @@ function BaseScenarioContent() {
     </Box>
   );
 
+  /** List View */
+
+  const flyToRef = useRef<((geo: number[]) => void) | null>(null);
+  const handleFlyTo = useCallback((geo: number[]) => flyToRef.current?.(geo), []);
+  const handleFlyToReady = useCallback((fn: (geo: number[]) => void) => {
+    flyToRef.current = fn;
+  }, []);
+
+  const listContent = useInstitutionListView(filteredData, {
+    onFlyTo: handleFlyTo,
+    onRowClick: (item) => {
+      console.log("Row clicked:", item);
+    },
+  });
+
   /** Event Handlers */
 
   const handleMapOnClick = useCallback((info: any) => {
@@ -242,6 +258,8 @@ function BaseScenarioContent() {
         error={error}
         scenarioName={"Base"}
         scenarioTitle={"Base"}
+        listContent={listContent}
+        onFlyToReady={handleFlyToReady}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>

@@ -7,7 +7,7 @@ import { useTopicFilter } from "components/filter/useTopicFilter";
 import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
-import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
+import { ReactNode, Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { ViewState } from "react-map-gl/mapbox";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { Box, Typography } from "@mui/material";
@@ -26,6 +26,7 @@ import { useMapHover } from "@/components/deckgl/hover/useMapHover";
 import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
 import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
 import { CountryTooltip } from "@/components/deckgl/hover/CountryTooltip";
+import { useInstitutionListView } from "@/components/maplistview";
 
 type FundingHoverData =
   | { type: "geoGroup"; group: GeoGroup }
@@ -183,6 +184,21 @@ function FundingScenarioContent() {
     </Box>
   );
 
+  /** List View */
+
+  const flyToRef = useRef<((geo: number[]) => void) | null>(null);
+  const handleFlyTo = useCallback((geo: number[]) => flyToRef.current?.(geo), []);
+  const handleFlyToReady = useCallback((fn: (geo: number[]) => void) => {
+    flyToRef.current = fn;
+  }, []);
+
+  const listContent = useInstitutionListView(filteredData, {
+    onFlyTo: handleFlyTo,
+    onRowClick: (item) => {
+      console.log("Row clicked:", item);
+    },
+  });
+
   /** Event Handlers */
 
   const handleMapOnClick = useCallback((info: any) => {
@@ -331,6 +347,8 @@ function FundingScenarioContent() {
         scenarioName="funding-tracker"
         scenarioTitle="Funding Tracker"
         filters={Filters}
+        listContent={listContent}
+        onFlyToReady={handleFlyToReady}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>

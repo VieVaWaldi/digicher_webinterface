@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode, useMemo, useRef, useState } from "react";
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { FlyToInterpolator } from "@deck.gl/core";
 import DeckGLMap from "@/components/deckgl/DeckGLMap";
 import Navbar from "@/components/layout/Navbar";
@@ -48,6 +48,10 @@ interface BaseUIProps {
   error: Error | null;
   scenarioName: string;
   scenarioTitle?: string;
+  /** Content to render inside the right-side list panel */
+  listContent?: ReactNode;
+  /** Called once on mount with a stable flyTo function */
+  onFlyToReady?: (flyTo: (geolocation: number[]) => void) => void;
 }
 
 export default function MapController({
@@ -66,6 +70,8 @@ export default function MapController({
   error = null,
   scenarioName,
   scenarioTitle,
+  listContent,
+  onFlyToReady,
 }: BaseUIProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -150,6 +156,21 @@ export default function MapController({
       },
     );
   };
+
+  useEffect(() => {
+    onFlyToReady?.((geo: number[]) => {
+      setCommandedViewState({
+        ...viewStateRef.current,
+        latitude: geo[1],
+        longitude: geo[0],
+        pitch: 45,
+        bearing: -20,
+        zoom: 15.5,
+        transitionDuration: 1200,
+        transitionInterpolator: new FlyToInterpolator(),
+      });
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Box
@@ -416,10 +437,8 @@ export default function MapController({
           title="Institutions"
           open={listOpen}
           onClose={() => setListOpen(false)}
-          headerActions={undefined}
-          children={<Stack>{undefined}</Stack>}
         >
-          {/* List content will go here */}
+          {listContent}
         </SideMenu>
 
         {/* Mobile Navbar Menu */}

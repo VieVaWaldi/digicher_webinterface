@@ -10,6 +10,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import useCountryFilter from "@/components/filter/useCountryFilter";
@@ -33,6 +34,10 @@ import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
 import { ArcTooltip } from "@/components/deckgl/hover/ArcTooltip";
 import { ArcProjectItem } from "@/components/deckgl/hover/ArcProjectItem";
 import useMinConnectionsFilter from "@/components/filter/useMinConnectionsFilter";
+import {
+  useInstitutionListView,
+  useTopicNetworkListView,
+} from "@/components/maplistview";
 
 /** ToDo:
  * If performance becomes an issue, useMapViewInstitution and useMapViewCollaborationByTopic both run and get filtered always
@@ -170,7 +175,24 @@ function CollaborationScenarioContent() {
   const { MinConnectionsFilter, connectionFilteredData } =
     useMinConnectionsFilter({ data: filteredTopicCollabData });
 
-  console.log(filteredData);
+  console.log(connectionFilteredData);
+
+  /** List View */
+
+  const flyToRef = useRef<((geo: number[]) => void) | null>(null);
+  const handleFlyTo = useCallback((geo: number[]) => flyToRef.current?.(geo), []);
+  const handleFlyToReady = useCallback((fn: (geo: number[]) => void) => {
+    flyToRef.current = fn;
+  }, []);
+
+  const layer1List = useInstitutionListView(filteredData, {
+    onFlyTo: handleFlyTo,
+  });
+  const layer2List = useTopicNetworkListView(connectionFilteredData, {
+    onFlyTo: handleFlyTo,
+  });
+  const listContent =
+    filterValues.activeLayerIndex === 0 ? layer1List : layer2List;
 
   /** UI Components */
 
@@ -396,6 +418,8 @@ function CollaborationScenarioContent() {
         onEmptyMapClick={handleEmptyMapClick}
         scenarioName="collaboration"
         scenarioTitle="Collaboration"
+        listContent={listContent}
+        onFlyToReady={handleFlyToReady}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>
