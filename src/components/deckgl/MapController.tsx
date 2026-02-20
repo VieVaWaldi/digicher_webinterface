@@ -162,7 +162,7 @@ export default function MapController({
     >
       {/* Desktop Navbar - hidden on mobile */}
       {!isMobile && (
-        <Navbar>
+        <Navbar centerTitle={title}>
           <Box sx={{ flexGrow: 1 }} />
           <ScenarioSelector canRoute={true} />
           <Box
@@ -208,28 +208,30 @@ export default function MapController({
             "& > *": { pointerEvents: "auto" }, // Trick to enable UI interaction
           }}
         >
-          {/* Top Center: Title Placeholder */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-          >
-            <Paper
-              elevation={3}
+          {/* Top Center: Title (mobile only — desktop uses Navbar centerTitle) */}
+          {isMobile && (
+            <Box
               sx={{
-                borderRadius: "0 0 12px 12px",
-                px: 3,
-                py: 1,
-                minWidth: 200,
-                minHeight: 40,
+                position: "absolute",
+                top: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
               }}
             >
-              {title}
-            </Paper>
-          </Box>
+              <Paper
+                elevation={3}
+                sx={{
+                  borderRadius: "0 0 12px 12px",
+                  px: 3,
+                  py: 1,
+                  minWidth: 200,
+                  minHeight: 40,
+                }}
+              >
+                {title}
+              </Paper>
+            </Box>
+          )}
 
           {/* Top Left: Search Bar and Filter Button */}
           {showSearchbar && (

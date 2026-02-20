@@ -34,7 +34,9 @@ import { ArcTooltip } from "@/components/deckgl/hover/ArcTooltip";
 import { ArcProjectItem } from "@/components/deckgl/hover/ArcProjectItem";
 import useMinConnectionsFilter from "@/components/filter/useMinConnectionsFilter";
 
-/** ToDo: If performance becomes an issue, useMapViewInstitution and useMapViewCollaborationByTopic both run and get filtered always */
+/** ToDo:
+ * If performance becomes an issue, useMapViewInstitution and useMapViewCollaborationByTopic both run and get filtered always
+ * Because of the 2 layers we have 2 different primary data sources in here: useMapViewInstitution for layer 1 and useMapViewCollaborationByTopic for layer 2*/
 function CollaborationScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
 

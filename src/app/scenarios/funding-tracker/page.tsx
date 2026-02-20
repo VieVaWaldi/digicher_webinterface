@@ -8,6 +8,7 @@ import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import useYearRangeFilter from "components/filter/useYearRangeFilter";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
+import { ViewState } from "react-map-gl/mapbox";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { Box, Typography } from "@mui/material";
 import { FilterSection, useUnifiedSearchFilter } from "@/components/mui";
@@ -42,6 +43,18 @@ function FundingScenarioContent() {
 
   const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 500);
+
+  const [zoom, setZoom] = useState<number>(
+    filterValues.viewState?.zoom ?? INITIAL_VIEW_STATE_TILTED_EU.zoom,
+  );
+  const handleViewStateChange = useCallback(
+    (vs: ViewState) => {
+      const snapped = Math.round((vs.zoom ?? 0) * 2) / 2;
+      setZoom((prev) => (prev !== snapped ? snapped : prev));
+      debouncedSetViewState(vs);
+    },
+    [debouncedSetViewState],
+  );
   const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
     initialValue: filterValues.yearRange,
     onChange: debouncedSetYearRange,
@@ -249,6 +262,7 @@ function FundingScenarioContent() {
           createHexagonLayer({
             data: groupedData,
             isGlobe,
+            zoom,
             onClick: handleMapOnClick,
             onHover: handleHexHover,
           }),
@@ -264,6 +278,7 @@ function FundingScenarioContent() {
             data: groupedData,
             maxTotalCost,
             isGlobe,
+            zoom,
             onClick: handleMapOnClick,
             onHover: handleColumnHover,
           }),
@@ -289,6 +304,7 @@ function FundingScenarioContent() {
       filteredData,
       maxTotalCost,
       isGlobe,
+      zoom,
       handleMapOnClick,
       handleColumnHover,
       handleHexHover,
@@ -308,7 +324,7 @@ function FundingScenarioContent() {
         search={SearchFilter}
         defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
         initialViewState={filterValues.viewState}
-        onViewStateChange={debouncedSetViewState}
+        onViewStateChange={handleViewStateChange}
         onResetAll={resetAll}
         loading={isPending}
         error={error}
