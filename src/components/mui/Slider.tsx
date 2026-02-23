@@ -20,7 +20,7 @@ export interface SliderProps {
   label?: string;
   /** If provided, shows a HelpIcon to the left of the label with a tooltip on hover. */
   helpText?: string;
-  textFieldWidth: number;
+  textFieldWidth?: number;
 }
 
 export const Slider = ({
