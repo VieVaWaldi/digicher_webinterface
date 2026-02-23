@@ -94,6 +94,7 @@ export class CollaborationNetworkLayer extends CompositeLayer<CollaborationNetwo
       widthMinPixels: 1,
       greatCircle: true,
       pickable: true,
+      onClick: this.props.onClick,
       updateTriggers: {
         getSourceColor: getTopicColor,
         getTargetColor: getTopicColor,

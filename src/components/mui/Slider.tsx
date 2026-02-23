@@ -20,6 +20,7 @@ export interface SliderProps {
   label?: string;
   /** If provided, shows a HelpIcon to the left of the label with a tooltip on hover. */
   helpText?: string;
+  textFieldWidth: number;
 }
 
 export const Slider = ({
@@ -30,6 +31,7 @@ export const Slider = ({
   step = 1,
   label,
   helpText,
+  textFieldWidth = 100,
 }: SliderProps) => {
   const [localValue, setLocalValue] = useState<number>(value);
   const [inputValue, setInputValue] = useState<string>(String(value));
@@ -136,7 +138,7 @@ export const Slider = ({
           htmlInput: { min, max, step },
         }}
         sx={{
-          width: 100,
+          width: textFieldWidth,
           "& .MuiOutlinedInput-root": { borderRadius: 1 },
         }}
       />

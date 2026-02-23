@@ -15,6 +15,7 @@ interface TopicNetworkLayerProps {
   isDark: boolean;
   getTopicColor: (projectId: string) => [number, number, number, number];
   onHover?: (info: PickingInfo) => void;
+  onClick?: (info: PickingInfo) => void;
 }
 
 /**
@@ -28,7 +29,7 @@ export class TopicNetworkLayer extends CompositeLayer<TopicNetworkLayerProps> {
   static layerName = "TopicNetworkLayer";
 
   renderLayers() {
-    const { data, isDark, getTopicColor, onHover } = this.props;
+    const { data, isDark, getTopicColor, onHover, onClick } = this.props;
 
     if (!data?.length) return [];
 
@@ -69,6 +70,7 @@ export class TopicNetworkLayer extends CompositeLayer<TopicNetworkLayerProps> {
       widthMinPixels: 1,
       greatCircle: true,
       pickable: true,
+      onClick,
       updateTriggers: {
         getSourceColor: getTopicColor,
         getTargetColor: getTopicColor,
@@ -80,6 +82,7 @@ export class TopicNetworkLayer extends CompositeLayer<TopicNetworkLayerProps> {
       data: institutionPoints,
       isDark,
       onHover,
+      onClick,
     });
 
     return [arcLayer, iconLayer];

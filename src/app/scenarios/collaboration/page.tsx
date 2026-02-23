@@ -34,6 +34,7 @@ import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
 import { ArcTooltip } from "@/components/deckgl/hover/ArcTooltip";
 import { ArcProjectItem } from "@/components/deckgl/hover/ArcProjectItem";
 import useMinConnectionsFilter from "@/components/filter/useMinConnectionsFilter";
+import useMinProjectBudgetFilter from "@/components/filter/useMinProjectBudgetFilter";
 import {
   useInstitutionListView,
   useTopicNetworkListView,
@@ -44,14 +45,9 @@ import {
  * Because of the 2 layers we have 2 different primary data sources in here: useMapViewInstitution for layer 1 and useMapViewCollaborationByTopic for layer 2*/
 function CollaborationScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
-
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
-
-  const { data: networkData } = useCollaborationNetworkById(
-    selectedInstitutionId,
-  );
 
   /** URL Filter State */
 
@@ -138,10 +134,47 @@ function CollaborationScenarioContent() {
     yearRangePredicate,
   ]);
 
+  /** Collaboration Network Data */
+
+  const { data: collaborationNetwork } = useCollaborationNetworkById(
+    selectedInstitutionId,
+  );
+
+  const filteredCollaborationNetwork = useMemo(() => {
+    if (!collaborationNetwork?.length) return [];
+    return collaborationNetwork.flatMap((p) => {
+      if (!institutionSearchPredicate(p.institution_id)) return [];
+      if (!institutionSearchPredicate(p.collaborator_id)) return [];
+      if (!countryPredicate(p.collaborator_country)) return [];
+      if (!typeAndSmePredicate(p.collaborator_type, p.collaborator_sme))
+        return [];
+
+      const matchingProjects = p.projects?.filter(
+        (proj) =>
+          topicPredicate(proj.project_id) &&
+          projectSearchPredicate(proj.project_id) &&
+          frameworkProgrammePredicate(proj.framework_programmes) &&
+          yearRangePredicate(proj.start_date, proj.end_date),
+      );
+      if (!matchingProjects?.length) return [];
+
+      return [{ ...p, projects: matchingProjects }];
+    });
+  }, [
+    collaborationNetwork,
+    institutionSearchPredicate,
+    countryPredicate,
+    typeAndSmePredicate,
+    topicPredicate,
+    projectSearchPredicate,
+    frameworkProgrammePredicate,
+    yearRangePredicate,
+  ]);
+
   /** Topic Network Data */
 
   const {
-    data: topicCollabData,
+    data: topicCollaborationNetwork,
     isLoading: isTopicCollabLoading,
     error: topicCollabError,
   } = useMapViewCollaborationByTopic({
@@ -150,35 +183,80 @@ function CollaborationScenarioContent() {
     fieldIds: selectedFields,
   });
 
-  const filteredTopicCollabData = useMemo(() => {
-    if (!topicCollabData?.length) return [];
-    return topicCollabData.filter(
+  const filteredTopicCollaborationNetwork = useMemo(() => {
+    if (!topicCollaborationNetwork?.length) return [];
+    return topicCollaborationNetwork.filter(
       (row) =>
         (!row.start_date ||
           !row.end_date ||
           yearRangePredicate(row.start_date, row.end_date)) &&
+        projectSearchPredicate(row.project_id) &&
         countryPredicate(row.a_country) &&
         countryPredicate(row.b_country) &&
         frameworkProgrammePredicate(row.framework_programmes),
     );
   }, [
-    topicCollabData,
+    topicCollaborationNetwork,
     yearRangePredicate,
+    projectSearchPredicate,
     countryPredicate,
     frameworkProgrammePredicate,
   ]);
 
-  /** Min Connections Filter (Topic layer only) */
+  /** Project Budget Filter – applies to both layers */
 
-  /** ToDo: Refactor this to the style of the other filters with predicates */
+  const maxProjectBudget = useMemo(() => {
+    const topicCosts = filteredTopicCollaborationNetwork
+      .map((r) => r.total_cost)
+      .filter((c): c is number => c !== null && c !== undefined);
+    const collabCosts = filteredCollaborationNetwork.flatMap((p) =>
+      (p.projects ?? [])
+        .map((proj) => proj.total_cost)
+        .filter((c): c is number => c !== null && c !== undefined),
+    );
+    const all = [...topicCosts, ...collabCosts];
+    if (!all.length) return 1;
+    return Math.ceil(all.reduce((max, c) => (c > max ? c : max), 0));
+  }, [filteredTopicCollaborationNetwork, filteredCollaborationNetwork]);
+
+  const { MinProjectBudgetFilter, budgetPredicate } = useMinProjectBudgetFilter(
+    { maxBudget: maxProjectBudget },
+  );
+
+  const budgetFilteredTopicCollaborationNetwork = useMemo(
+    () =>
+      filteredTopicCollaborationNetwork.filter((row) =>
+        budgetPredicate(row.total_cost),
+      ),
+    [filteredTopicCollaborationNetwork, budgetPredicate],
+  );
+
+  const budgetFilteredCollaborationNetwork = useMemo(
+    () =>
+      filteredCollaborationNetwork.flatMap((p) => {
+        const matchingProjects = p.projects?.filter((proj) =>
+          budgetPredicate(proj.total_cost),
+        );
+        if (!matchingProjects?.length) return [];
+        return [{ ...p, projects: matchingProjects }];
+      }),
+    [filteredCollaborationNetwork, budgetPredicate],
+  );
+
+  /** Min Connections Filter (Topic layer only)
+   * This filter needs to see all the data, so it cant just return a predicate
+   * */
 
   const { MinConnectionsFilter, connectionFilteredData } =
-    useMinConnectionsFilter({ data: filteredTopicCollabData });
+    useMinConnectionsFilter({ data: budgetFilteredTopicCollaborationNetwork });
 
   /** List View */
 
   const flyToRef = useRef<((geo: number[]) => void) | null>(null);
-  const handleFlyTo = useCallback((geo: number[]) => flyToRef.current?.(geo), []);
+  const handleFlyTo = useCallback(
+    (geo: number[]) => flyToRef.current?.(geo),
+    [],
+  );
   const handleFlyToReady = useCallback((fn: (geo: number[]) => void) => {
     flyToRef.current = fn;
   }, []);
@@ -195,12 +273,12 @@ function CollaborationScenarioContent() {
   /** UI Components */
 
   const totalProjects = useMemo(() => {
-    if (!networkData?.length) return 0;
+    if (!budgetFilteredCollaborationNetwork?.length) return 0;
     const seen = new Set<string>();
-    for (const p of networkData)
+    for (const p of budgetFilteredCollaborationNetwork)
       for (const proj of p.projects ?? []) seen.add(proj.project_id);
     return seen.size;
-  }, [networkData]);
+  }, [budgetFilteredCollaborationNetwork]);
 
   const hasSelectedTopic =
     selectedTopics.length > 0 ||
@@ -230,7 +308,7 @@ function CollaborationScenarioContent() {
             component="span"
             sx={{ color: "secondary.main", fontWeight: 500 }}
           >
-            {networkData?.length.toLocaleString()}
+            {budgetFilteredCollaborationNetwork?.length.toLocaleString()}
           </Box>{" "}
           collaborations across{" "}
           <Box
@@ -261,9 +339,10 @@ function CollaborationScenarioContent() {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
 
-      {filterValues.activeLayerIndex === 1 && (
-        <FilterSection title="Network">{MinConnectionsFilter}</FilterSection>
-      )}
+      <FilterSection title="Network">
+        {MinProjectBudgetFilter}
+        {filterValues.activeLayerIndex === 1 && MinConnectionsFilter}
+      </FilterSection>
 
       <FilterSection title="Project Time" showDivider={true}>
         {YearRangeFilter}
@@ -294,17 +373,38 @@ function CollaborationScenarioContent() {
 
   /** Event Handlers */
 
+  const loggedForInstitutionRef = useRef<string | null>(null);
   useEffect(() => {
-    /** We treate this as the onClick for the institution network */
-    if (networkData) {
+    /** We treat this as the onClick for the institution collaboration network */
+    if (
+      selectedInstitutionId &&
+      filteredCollaborationNetwork?.length &&
+      loggedForInstitutionRef.current !== selectedInstitutionId
+    ) {
+      loggedForInstitutionRef.current = selectedInstitutionId;
       /** ToDo: This is where we open the InfoPanel from */
-      console.log("Network data:", networkData);
+      console.log("Network data:", filteredCollaborationNetwork);
     }
-  }, [networkData]);
+  }, [selectedInstitutionId, filteredCollaborationNetwork]);
 
   const handleMapOnClick = useCallback((info: any) => {
     if (info.object?.institutions?.length) {
+      // Layer 1 — icon click
+      // console.log("[Layer 1] Icon click:", info.object);
       setSelectedInstitutionId(info.object.institutions[0].institution_id);
+    } else if (info.object?.projects) {
+      // Layer 1 — arc click (MapViewCollaborationNetworkType)
+      console.log("[Layer 1] Arc click:", info.object);
+    }
+  }, []);
+
+  const handleLayer2Click = useCallback((info: any) => {
+    if (info.object?.institutions?.length) {
+      // Layer 2 — icon click (TopicInstitutionPoint)
+      console.log("[Layer 2] Icon click:", info.object);
+    } else if (info.object?.project_id) {
+      // Layer 2 — arc click (MapViewCollaborationByTopicType)
+      console.log("[Layer 2] Arc click:", info.object);
     }
   }, []);
 
@@ -316,17 +416,26 @@ function CollaborationScenarioContent() {
 
   type CollaborationHoverData =
     | { type: "icon"; group: GeoGroup }
-    | { type: "arc"; projects: { project_id: string; total_cost: number | null }[] }
+    | {
+        type: "arc";
+        projects: { project_id: string; total_cost: number | null }[];
+      }
     | { type: "topic-arc"; project_id: string; total_cost: number | null };
 
-  const { hoverState, makeHoverHandler } = useMapHover<CollaborationHoverData>();
+  const { hoverState, makeHoverHandler } =
+    useMapHover<CollaborationHoverData>();
 
   const handleHover = useMemo(
     () =>
       makeHoverHandler((obj: any): CollaborationHoverData | null => {
         if (obj?.institutions) return { type: "icon", group: obj as GeoGroup };
         if (obj?.projects) return { type: "arc", projects: obj.projects };
-        if (obj?.project_id) return { type: "topic-arc", project_id: obj.project_id, total_cost: obj.total_cost ?? null };
+        if (obj?.project_id)
+          return {
+            type: "topic-arc",
+            project_id: obj.project_id,
+            total_cost: obj.total_cost ?? null,
+          };
         return null;
       }),
     [makeHoverHandler],
@@ -341,11 +450,11 @@ function CollaborationScenarioContent() {
 
   const sourcePosition = useMemo(() => {
     if (!selectedInstitutionId) return undefined;
-    const inst = filteredData.find(
+    const inst = data?.find(
       (d) => d.institution_id === selectedInstitutionId,
     );
     return inst?.geolocation ?? undefined;
-  }, [selectedInstitutionId, filteredData]);
+  }, [selectedInstitutionId, data]);
 
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -365,7 +474,7 @@ function CollaborationScenarioContent() {
             onClick: handleMapOnClick,
             onHover: handleHover,
             getTopicColor,
-            networkData,
+            networkData: budgetFilteredCollaborationNetwork,
             sourcePosition,
           }),
         ],
@@ -382,6 +491,7 @@ function CollaborationScenarioContent() {
             isDark,
             getTopicColor,
             onHover: handleHover,
+            onClick: handleLayer2Click,
           }),
         ],
       },
@@ -391,7 +501,8 @@ function CollaborationScenarioContent() {
       isDark,
       handleMapOnClick,
       handleHover,
-      networkData,
+      handleLayer2Click,
+      budgetFilteredCollaborationNetwork,
       sourcePosition,
       connectionFilteredData,
       getTopicColor,
@@ -424,7 +535,10 @@ function CollaborationScenarioContent() {
           {hoverState.data.type === "arc" ? (
             <ArcTooltip projects={hoverState.data.projects} />
           ) : hoverState.data.type === "topic-arc" ? (
-            <ArcProjectItem project_id={hoverState.data.project_id} total_cost={hoverState.data.total_cost} />
+            <ArcProjectItem
+              project_id={hoverState.data.project_id}
+              total_cost={hoverState.data.total_cost}
+            />
           ) : (
             <GeoGroupTooltip group={hoverState.data.group} />
           )}

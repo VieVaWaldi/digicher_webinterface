@@ -61,11 +61,17 @@ export const mapViewcollaborationNetwork = coreMatsSchema
     collaborator_geolocation: doublePrecision(
       "collaborator_geolocation",
     ).array(),
+    collaborator_country: text("collaborator_country"),
+    collaborator_type: text("collaborator_type"),
+    collaborator_sme: boolean("collaborator_sme"),
     projects: jsonb("projects").$type<
       {
         project_id: string;
         total_cost: number | null;
         combined_institution_cost: number | null;
+        start_date: string;
+        end_date: string;
+        framework_programmes: string[] | null;
       }[]
     >(),
   })
