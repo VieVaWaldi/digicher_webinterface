@@ -1,7 +1,9 @@
 "use client";
 
-import { Box, Slider, TextField, Typography, Stack } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import PauseIcon from "@mui/icons-material/Pause";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { Box, IconButton, Slider, Stack, TextField, Typography } from "@mui/material";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface DualSliderProps {
   min: number;
@@ -11,6 +13,7 @@ export interface DualSliderProps {
   step?: number;
   fromLabel?: string;
   toLabel?: string;
+  playIntervalMs?: number;
 }
 
 export const DualSlider = ({
@@ -21,10 +24,34 @@ export const DualSlider = ({
   step = 1,
   fromLabel = "From",
   toLabel = "To",
+  playIntervalMs = 1000,
 }: DualSliderProps) => {
   const [localValue, setLocalValue] = useState<[number, number]>(value);
   const [fromInput, setFromInput] = useState<string>(String(value[0]));
   const [toInput, setToInput] = useState<string>(String(value[1]));
+  const [isPlaying, setIsPlaying] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tickRef = useRef<() => void>(() => {});
+
+  // Updated each render so the interval always sees the latest value
+  tickRef.current = () => {
+    const [from, to] = localValue;
+    let nextFrom: number;
+    let nextTo: number;
+    if (to >= max) {
+      const range = to - from;
+      nextFrom = min;
+      nextTo = Math.min(min + range, max);
+    } else {
+      nextFrom = from + step;
+      nextTo = to + step;
+    }
+    const newVal: [number, number] = [nextFrom, nextTo];
+    setLocalValue(newVal);
+    setFromInput(String(nextFrom));
+    setToInput(String(nextTo));
+    onChange(newVal);
+  };
 
   // Sync local state with external value changes
   useEffect(() => {
@@ -32,6 +59,12 @@ export const DualSlider = ({
     setFromInput(String(value[0]));
     setToInput(String(value[1]));
   }, [value]);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const handleSliderChange = useCallback(
     (_event: Event, newValue: number | number[]) => {
@@ -41,7 +74,7 @@ export const DualSlider = ({
       setToInput(String(val[1]));
       onChange(val);
     },
-    [onChange]
+    [onChange],
   );
 
   const handleFromInputChange = useCallback(
@@ -60,7 +93,7 @@ export const DualSlider = ({
         }
       }
     },
-    [localValue, step, min, onChange]
+    [localValue, step, min, onChange],
   );
 
   const handleToInputChange = useCallback(
@@ -79,7 +112,7 @@ export const DualSlider = ({
         }
       }
     },
-    [localValue, step, max, onChange]
+    [localValue, step, max, onChange],
   );
 
   const handleFromInputBlur = useCallback(() => {
@@ -116,8 +149,19 @@ export const DualSlider = ({
         }
       }
     },
-    [handleFromInputBlur, handleToInputBlur]
+    [handleFromInputBlur, handleToInputBlur],
   );
+
+  const togglePlay = useCallback(() => {
+    if (isPlaying) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      setIsPlaying(false);
+    } else {
+      setIsPlaying(true);
+      intervalRef.current = setInterval(() => tickRef.current(), playIntervalMs);
+    }
+  }, [isPlaying, playIntervalMs]);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -202,6 +246,11 @@ export const DualSlider = ({
           />
         </Box>
       </Stack>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+        <IconButton onClick={togglePlay} size="small" color="primary">
+          {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+        </IconButton>
+      </Box>
     </Box>
   );
 };

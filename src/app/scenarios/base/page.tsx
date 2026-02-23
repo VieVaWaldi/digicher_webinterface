@@ -5,7 +5,7 @@ import useCountryFilter from "components/filter/useCountryFilter";
 import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
 import { useTopicFilter } from "components/filter/useTopicFilter";
 import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
-import useYearRangeFilter from "components/filter/useYearRangeFilter";
+import usePlayYearFilter from "components/filter/usePlayYearFilter";
 import { FilterSection, useUnifiedSearchFilter } from "components/mui";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { ReactNode, Suspense, useCallback, useMemo, useRef, useState } from "react";
@@ -35,7 +35,7 @@ function BaseScenarioContent() {
 
   const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
-  const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
+  const { YearRangeFilter, yearRangePredicate } = usePlayYearFilter({
     initialValue: filterValues.yearRange,
     onChange: debouncedSetYearRange,
   });

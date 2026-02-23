@@ -2,7 +2,7 @@
 
 import MapController from "@/components/deckgl/MapController";
 import { useTopicFilter } from "components/filter/useTopicFilter";
-import useYearRangeFilter from "components/filter/useYearRangeFilter";
+import usePlayYearFilter from "components/filter/usePlayYearFilter";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
 import {
   ReactNode,
@@ -59,7 +59,7 @@ function CollaborationScenarioContent() {
 
   const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
-  const { YearRangeFilter, yearRangePredicate } = useYearRangeFilter({
+  const { YearRangeFilter, yearRangePredicate } = usePlayYearFilter({
     initialValue: filterValues.yearRange,
     onChange: debouncedSetYearRange,
   });
@@ -174,8 +174,6 @@ function CollaborationScenarioContent() {
 
   const { MinConnectionsFilter, connectionFilteredData } =
     useMinConnectionsFilter({ data: filteredTopicCollabData });
-
-  console.log(connectionFilteredData);
 
   /** List View */
 

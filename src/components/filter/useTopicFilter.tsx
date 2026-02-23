@@ -89,6 +89,7 @@ export const useTopicFilter = (
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [topicsExpanded, setTopicsExpanded] = useState(false);
 
   const { treeData, lookupMaps } = useMemo(() => {
     if (!enrichedData?.length) return { treeData: [], lookupMaps: null };
@@ -531,7 +532,7 @@ export const useTopicFilter = (
             </Button>
           </Box>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-            {resolvedTopics.map(({ id, name }) => {
+            {(topicsExpanded ? resolvedTopics : resolvedTopics.slice(0, 3)).map(({ id, name }) => {
               const [r, g, b] = simpleTopicColor(id);
               return (
                 <FilterChip
@@ -541,6 +542,20 @@ export const useTopicFilter = (
                 />
               );
             })}
+            {!topicsExpanded && resolvedTopics.length > 3 && (
+              <FilterChip
+                label={`+${resolvedTopics.length - 3} more`}
+                color={[150, 150, 150]}
+                onClick={() => setTopicsExpanded(true)}
+              />
+            )}
+            {topicsExpanded && (
+              <FilterChip
+                label="Show less"
+                color={[150, 150, 150]}
+                onClick={() => setTopicsExpanded(false)}
+              />
+            )}
           </Box>
         </Box>
       )}

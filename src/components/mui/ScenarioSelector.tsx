@@ -8,7 +8,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import { useRouter, usePathname } from "next/navigation";
 import { useFilters } from "@/hooks/persistence/useFilters";
 
-export type Scenario = "base" | "funding-tracker" | "collaboration";
+export type Scenario = "base" | "funding" | "collaboration";
 
 export interface ScenarioOption {
   id: Scenario;
@@ -23,7 +23,7 @@ const defaultScenarios: ScenarioOption[] = [
     icon: <PlaceIcon fontSize="small" />,
   },
   {
-    id: "funding-tracker",
+    id: "funding",
     label: "Funding",
     icon: <PaidIcon fontSize="small" />,
   },
