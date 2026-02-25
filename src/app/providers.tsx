@@ -37,8 +37,8 @@ const queryClient = new QueryClient({
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: light)");
-  const [mode, setMode] = useState<ThemeMode>("system");
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const [mode, setMode] = useState<ThemeMode>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

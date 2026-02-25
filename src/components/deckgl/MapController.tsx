@@ -202,7 +202,7 @@ export default function MapController({
     >
       {/* Desktop Navbar - hidden on mobile */}
       {!isMobile && (
-        <Navbar centerTitle={title}>
+        <Navbar>
           <Box sx={{ flexGrow: 1 }} />
           <ScenarioSelector canRoute={true} />
           <Box
@@ -248,31 +248,6 @@ export default function MapController({
             "& > *": { pointerEvents: "auto" }, // Trick to enable UI interaction
           }}
         >
-          {/* Top Center: Title (mobile only — desktop uses Navbar centerTitle) */}
-          {isMobile && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: "50%",
-                transform: "translateX(-50%)",
-              }}
-            >
-              <Paper
-                elevation={3}
-                sx={{
-                  borderRadius: "0 0 12px 12px",
-                  px: 3,
-                  py: 1,
-                  minWidth: 200,
-                  minHeight: 40,
-                }}
-              >
-                {title}
-              </Paper>
-            </Box>
-          )}
-
           {/* Top Left: Search Bar and Filter Button */}
           {showSearchbar && (
             <Box
@@ -350,6 +325,37 @@ export default function MapController({
                 </Paper>
               )}
             </Stack>
+          </Box>
+
+          {/* Bottom Center: Title */}
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+              pointerEvents: "none",
+              border: 1,
+              borderBottom: 0,
+              borderRadius: "12px 12px 0 0",
+              borderColor: "divider",
+            }}
+          >
+            <Paper
+              elevation={9}
+              sx={{
+                borderRadius: "12px 12px 0 0",
+                px: 3,
+                py: 1,
+                pb: 2,
+                minWidth: 200,
+                minHeight: 40,
+                pointerEvents: "auto",
+                clipPath: "inset(-20px -20px 0 -20px)",
+              }}
+            >
+              {title}
+            </Paper>
           </Box>
 
           {/* Bottom Left: Layer Switcher */}
