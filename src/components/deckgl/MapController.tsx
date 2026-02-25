@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
@@ -27,6 +28,7 @@ import { ViewState } from "react-map-gl/mapbox";
 import { Map, Public } from "@mui/icons-material";
 import { ScenarioSelector } from "@/components/mui";
 import { SIDE_MENU_WIDTH } from "@/components/mui/SideMenu";
+import { InfoPanelContainer, SelectedItem, getSelectionLabel } from "@/components/infopanel";
 
 interface BaseUIProps {
   layerConfigs: LayerConfig[];
@@ -52,6 +54,14 @@ interface BaseUIProps {
   listContent?: ReactNode;
   /** Called once on mount with a stable flyTo function */
   onFlyToReady?: (flyTo: (geolocation: number[]) => void) => void;
+  /** Currently selected map item for the info panel */
+  selectedItem?: SelectedItem | null;
+  /** Whether the info panel is open */
+  infoPanelOpen?: boolean;
+  /** Callback when info panel is closed */
+  onInfoPanelClose?: () => void;
+  /** Callback when info panel quick-access button is clicked */
+  onInfoPanelOpen?: () => void;
 }
 
 export default function MapController({
@@ -72,6 +82,10 @@ export default function MapController({
   scenarioTitle,
   listContent,
   onFlyToReady,
+  selectedItem,
+  infoPanelOpen = false,
+  onInfoPanelClose,
+  onInfoPanelOpen,
 }: BaseUIProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -85,6 +99,11 @@ export default function MapController({
   const [showBanner, setShowBanner] = useState(false);
 
   const [isGlobe, setIsGlobe] = useState(false);
+
+  // Mutual exclusion: close list when info panel opens
+  useEffect(() => {
+    if (infoPanelOpen) setListOpen(false);
+  }, [infoPanelOpen]);
 
   /** Create fresh layer instances for the active config (deck.gl layers are single-use) */
   const activeLayers = useMemo(
@@ -303,7 +322,7 @@ export default function MapController({
             </Box>
           )}
 
-          {/* Top Right: List Button */}
+          {/* Top Right: List Button + Info Panel Quick-Access */}
           <Box
             sx={{
               position: "absolute",
@@ -311,14 +330,26 @@ export default function MapController({
               right: 16,
             }}
           >
-            <Paper elevation={3} sx={{ borderRadius: 4 }}>
-              <IconTextButton
-                icon={<FormatListBulletedIcon />}
-                label="Institutions"
-                tooltip="Open Institutions Panel"
-                onClick={() => setListOpen(true)}
-              />
-            </Paper>
+            <Stack direction="column" spacing={1}>
+              <Paper elevation={3} sx={{ borderRadius: 4 }}>
+                <IconTextButton
+                  icon={<FormatListBulletedIcon />}
+                  label="Institutions"
+                  tooltip="Open Institutions Panel"
+                  onClick={() => setListOpen(true)}
+                />
+              </Paper>
+              {selectedItem && !infoPanelOpen && (
+                <Paper elevation={3} sx={{ borderRadius: 4 }}>
+                  <IconTextButton
+                    icon={<InfoOutlinedIcon />}
+                    label={getSelectionLabel(selectedItem)}
+                    tooltip="Reopen Info Panel"
+                    onClick={() => onInfoPanelOpen?.()}
+                  />
+                </Paper>
+              )}
+            </Stack>
           </Box>
 
           {/* Bottom Left: Layer Switcher */}
@@ -344,7 +375,7 @@ export default function MapController({
             sx={{
               position: "absolute",
               bottom: 16,
-              right: listOpen ? SIDE_MENU_WIDTH + 16 : 16,
+              right: infoPanelOpen || listOpen ? SIDE_MENU_WIDTH + 16 : 16,
               transition: "right 0.3s ease",
             }}
           >
@@ -440,6 +471,13 @@ export default function MapController({
         >
           {listContent}
         </SideMenu>
+
+        {/* Right Side Menu: Info Panel */}
+        <InfoPanelContainer
+          selectedItem={selectedItem ?? null}
+          open={infoPanelOpen}
+          onClose={() => onInfoPanelClose?.()}
+        />
 
         {/* Mobile Navbar Menu */}
         <SideMenu

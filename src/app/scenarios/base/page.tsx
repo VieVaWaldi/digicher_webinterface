@@ -8,7 +8,7 @@ import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
 import usePlayYearFilter from "components/filter/usePlayYearFilter";
 import { FilterSection, useUnifiedSearchFilter } from "components/mui";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
-import { ReactNode, Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { INITIAL_VIEW_STATE_EU } from "@/components/deckgl/viewports";
 import { Box, Typography, useTheme } from "@mui/material";
 import { useFilters } from "@/hooks/persistence/useFilters";
@@ -22,12 +22,12 @@ import { useMapHover } from "@/components/deckgl/hover/useMapHover";
 import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
 import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
 import { useInstitutionListView } from "@/components/maplistview";
+import { SelectedItem } from "@/components/infopanel";
 
 function BaseScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
-  const [selectedInstitutionId, setSelectedInstitutionId] = useState<
-    string | null
-  >(null);
+  const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
+  const [infoPanelOpen, setInfoPanelOpen] = useState(false);
 
   /** Filters */
 
@@ -168,16 +168,31 @@ function BaseScenarioContent() {
   const listContent = useInstitutionListView(filteredData, {
     onFlyTo: handleFlyTo,
     onRowClick: (item) => {
-      console.log("Row clicked:", item);
+      const geoGroup: GeoGroup = {
+        geolocation: item.geolocation,
+        institutions: [
+          {
+            institution_id: item.id,
+            geolocation: item.geolocation,
+            country_code: null,
+            type: null,
+            sme: null,
+            projects: null,
+          },
+        ],
+        count: 1,
+      };
+      setSelectedItem({ type: "grouped-institution", data: geoGroup });
+      setInfoPanelOpen(true);
     },
   });
 
   /** Event Handlers */
 
   const handleMapOnClick = useCallback((info: any) => {
-    if (info.object.count) {
-      setSelectedInstitutionId(info.object.institution_id);
-      console.log(info.object);
+    if (info.object?.institutions) {
+      setSelectedItem({ type: "grouped-institution", data: info.object as GeoGroup });
+      setInfoPanelOpen(true);
     }
   }, []);
 
@@ -203,6 +218,44 @@ function BaseScenarioContent() {
 
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
+
+  /** URL persistence: sync selectedItem → URL sel param (skip initial mount) */
+  const urlSyncMountedRef = useRef(false);
+  useEffect(() => {
+    if (!urlSyncMountedRef.current) {
+      urlSyncMountedRef.current = true;
+      return;
+    }
+    if (!selectedItem) {
+      setters.setSelectionKey(null);
+      return;
+    }
+    if (selectedItem.type === "grouped-institution") {
+      setters.setSelectionKey(`gi:${selectedItem.data.geolocation.join(",")}`);
+    } else if (selectedItem.type === "project" && selectedItem.projects.length > 0) {
+      setters.setSelectionKey(`pr:${selectedItem.projects[0].project_id}`);
+    }
+  }, [selectedItem]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** URL initialization: restore selectedItem from URL sel param */
+  const panelInitializedRef = useRef(false);
+  useEffect(() => {
+    if (panelInitializedRef.current || !filterValues.selectionKey || !groupedData.length) return;
+    panelInitializedRef.current = true;
+    const colonIdx = filterValues.selectionKey.indexOf(":");
+    const type = filterValues.selectionKey.slice(0, colonIdx);
+    const id = filterValues.selectionKey.slice(colonIdx + 1);
+    if (type === "gi") {
+      const group = groupedData.find((g) => g.geolocation.join(",") === id);
+      if (group) {
+        setSelectedItem({ type: "grouped-institution", data: group });
+        setInfoPanelOpen(true);
+      }
+    } else if (type === "pr") {
+      setSelectedItem({ type: "project", projects: [{ project_id: id }] });
+      setInfoPanelOpen(true);
+    }
+  }, [filterValues.selectionKey, groupedData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const layerConfigs: LayerConfig[] = useMemo(
     () => [
@@ -260,6 +313,10 @@ function BaseScenarioContent() {
         scenarioTitle={"Base"}
         listContent={listContent}
         onFlyToReady={handleFlyToReady}
+        selectedItem={selectedItem}
+        infoPanelOpen={infoPanelOpen}
+        onInfoPanelClose={() => setInfoPanelOpen(false)}
+        onInfoPanelOpen={() => setInfoPanelOpen(true)}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>

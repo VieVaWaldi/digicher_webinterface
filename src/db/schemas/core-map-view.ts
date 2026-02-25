@@ -2,7 +2,6 @@ import {
   boolean,
   date,
   doublePrecision,
-  integer,
   jsonb,
   pgSchema,
   text,

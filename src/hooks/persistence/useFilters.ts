@@ -21,6 +21,7 @@ const PARAM_KEYS = {
   topicFields: "tf",
   topicSubfields: "tsf",
   topicTopics: "tt",
+  sel: "sel", // format: "TYPE:ID" e.g. "gi:8.668,40.743", "cn:abc123", "pr:projectId"
 } as const;
 
 /** ViewState stored in URL */
@@ -46,6 +47,7 @@ export interface FilterValues {
   topicFields: string[];
   topicSubfields: string[];
   topicTopics: number[];
+  selectionKey: string | null;
 }
 
 /** Setters for updating filter values (updates URL) */
@@ -62,6 +64,7 @@ export interface FilterSetters {
   setTopicFields: (value: string[]) => void;
   setTopicSubfields: (value: string[]) => void;
   setTopicTopics: (value: number[]) => void;
+  setSelectionKey: (value: string | null) => void;
 }
 
 export interface UseFiltersResult {
@@ -143,6 +146,9 @@ export function useFilters(): UseFiltersResult {
       .map(Number)
       .filter((n) => !isNaN(n));
 
+    // Parse selection key
+    const selectionKey = searchParams.get(PARAM_KEYS.sel) || null;
+
     return {
       yearRange,
       countries,
@@ -158,6 +164,7 @@ export function useFilters(): UseFiltersResult {
       topicFields,
       topicSubfields,
       topicTopics,
+      selectionKey,
     };
   }, [searchParams]);
 
@@ -293,6 +300,11 @@ export function useFilters(): UseFiltersResult {
       updateUrl(params);
     };
 
+    const setSelectionKey = (value: string | null) => {
+      const params = buildParams({ sel: value });
+      updateUrl(params);
+    };
+
     return {
       setYearRange,
       setCountries,
@@ -306,6 +318,7 @@ export function useFilters(): UseFiltersResult {
       setTopicFields,
       setTopicSubfields,
       setTopicTopics,
+      setSelectionKey,
     };
   }, [buildParams, updateUrl]);
 

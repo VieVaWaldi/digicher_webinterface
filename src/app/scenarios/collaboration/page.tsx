@@ -39,6 +39,7 @@ import {
   useInstitutionListView,
   useTopicNetworkListView,
 } from "@/components/maplistview";
+import { SelectedItem, ProjectPanelData } from "@/components/infopanel";
 
 /** ToDo:
  * If performance becomes an issue, useMapViewInstitution and useMapViewCollaborationByTopic both run and get filtered always
@@ -48,6 +49,8 @@ function CollaborationScenarioContent() {
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<
     string | null
   >(null);
+  const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
+  const [infoPanelOpen, setInfoPanelOpen] = useState(false);
 
   /** URL Filter State */
 
@@ -263,9 +266,45 @@ function CollaborationScenarioContent() {
 
   const layer1List = useInstitutionListView(filteredData, {
     onFlyTo: handleFlyTo,
+    onRowClick: (item) => {
+      const geoGroup: GeoGroup = {
+        geolocation: item.geolocation,
+        institutions: [
+          {
+            institution_id: item.id,
+            geolocation: item.geolocation,
+            country_code: null,
+            type: null,
+            sme: null,
+            projects: null,
+          },
+        ],
+        count: 1,
+      };
+      setSelectedItem({ type: "grouped-institution", data: geoGroup });
+      setInfoPanelOpen(true);
+    },
   });
   const layer2List = useTopicNetworkListView(connectionFilteredData, {
     onFlyTo: handleFlyTo,
+    onRowClick: (item) => {
+      const geoGroup: GeoGroup = {
+        geolocation: item.geolocation,
+        institutions: [
+          {
+            institution_id: item.id,
+            geolocation: item.geolocation,
+            country_code: null,
+            type: null,
+            sme: null,
+            projects: null,
+          },
+        ],
+        count: 1,
+      };
+      setSelectedItem({ type: "grouped-institution", data: geoGroup });
+      setInfoPanelOpen(true);
+    },
   });
   const listContent =
     filterValues.activeLayerIndex === 0 ? layer1List : layer2List;
@@ -373,38 +412,63 @@ function CollaborationScenarioContent() {
 
   /** Event Handlers */
 
-  const loggedForInstitutionRef = useRef<string | null>(null);
+  /** Update panel network data when filtered network changes */
   useEffect(() => {
-    /** We treat this as the onClick for the institution collaboration network */
-    if (
-      selectedInstitutionId &&
-      filteredCollaborationNetwork?.length &&
-      loggedForInstitutionRef.current !== selectedInstitutionId
-    ) {
-      loggedForInstitutionRef.current = selectedInstitutionId;
-      /** ToDo: This is where we open the InfoPanel from */
-      console.log("Network data:", filteredCollaborationNetwork);
-    }
+    if (!selectedInstitutionId) return;
+    setSelectedItem((prev) =>
+      prev?.type === "collab-network" &&
+      prev.institutionId === selectedInstitutionId
+        ? { ...prev, network: filteredCollaborationNetwork }
+        : prev,
+    );
   }, [selectedInstitutionId, filteredCollaborationNetwork]);
 
   const handleMapOnClick = useCallback((info: any) => {
     if (info.object?.institutions?.length) {
       // Layer 1 — icon click
-      // console.log("[Layer 1] Icon click:", info.object);
-      setSelectedInstitutionId(info.object.institutions[0].institution_id);
+      const id = info.object.institutions[0].institution_id as string;
+      setSelectedInstitutionId(id);
+      setSelectedItem({ type: "collab-network", institutionId: id, network: null });
+      setInfoPanelOpen(true);
     } else if (info.object?.projects) {
       // Layer 1 — arc click (MapViewCollaborationNetworkType)
-      console.log("[Layer 1] Arc click:", info.object);
+      const projects: ProjectPanelData[] = (info.object.projects as {
+        project_id: string;
+        total_cost: number | null;
+        start_date: string;
+        end_date: string;
+        framework_programmes: string[] | null;
+      }[]).map((p) => ({
+        project_id: p.project_id,
+        total_cost: p.total_cost,
+        start_date: p.start_date,
+        end_date: p.end_date,
+        framework_programmes: p.framework_programmes,
+      }));
+      setSelectedItem({ type: "project", projects });
+      setInfoPanelOpen(true);
     }
   }, []);
 
   const handleLayer2Click = useCallback((info: any) => {
     if (info.object?.institutions?.length) {
-      // Layer 2 — icon click (TopicInstitutionPoint)
-      console.log("[Layer 2] Icon click:", info.object);
+      // Layer 2 — icon click (GeoGroup-like)
+      setSelectedItem({ type: "grouped-institution", data: info.object as GeoGroup });
+      setInfoPanelOpen(true);
     } else if (info.object?.project_id) {
       // Layer 2 — arc click (MapViewCollaborationByTopicType)
-      console.log("[Layer 2] Arc click:", info.object);
+      const proj = info.object;
+      const projects: ProjectPanelData[] = [
+        {
+          project_id: proj.project_id as string,
+          total_cost: proj.total_cost ?? null,
+          start_date: proj.start_date ?? null,
+          end_date: proj.end_date ?? null,
+          framework_programmes: proj.framework_programmes ?? null,
+        },
+      ];
+      setSelectedItem({ type: "project", projects });
+      setInfoPanelOpen(true);
     }
   }, []);
 
@@ -458,6 +522,52 @@ function CollaborationScenarioContent() {
 
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
+
+  /** URL persistence: sync selectedItem → URL sel param (skip initial mount) */
+  const urlSyncMountedRef = useRef(false);
+  useEffect(() => {
+    if (!urlSyncMountedRef.current) {
+      urlSyncMountedRef.current = true;
+      return;
+    }
+    if (!selectedItem) {
+      setters.setSelectionKey(null);
+      return;
+    }
+    if (selectedItem.type === "grouped-institution") {
+      setters.setSelectionKey(`gi:${selectedItem.data.geolocation.join(",")}`);
+    } else if (selectedItem.type === "collab-network") {
+      setters.setSelectionKey(`cn:${selectedItem.institutionId}`);
+    } else if (selectedItem.type === "project" && selectedItem.projects.length > 0) {
+      setters.setSelectionKey(`pr:${selectedItem.projects[0].project_id}`);
+    }
+  }, [selectedItem]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** URL initialization: restore selectedItem from URL sel param */
+  const panelInitializedRef = useRef(false);
+  useEffect(() => {
+    if (panelInitializedRef.current || !filterValues.selectionKey) return;
+    const colonIdx = filterValues.selectionKey.indexOf(":");
+    const type = filterValues.selectionKey.slice(0, colonIdx);
+    const id = filterValues.selectionKey.slice(colonIdx + 1);
+    if (type === "cn") {
+      panelInitializedRef.current = true;
+      setSelectedInstitutionId(id);
+      setSelectedItem({ type: "collab-network", institutionId: id, network: null });
+      setInfoPanelOpen(true);
+    } else if (type === "gi" && groupedData.length) {
+      panelInitializedRef.current = true;
+      const group = groupedData.find((g) => g.geolocation.join(",") === id);
+      if (group) {
+        setSelectedItem({ type: "grouped-institution", data: group });
+        setInfoPanelOpen(true);
+      }
+    } else if (type === "pr") {
+      panelInitializedRef.current = true;
+      setSelectedItem({ type: "project", projects: [{ project_id: id }] });
+      setInfoPanelOpen(true);
+    }
+  }, [filterValues.selectionKey, groupedData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const layerConfigs: LayerConfig[] = useMemo(
     () => [
@@ -529,6 +639,10 @@ function CollaborationScenarioContent() {
         scenarioTitle="Collaboration"
         listContent={listContent}
         onFlyToReady={handleFlyToReady}
+        selectedItem={selectedItem}
+        infoPanelOpen={infoPanelOpen}
+        onInfoPanelClose={() => setInfoPanelOpen(false)}
+        onInfoPanelOpen={() => setInfoPanelOpen(true)}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>
