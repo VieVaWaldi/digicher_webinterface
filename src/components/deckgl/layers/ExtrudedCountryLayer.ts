@@ -1,6 +1,7 @@
 import { SolidPolygonLayer } from "@deck.gl/layers";
 import { ProcessedCountry } from "@/hooks/queries/useCountryGeoData";
 import { MapViewInstitutionType } from "db/schemas/core-map-view";
+import { getParticipationCost } from "@/utils/institutionUtils";
 
 const MAX_ELEVATION = 1_000_000;
 const COLOR_GAMMA = 0.5;
@@ -26,7 +27,7 @@ function aggregateByCountry(
   for (const inst of data) {
     const cc = inst.country_code;
     if (!cc) continue;
-    map[cc] = (map[cc] || 0) + (inst.total_cost || 0);
+    map[cc] = (map[cc] || 0) + getParticipationCost(inst);
   }
   return map;
 }

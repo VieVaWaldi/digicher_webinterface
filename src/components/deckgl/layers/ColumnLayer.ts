@@ -1,6 +1,7 @@
 import { ColumnLayer } from "@deck.gl/layers";
 import { baseLayerProps } from "@/components/deckgl/layers/baseLayerProps";
 import { MapViewInstitutionType } from "db/schemas/core-map-view";
+import { getParticipationCost } from "@/utils/institutionUtils";
 
 const MAX_HEIGHT = 1_000_000;
 const BAR_RADIUS = 3_200;
@@ -36,7 +37,7 @@ export function createColumnLayer({
     elevationScale,
     getElevation: (d: any) => {
       const funding = d.institutions.reduce(
-        (acc: number, i: MapViewInstitutionType) => acc + (i.total_cost ?? 0),
+        (acc: number, i: MapViewInstitutionType) => acc + getParticipationCost(i),
         0,
       );
       const ratio = maxTotalCost > 0 ? funding / maxTotalCost : 0;
@@ -44,7 +45,7 @@ export function createColumnLayer({
     },
     getFillColor: (d: any) => {
       const funding = d.institutions.reduce(
-        (acc: number, i: MapViewInstitutionType) => acc + (i.total_cost ?? 0),
+        (acc: number, i: MapViewInstitutionType) => acc + getParticipationCost(i),
         0,
       );
       const normalizedFunding = maxTotalCost > 0 ? funding / maxTotalCost : 0;

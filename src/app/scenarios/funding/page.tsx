@@ -27,6 +27,7 @@ import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
 import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
 import { CountryTooltip } from "@/components/deckgl/hover/CountryTooltip";
 import { useInstitutionListView } from "@/components/maplistview";
+import { getParticipationCost } from "@/utils/institutionUtils";
 
 type FundingHoverData =
   | { type: "geoGroup"; group: GeoGroup }
@@ -132,14 +133,11 @@ function FundingScenarioContent() {
   /** Calculations */
 
   const maxTotalCost = useMemo(() => {
-    return filteredData.reduce((max, i) => {
-      const cost = i.total_cost || 0;
-      return Math.max(max, cost);
-    }, 0);
+    return filteredData.reduce((max, i) => Math.max(max, getParticipationCost(i)), 0);
   }, [filteredData]);
 
   const totalFunding = useMemo(() => {
-    return filteredData.reduce((sum, i) => sum + (i.total_cost || 0), 0);
+    return filteredData.reduce((sum, i) => sum + getParticipationCost(i), 0);
   }, [filteredData]);
 
   /** UI Components */

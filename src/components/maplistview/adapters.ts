@@ -1,6 +1,7 @@
 import { MapViewInstitutionType } from "db/schemas/core-map-view";
 import { MapViewCollaborationByTopicType } from "db/schemas/core-map-view";
 import { MapListItem } from "./types";
+import { getParticipationCost } from "@/utils/institutionUtils";
 
 function formatCost(cost: number): string {
   if (cost >= 1_000_000_000) return `€${(cost / 1_000_000_000).toFixed(1)}B`;
@@ -12,10 +13,7 @@ function formatCost(cost: number): string {
 export function toListItems(filteredData: MapViewInstitutionType[]): MapListItem[] {
   return filteredData.flatMap((inst) => {
     if (!inst.geolocation?.length) return [];
-    const totalCost = (inst.projects ?? []).reduce(
-      (sum, proj) => sum + (proj.total_cost ?? 0),
-      0,
-    );
+    const totalCost = getParticipationCost(inst);
     return [
       {
         id: inst.institution_id,

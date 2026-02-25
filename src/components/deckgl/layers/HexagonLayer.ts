@@ -1,5 +1,6 @@
 import { HexagonLayer } from "deck.gl";
 import { baseLayerProps } from "@/components/deckgl/layers/baseLayerProps";
+import { getParticipationCost } from "@/utils/institutionUtils";
 
 const BASE_ELEVATION_SCALE = 400;
 const BASE_RADIUS = 10_000;
@@ -29,12 +30,12 @@ export function createHexagonLayer({
     getPosition: (d: any) => d.geolocation || [0, 0],
     getColorWeight: (d: any) =>
       d.institutions.reduce(
-        (acc: number, i: any) => acc + (i.total_cost ?? 0),
+        (acc: number, i: any) => acc + getParticipationCost(i),
         0,
       ),
     getElevationWeight: (d: any) =>
       d.institutions.reduce(
-        (acc: number, i: any) => acc + (i.total_cost ?? 0),
+        (acc: number, i: any) => acc + getParticipationCost(i),
         0,
       ),
     elevationScale: BASE_ELEVATION_SCALE * zoomFactor * (isGlobe ? 10 : 1),

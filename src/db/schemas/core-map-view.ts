@@ -39,13 +39,14 @@ export const mapViewInstitution = coreMatsSchema
     country_code: text("country_code"),
     type: text("type"),
     sme: boolean("sme"),
-    total_cost: doublePrecision("total_cost"),
+    // total_cost: doublePrecision("total_cost"),
     projects: jsonb("projects").$type<
       {
         id: string;
         start: string;
         end: string;
         total_cost: number | null;
+        participation_cost: number | null;
         framework_programmes: string[];
       }[]
     >(),

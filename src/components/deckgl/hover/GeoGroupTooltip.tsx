@@ -1,6 +1,7 @@
 import { Typography } from "@mui/material";
 import { GeoGroup } from "@/app/scenarios/scenario_data";
 import { InstitutionName } from "./InstitutionName";
+import { getParticipationCost } from "@/utils/institutionUtils";
 
 const MAX_SHOWN = 3;
 
@@ -18,13 +19,13 @@ interface GeoGroupTooltipProps {
 export function GeoGroupTooltip({ group, showFunding }: GeoGroupTooltipProps) {
   const { institutions } = group;
   const sorted = [...institutions].sort(
-    (a, b) => (b.total_cost ?? 0) - (a.total_cost ?? 0),
+    (a, b) => getParticipationCost(b) - getParticipationCost(a),
   );
   const shown = sorted.slice(0, MAX_SHOWN);
   const remaining = sorted.length - shown.length;
 
   const totalFunding = institutions.reduce(
-    (sum, i) => sum + (i.total_cost ?? 0),
+    (sum, i) => sum + getParticipationCost(i),
     0,
   );
 
