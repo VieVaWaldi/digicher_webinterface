@@ -17,9 +17,17 @@ export function GroupedInstitutionPanel({ data }: GroupedInstitutionPanelProps) 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [openId, setOpenId] = useState<string | null>(null);
 
+  const sorted = useMemo(
+    () =>
+      [...data.institutions].sort(
+        (a, b) => (b.projects?.length ?? 0) - (a.projects?.length ?? 0),
+      ),
+    [data.institutions],
+  );
+
   const visible = useMemo(
-    () => data.institutions.slice(0, visibleCount),
-    [data.institutions, visibleCount],
+    () => sorted.slice(0, visibleCount),
+    [sorted, visibleCount],
   );
   const visibleIds = useMemo(() => visible.map((i) => i.institution_id), [visible]);
   const { data: names } = useGetBulkInstitutionNames(visibleIds);
