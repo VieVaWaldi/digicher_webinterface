@@ -193,21 +193,7 @@ function FundingScenarioContent() {
   const listContent = useInstitutionListView(filteredData, {
     onFlyTo: handleFlyTo,
     onRowClick: (item) => {
-      const geoGroup: GeoGroup = {
-        geolocation: item.geolocation,
-        institutions: [
-          {
-            institution_id: item.id,
-            geolocation: item.geolocation,
-            country_code: null,
-            type: null,
-            sme: null,
-            projects: null,
-          },
-        ],
-        count: 1,
-      };
-      setSelectedItem({ type: "grouped-institution", data: geoGroup });
+      setSelectedItem({ type: "grouped-institution", geolocation: item.geolocation, institutionIds: [item.id] });
       setInfoPanelOpen(true);
     },
   });
@@ -216,19 +202,19 @@ function FundingScenarioContent() {
 
   const handleMapOnClick = useCallback((info: any) => {
     if (info.object?.points) {
-      // Hex bin click — normalize GeoGroups into a single merged GeoGroup
-      const institutions = (info.object.points as GeoGroup[]).flatMap(
-        (p) => p.institutions,
-      );
+      // Hex bin click — flatten all GeoGroup institutions into one selection
+      const institutions = (info.object.points as GeoGroup[]).flatMap((p) => p.institutions);
       const geo = (info.object.points as GeoGroup[])[0]?.geolocation ?? [0, 0];
       setSelectedItem({
         type: "grouped-institution",
-        data: { geolocation: geo, institutions, count: institutions.length },
+        geolocation: geo,
+        institutionIds: institutions.map((i) => i.institution_id),
       });
       setInfoPanelOpen(true);
     } else if (info.object?.count && info.object?.institutions) {
       // Column layer click — GeoGroup directly
-      setSelectedItem({ type: "grouped-institution", data: info.object as GeoGroup });
+      const group = info.object as GeoGroup;
+      setSelectedItem({ type: "grouped-institution", geolocation: group.geolocation, institutionIds: group.institutions.map((i) => i.institution_id) });
       setInfoPanelOpen(true);
     }
   }, []);
@@ -285,6 +271,16 @@ function FundingScenarioContent() {
     [filteredData],
   );
 
+  /** Derive live GeoGroup from current filteredData for the selected item */
+  const selectedGeoGroup = useMemo((): GeoGroup | null => {
+    if (!selectedItem || selectedItem.type !== "grouped-institution") return null;
+    const instMap = new Map(filteredData.map((i) => [i.institution_id, i]));
+    const institutions = selectedItem.institutionIds.map(
+      (id) => instMap.get(id) ?? { institution_id: id, geolocation: selectedItem.geolocation, country_code: null, type: null, sme: null, projects: null },
+    );
+    return { geolocation: selectedItem.geolocation, institutions, count: institutions.length };
+  }, [selectedItem, filteredData]);
+
   /** URL persistence: sync selectedItem → URL sel param (skip initial mount) */
   const urlSyncMountedRef = useRef(false);
   useEffect(() => {
@@ -297,7 +293,7 @@ function FundingScenarioContent() {
       return;
     }
     if (selectedItem.type === "grouped-institution") {
-      setters.setSelectionKey(`gi:${selectedItem.data.geolocation.join(",")}`);
+      setters.setSelectionKey(`gi:${selectedItem.geolocation.join(",")}`);
     } else if (selectedItem.type === "project" && selectedItem.projects.length > 0) {
       setters.setSelectionKey(`pr:${selectedItem.projects[0].project_id}`);
     }
@@ -314,7 +310,7 @@ function FundingScenarioContent() {
     if (type === "gi") {
       const group = groupedData.find((g) => g.geolocation.join(",") === id);
       if (group) {
-        setSelectedItem({ type: "grouped-institution", data: group });
+        setSelectedItem({ type: "grouped-institution", geolocation: group.geolocation, institutionIds: group.institutions.map((i) => i.institution_id) });
         setInfoPanelOpen(true);
       }
     } else if (type === "pr") {
@@ -406,9 +402,11 @@ function FundingScenarioContent() {
         listContent={listContent}
         onFlyToReady={handleFlyToReady}
         selectedItem={selectedItem}
+        selectedGeoGroup={selectedGeoGroup}
         infoPanelOpen={infoPanelOpen}
         onInfoPanelClose={() => setInfoPanelOpen(false)}
         onInfoPanelOpen={() => setInfoPanelOpen(true)}
+        mapFilters={filterValues}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>

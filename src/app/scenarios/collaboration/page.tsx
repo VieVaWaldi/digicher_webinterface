@@ -267,42 +267,14 @@ function CollaborationScenarioContent() {
   const layer1List = useInstitutionListView(filteredData, {
     onFlyTo: handleFlyTo,
     onRowClick: (item) => {
-      const geoGroup: GeoGroup = {
-        geolocation: item.geolocation,
-        institutions: [
-          {
-            institution_id: item.id,
-            geolocation: item.geolocation,
-            country_code: null,
-            type: null,
-            sme: null,
-            projects: null,
-          },
-        ],
-        count: 1,
-      };
-      setSelectedItem({ type: "grouped-institution", data: geoGroup });
+      setSelectedItem({ type: "grouped-institution", geolocation: item.geolocation, institutionIds: [item.id] });
       setInfoPanelOpen(true);
     },
   });
   const layer2List = useTopicNetworkListView(connectionFilteredData, {
     onFlyTo: handleFlyTo,
     onRowClick: (item) => {
-      const geoGroup: GeoGroup = {
-        geolocation: item.geolocation,
-        institutions: [
-          {
-            institution_id: item.id,
-            geolocation: item.geolocation,
-            country_code: null,
-            type: null,
-            sme: null,
-            projects: null,
-          },
-        ],
-        count: 1,
-      };
-      setSelectedItem({ type: "grouped-institution", data: geoGroup });
+      setSelectedItem({ type: "grouped-institution", geolocation: item.geolocation, institutionIds: [item.id] });
       setInfoPanelOpen(true);
     },
   });
@@ -453,7 +425,8 @@ function CollaborationScenarioContent() {
   const handleLayer2Click = useCallback((info: any) => {
     if (info.object?.institutions?.length) {
       // Layer 2 — icon click (GeoGroup-like)
-      setSelectedItem({ type: "grouped-institution", data: info.object as GeoGroup });
+      const group = info.object as GeoGroup;
+      setSelectedItem({ type: "grouped-institution", geolocation: group.geolocation, institutionIds: group.institutions.map((i) => i.institution_id) });
       setInfoPanelOpen(true);
     } else if (info.object?.project_id) {
       // Layer 2 — arc click (MapViewCollaborationByTopicType)
@@ -512,6 +485,16 @@ function CollaborationScenarioContent() {
     [filteredData],
   );
 
+  /** Derive live GeoGroup from current filteredData for the selected item */
+  const selectedGeoGroup = useMemo((): GeoGroup | null => {
+    if (!selectedItem || selectedItem.type !== "grouped-institution") return null;
+    const instMap = new Map(filteredData.map((i) => [i.institution_id, i]));
+    const institutions = selectedItem.institutionIds.map(
+      (id) => instMap.get(id) ?? { institution_id: id, geolocation: selectedItem.geolocation, country_code: null, type: null, sme: null, projects: null },
+    );
+    return { geolocation: selectedItem.geolocation, institutions, count: institutions.length };
+  }, [selectedItem, filteredData]);
+
   const sourcePosition = useMemo(() => {
     if (!selectedInstitutionId) return undefined;
     const inst = data?.find(
@@ -535,7 +518,7 @@ function CollaborationScenarioContent() {
       return;
     }
     if (selectedItem.type === "grouped-institution") {
-      setters.setSelectionKey(`gi:${selectedItem.data.geolocation.join(",")}`);
+      setters.setSelectionKey(`gi:${selectedItem.geolocation.join(",")}`);
     } else if (selectedItem.type === "collab-network") {
       setters.setSelectionKey(`cn:${selectedItem.institutionId}`);
     } else if (selectedItem.type === "project" && selectedItem.projects.length > 0) {
@@ -559,7 +542,7 @@ function CollaborationScenarioContent() {
       panelInitializedRef.current = true;
       const group = groupedData.find((g) => g.geolocation.join(",") === id);
       if (group) {
-        setSelectedItem({ type: "grouped-institution", data: group });
+        setSelectedItem({ type: "grouped-institution", geolocation: group.geolocation, institutionIds: group.institutions.map((i) => i.institution_id) });
         setInfoPanelOpen(true);
       }
     } else if (type === "pr") {
@@ -640,9 +623,11 @@ function CollaborationScenarioContent() {
         listContent={listContent}
         onFlyToReady={handleFlyToReady}
         selectedItem={selectedItem}
+        selectedGeoGroup={selectedGeoGroup}
         infoPanelOpen={infoPanelOpen}
         onInfoPanelClose={() => setInfoPanelOpen(false)}
         onInfoPanelOpen={() => setInfoPanelOpen(true)}
+        mapFilters={filterValues}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>

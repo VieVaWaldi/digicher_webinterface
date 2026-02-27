@@ -1,4 +1,4 @@
-import { date, numeric, pgSchema, text } from "drizzle-orm/pg-core";
+import { boolean, date, numeric, pgSchema, text } from "drizzle-orm/pg-core";
 import { coreSchema } from "db/schemas/core";
 
 // export const coreMatsSchema = pgSchema("core_mats");
@@ -30,3 +30,6 @@ export const tableViewProject = coreSchema
   .existing();
 
 export type ProjectTableViewType = typeof tableViewProject.$inferSelect;
+
+// Institution table view — queries core.institution directly
+export { institution as tableViewInstitution } from "db/schemas/core";

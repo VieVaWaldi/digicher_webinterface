@@ -2,6 +2,7 @@ import { withApiWrapper } from "app/api/apiClient";
 import { apiSuccess } from "app/api/response";
 import { db } from "db/client";
 import { tableViewProject } from "db/schemas/core-table-view";
+import { j_project_institution } from "db/schemas/core-junctions";
 import {
   and,
   arrayOverlaps,
@@ -27,6 +28,10 @@ export interface ProjectSearchParams {
   domainIds?: string[];
 
   frameworkProgrammes?: string[];
+
+  institutionId?: string;
+  collaboratorId?: string;
+  projectIds?: string[];
 
   page?: number;
   limit?: number;
@@ -55,6 +60,9 @@ async function tableViewProjectHandler(request: NextRequest) {
     domainIds: searchParams.get("domainIds")?.split(",").filter(Boolean) || [],
     frameworkProgrammes:
       searchParams.get("frameworkProgrammes")?.split(",").filter(Boolean) || [],
+    institutionId: searchParams.get("institutionId") || undefined,
+    collaboratorId: searchParams.get("collaboratorId") || undefined,
+    projectIds: searchParams.get("projectIds")?.split(",").filter(Boolean) || [],
     page: parseInt(searchParams.get("page") || "0"),
     limit: Math.min(
       parseInt(searchParams.get("limit") || "50"),
@@ -162,10 +170,39 @@ async function tableViewProjectHandler(request: NextRequest) {
     );
   }
 
+  if (params.institutionId) {
+    whereConditions.push(
+      inArray(
+        tableViewProject.id,
+        db
+          .select({ project_id: j_project_institution.project_id })
+          .from(j_project_institution)
+          .where(sql`${j_project_institution.institution_id} = ${params.institutionId}`),
+      ),
+    );
+  }
+
+  if (params.collaboratorId) {
+    whereConditions.push(
+      inArray(
+        tableViewProject.id,
+        db
+          .select({ project_id: j_project_institution.project_id })
+          .from(j_project_institution)
+          .where(sql`${j_project_institution.institution_id} = ${params.collaboratorId}`),
+      ),
+    );
+  }
+
+  if (params.projectIds && params.projectIds.length > 0) {
+    whereConditions.push(inArray(tableViewProject.id, params.projectIds));
+  }
+
   let querySelect = db.select({
     id: tableViewProject.id,
     title: tableViewProject.title,
     start_date: tableViewProject.start_date,
+    end_date: tableViewProject.end_date,
     acronym: tableViewProject.acronym,
   });
 
@@ -175,6 +212,7 @@ async function tableViewProjectHandler(request: NextRequest) {
       id: tableViewProject.id,
       title: tableViewProject.title,
       start_date: tableViewProject.start_date,
+      end_date: tableViewProject.end_date,
       acronym: tableViewProject.acronym,
       rank: sql<number>`ts_rank(
         setweight(to_tsvector('english', COALESCE(${tableViewProject.title}, '')), 'A') ||

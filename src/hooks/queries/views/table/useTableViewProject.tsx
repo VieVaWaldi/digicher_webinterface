@@ -5,8 +5,9 @@ import { createApiFetcher } from "hooks/queries/createQuery";
 interface ProjectTableItem {
   id: string;
   title: string;
-  start_date: string;
-  acronym: string;
+  start_date: string | null;
+  end_date: string | null;
+  acronym: string | null;
   rank?: number;
 }
 
@@ -48,6 +49,17 @@ function buildQueryString(params: ProjectSearchParams): string {
     );
   }
 
+  if (params.institutionId) {
+    searchParams.append("institutionId", params.institutionId);
+  }
+
+  if (params.collaboratorId) {
+    searchParams.append("collaboratorId", params.collaboratorId);
+  }
+  if (params.projectIds?.length) {
+    searchParams.append("projectIds", params.projectIds.join(","));
+  }
+
   if (params.page !== undefined)
     searchParams.append("page", params.page.toString());
   if (params.limit) searchParams.append("limit", params.limit.toString());
@@ -76,6 +88,9 @@ export const useTableViewProject = (
     params.fieldIds?.sort().join(","),
     params.domainIds?.sort().join(","),
     params.frameworkProgrammes?.sort().join(","),
+    params.institutionId,
+    params.collaboratorId,
+    params.projectIds?.sort().join(","),
     params.page,
     params.limit,
     params.sortBy,

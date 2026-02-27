@@ -57,6 +57,14 @@ const LandingPage = () => {
     }
   };
 
+  const handleSelectListMode = () => {
+    if (searchQuery) {
+      router.push(`/list/${buildQueryString()}`);
+    } else {
+      setViewMode("list");
+    }
+  };
+
   const handleScenarioChange = (scenario: Scenario) => {
     setSelectedScenario(scenario);
     const queryString = buildQueryString();
@@ -119,7 +127,7 @@ const LandingPage = () => {
             label="List"
             tooltip="Sets search to default List View (liike google scholar, but better)"
             selected={viewMode === "list"}
-            onClick={() => setViewMode("list")}
+            onClick={handleSelectListMode}
           />
         </Box>
 

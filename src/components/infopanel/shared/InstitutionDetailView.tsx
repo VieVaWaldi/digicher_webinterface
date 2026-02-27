@@ -8,11 +8,13 @@ import { useInstitutionById } from "@/hooks/queries/institution/useInstitutionBy
 interface InstitutionDetailViewProps {
   institutionId: string;
   projectsData?: { id: string }[];
+  listViewUrl?: string;
 }
 
 export function InstitutionDetailView({
   institutionId,
   projectsData,
+  listViewUrl,
 }: InstitutionDetailViewProps) {
   const { data, isLoading } = useInstitutionById(institutionId);
 
@@ -83,9 +85,20 @@ export function InstitutionDetailView({
             {projectCount !== null && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <ScienceIcon sx={{ color: "secondary.main", fontSize: 20, mr: 1 }} />
-                <Typography variant="body2" color="text.secondary">
-                  {projectCount} project{projectCount !== 1 ? "s" : ""}
-                </Typography>
+                {listViewUrl ? (
+                  <Link
+                    href={listViewUrl}
+                    variant="body2"
+                    underline="always"
+                    sx={{ color: "primary.main" }}
+                  >
+                    {projectCount} project{projectCount !== 1 ? "s" : ""}
+                  </Link>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    {projectCount} project{projectCount !== 1 ? "s" : ""}
+                  </Typography>
+                )}
               </Box>
             )}
           </Box>

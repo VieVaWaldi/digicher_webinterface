@@ -29,6 +29,8 @@ import { Map, Public } from "@mui/icons-material";
 import { ScenarioSelector } from "@/components/mui";
 import { SIDE_MENU_WIDTH } from "@/components/mui/SideMenu";
 import { InfoPanelContainer, SelectedItem, getSelectionLabel } from "@/components/infopanel";
+import { GeoGroup } from "@/app/scenarios/scenario_data";
+import { FilterValues } from "@/hooks/persistence/useFilters";
 
 interface BaseUIProps {
   layerConfigs: LayerConfig[];
@@ -56,12 +58,16 @@ interface BaseUIProps {
   onFlyToReady?: (flyTo: (geolocation: number[]) => void) => void;
   /** Currently selected map item for the info panel */
   selectedItem?: SelectedItem | null;
+  /** Derived live GeoGroup for grouped-institution selections */
+  selectedGeoGroup?: GeoGroup | null;
   /** Whether the info panel is open */
   infoPanelOpen?: boolean;
   /** Callback when info panel is closed */
   onInfoPanelClose?: () => void;
   /** Callback when info panel quick-access button is clicked */
   onInfoPanelOpen?: () => void;
+  /** Current map filter values to pass through to info panel for deep-linking */
+  mapFilters?: FilterValues;
 }
 
 export default function MapController({
@@ -83,9 +89,11 @@ export default function MapController({
   listContent,
   onFlyToReady,
   selectedItem,
+  selectedGeoGroup,
   infoPanelOpen = false,
   onInfoPanelClose,
   onInfoPanelOpen,
+  mapFilters,
 }: BaseUIProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -318,7 +326,7 @@ export default function MapController({
                 <Paper elevation={3} sx={{ borderRadius: 4 }}>
                   <IconTextButton
                     icon={<InfoOutlinedIcon />}
-                    label={getSelectionLabel(selectedItem)}
+                    label={getSelectionLabel(selectedItem, selectedGeoGroup)}
                     tooltip="Reopen Info Panel"
                     onClick={() => onInfoPanelOpen?.()}
                   />
@@ -481,8 +489,10 @@ export default function MapController({
         {/* Right Side Menu: Info Panel */}
         <InfoPanelContainer
           selectedItem={selectedItem ?? null}
+          selectedGeoGroup={selectedGeoGroup}
           open={infoPanelOpen}
           onClose={() => onInfoPanelClose?.()}
+          mapFilters={mapFilters}
         />
 
         {/* Mobile Navbar Menu */}

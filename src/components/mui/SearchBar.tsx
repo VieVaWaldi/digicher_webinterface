@@ -16,6 +16,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import ScienceIcon from "@mui/icons-material/Science";
+import DescriptionIcon from "@mui/icons-material/Description";
 import { ReactNode } from "react";
 
 export interface EntityOption {
@@ -25,15 +26,15 @@ export interface EntityOption {
 }
 
 export const ENTITY_OPTIONS: EntityOption[] = [
-  // {
-  //   value: "works",
-  //   label: "Works",
-  //   icon: <DescriptionIcon fontSize="small" />,
-  // },
   {
     value: "projects",
     label: "Projects",
     icon: <ScienceIcon fontSize="small" />,
+  },
+  {
+    value: "works",
+    label: "Works",
+    icon: <DescriptionIcon fontSize="small" />,
   },
   {
     value: "institutions",
@@ -53,6 +54,8 @@ export interface SearchBarProps extends Omit<
   entityOptions?: EntityOption[];
   selectedEntity?: string;
   onEntityChange?: (value: string) => void;
+  /** Reverses layout: entity selector on the left, search icon on the right */
+  reverseLayout?: boolean;
 }
 
 export const SearchBar = ({
@@ -64,6 +67,7 @@ export const SearchBar = ({
   entityOptions,
   selectedEntity,
   onEntityChange,
+  reverseLayout = false,
   sx,
   ...props
 }: SearchBarProps) => {
@@ -108,7 +112,66 @@ export const SearchBar = ({
       }}
       slotProps={{
         input: {
-          startAdornment: (
+          startAdornment: reverseLayout && entityOptions && entityOptions.length > 0 ? (
+            <InputAdornment position="start">
+              <Select
+                value={selectedEntity || ""}
+                onChange={handleEntityChange}
+                variant="standard"
+                disableUnderline
+                IconComponent={KeyboardArrowDownIcon}
+                renderValue={() => (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    {selectedOption?.icon && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          color: "text.secondary",
+                        }}
+                      >
+                        {selectedOption.icon}
+                      </Box>
+                    )}
+                    {selectedOption?.label}
+                  </Box>
+                )}
+                sx={{
+                  minWidth: 100,
+                  ml: 1,
+                  "& .MuiSelect-select": {
+                    py: 0.5,
+                    pr: 3,
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    color: "text.secondary",
+                  },
+                }}
+              >
+                {entityOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      {option.icon && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            color: "text.secondary",
+                          }}
+                        >
+                          {option.icon}
+                        </Box>
+                      )}
+                      {option.label}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+            </InputAdornment>
+          ) : (
             <InputAdornment position="start">
               <IconButton
                 onClick={value ? onClear : undefined}
@@ -130,7 +193,28 @@ export const SearchBar = ({
               </IconButton>
             </InputAdornment>
           ),
-          endAdornment: entityOptions && entityOptions.length > 0 && (
+          endAdornment: reverseLayout ? (
+            <InputAdornment position="end">
+              <IconButton
+                onClick={value ? onClear : undefined}
+                size="small"
+                disableRipple={!value}
+                sx={{
+                  mr: 0.5,
+                  cursor: value ? "pointer" : "default",
+                  "&:hover": {
+                    backgroundColor: value ? undefined : "transparent",
+                  },
+                }}
+              >
+                {value ? (
+                  <ClearIcon />
+                ) : (
+                  <SearchIcon sx={{ color: "text.secondary" }} />
+                )}
+              </IconButton>
+            </InputAdornment>
+          ) : entityOptions && entityOptions.length > 0 ? (
             <InputAdornment position="end">
               <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
               <Select
@@ -189,7 +273,7 @@ export const SearchBar = ({
                 ))}
               </Select>
             </InputAdornment>
-          ),
+          ) : undefined,
         },
       }}
       {...props}

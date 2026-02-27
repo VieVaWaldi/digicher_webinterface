@@ -11,7 +11,7 @@ export type ProjectPanelData = {
 };
 
 export type SelectedItem =
-  | { type: "grouped-institution"; data: GeoGroup }
+  | { type: "grouped-institution"; geolocation: number[]; institutionIds: string[] }
   | {
       type: "collab-network";
       institutionId: string;
@@ -19,10 +19,12 @@ export type SelectedItem =
     }
   | { type: "project"; projects: ProjectPanelData[] };
 
-export function getSelectionLabel(item: SelectedItem): string {
+export function getSelectionLabel(item: SelectedItem, selectedGeoGroup?: GeoGroup | null): string {
   switch (item.type) {
-    case "grouped-institution":
-      return `${item.data.count} institution${item.data.count !== 1 ? "s" : ""}`;
+    case "grouped-institution": {
+      const n = selectedGeoGroup?.count ?? item.institutionIds.length;
+      return `${n} institution${n !== 1 ? "s" : ""}`;
+    }
     case "collab-network":
       return "Network";
     case "project":

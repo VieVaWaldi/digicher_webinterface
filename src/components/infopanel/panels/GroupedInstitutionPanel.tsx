@@ -6,14 +6,17 @@ import { GeoGroup } from "@/app/scenarios/scenario_data";
 import { useGetBulkInstitutionNames } from "@/hooks/queries/institution/useGetBulkInstitutionNames";
 import { InstitutionDetailView } from "@/components/infopanel/shared/InstitutionDetailView";
 import { InstitutionListRow } from "@/components/infopanel/shared/InstitutionListRow";
+import { FilterValues } from "@/hooks/persistence/useFilters";
+import { buildListProjectUrl } from "@/utils/buildListUrl";
 
 const PAGE_SIZE = 50;
 
 interface GroupedInstitutionPanelProps {
   data: GeoGroup;
+  mapFilters?: FilterValues;
 }
 
-export function GroupedInstitutionPanel({ data }: GroupedInstitutionPanelProps) {
+export function GroupedInstitutionPanel({ data, mapFilters }: GroupedInstitutionPanelProps) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -45,6 +48,9 @@ export function GroupedInstitutionPanel({ data }: GroupedInstitutionPanelProps) 
       <InstitutionDetailView
         institutionId={inst.institution_id}
         projectsData={inst.projects ?? undefined}
+        listViewUrl={mapFilters
+          ? buildListProjectUrl({ institutionId: inst.institution_id, mapFilters })
+          : undefined}
       />
     );
   }
@@ -58,6 +64,9 @@ export function GroupedInstitutionPanel({ data }: GroupedInstitutionPanelProps) 
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         {visible.map((inst) => {
           const nameEntry = names?.[inst.institution_id];
+          const listUrl = mapFilters
+            ? buildListProjectUrl({ institutionId: inst.institution_id, mapFilters })
+            : undefined;
           return (
             <InstitutionListRow
               key={inst.institution_id}
@@ -67,6 +76,7 @@ export function GroupedInstitutionPanel({ data }: GroupedInstitutionPanelProps) 
               open={openId === inst.institution_id}
               onToggle={() => toggleOpen(inst.institution_id)}
               projectsData={inst.projects ?? undefined}
+              listViewUrl={listUrl}
             />
           );
         })}

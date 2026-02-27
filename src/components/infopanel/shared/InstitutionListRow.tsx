@@ -12,6 +12,7 @@ interface InstitutionListRowProps {
   open: boolean;
   onToggle: () => void;
   projectsData?: { id: string }[];
+  listViewUrl?: string;
   children?: ReactNode;
 }
 
@@ -22,6 +23,7 @@ export function InstitutionListRow({
   open,
   onToggle,
   projectsData,
+  listViewUrl,
   children,
 }: InstitutionListRowProps) {
   return (
@@ -67,7 +69,7 @@ export function InstitutionListRow({
             py: 1,
           }}
         >
-          <InstitutionDetailView institutionId={institutionId} projectsData={projectsData} />
+          <InstitutionDetailView institutionId={institutionId} projectsData={projectsData} listViewUrl={listViewUrl} />
           {children}
         </Box>
       </Collapse>
