@@ -91,6 +91,8 @@ export function InstitutionDetailView({
                     variant="body2"
                     underline="always"
                     sx={{ color: "primary.main" }}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {projectCount} project{projectCount !== 1 ? "s" : ""}
                   </Link>
