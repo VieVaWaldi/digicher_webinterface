@@ -106,7 +106,7 @@ export default function DeckGLMap({
         keyboard: true,
       }
     : isMobile
-      ? { inertia: 100 }
+      ? { inertia: 10 }
       : { inertia: true };
 
   const activeLayers = isGlobe
