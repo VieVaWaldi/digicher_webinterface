@@ -14,7 +14,7 @@ import DeckGL from "@deck.gl/react";
 import "@deck.gl/widgets/stylesheet.css";
 import { useSettings } from "context/SettingsContext";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Box, CircularProgress, Paper, Typography } from "@mui/material";
+import { Box, CircularProgress, Paper, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useThemeMode } from "@/app/providers";
 
@@ -45,6 +45,8 @@ export default function DeckGLMap({
 }: UnifiedDeckMapProps) {
   // const { isGlobe } = useSettings();
   const { resolvedMode } = useThemeMode();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [currentZoom, setCurrentZoom] = useState(defaultViewState.zoom ?? 0);
 
   const ZOOM_STYLE_THRESHOLD = 13;
@@ -103,7 +105,9 @@ export default function DeckGLMap({
         touchRotate: false,
         keyboard: true,
       }
-    : { inertia: true };
+    : isMobile
+      ? { inertia: false, touchZoom: { speed: 0.6 } }
+      : { inertia: true };
 
   const activeLayers = isGlobe
     ? [backgroundLayers, ...(layers || [])]
