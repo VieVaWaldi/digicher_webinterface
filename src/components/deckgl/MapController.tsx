@@ -32,7 +32,7 @@ import { InfoPanelContainer, SelectedItem, getSelectionLabel } from "@/component
 import { GeoGroup } from "@/app/scenarios/scenario_data";
 import { FilterValues } from "@/hooks/persistence/useFilters";
 
-interface BaseUIProps {
+interface MapControllerProps {
   layerConfigs: LayerConfig[];
   activeLayerIndex: number;
   onLayerChange: (index: number) => void;
@@ -94,7 +94,7 @@ export default function MapController({
   onInfoPanelClose,
   onInfoPanelOpen,
   mapFilters,
-}: BaseUIProps) {
+}: MapControllerProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -502,13 +502,17 @@ export default function MapController({
           open={navbarOpen}
           onClose={() => setNavbarOpen(false)}
         >
-          <MobileNavbar>
+          <MobileNavbar
+            feedbackButton={
+              <FeedbackButton
+                showBanner={showBanner}
+                setShowBanner={setShowBanner}
+                setShowFeedback={setShowFeedback}
+                bannerRight
+              />
+            }
+          >
             <ScenarioSelector canRoute={true} />
-            <FeedbackButton
-              showBanner={showBanner}
-              setShowBanner={setShowBanner}
-              setShowFeedback={setShowFeedback}
-            />
           </MobileNavbar>
         </SideMenu>
 

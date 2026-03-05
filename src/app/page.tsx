@@ -8,33 +8,38 @@ import {
   Link as MuiLink,
   Typography,
 } from "@mui/material";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LanguageIcon from "@mui/icons-material/Language";
-import { ReactNode, Suspense, useEffect, useState } from "react";
+import { keyframes } from "@mui/system";
+import { ReactNode, Suspense, useState } from "react";
 import {
-  IconTextButton,
   Navbar,
   Scenario,
   ScenarioSelector,
   SearchBar,
+  ViewMode,
+  ViewModeToggle,
 } from "@/components/mui";
 import { useRouter } from "next/navigation";
 import { useDataPreFetcher } from "@/hooks/fetching/DataPreFetcher";
+import { useAnimatedPlaceholder } from "@/hooks/useAnimatedPlaceholder";
 // import { useThemeMode } from "@/app/providers";
 
-type ViewMode = "list" | "map";
 
 const LandingPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("map");
-  const [selectedScenario, setSelectedScenario] = useState<Scenario>("base");
+  const [selectedScenario, setSelectedScenario] = useState<Scenario>("explore");
   const [searchQuery, setSearchQuery] = useState("");
 
   const router = useRouter();
   // const { resolvedMode } = useThemeMode();
+
+  const placeholderTarget =
+    viewMode === "map"
+      ? "Visualise research geospatially..."
+      : "Search by keywords and hit enter...";
+  const animatedPlaceholder = useAnimatedPlaceholder(placeholderTarget);
 
   useDataPreFetcher();
 
@@ -57,11 +62,11 @@ const LandingPage = () => {
     }
   };
 
-  const handleSelectListMode = () => {
-    if (searchQuery) {
+  const handleViewModeChange = (mode: ViewMode) => {
+    if (mode === "list" && searchQuery) {
       router.push(`/list/${buildQueryString()}`);
     } else {
-      setViewMode("list");
+      setViewMode(mode);
     }
   };
 
@@ -95,40 +100,40 @@ const LandingPage = () => {
         }}
       >
         <Box sx={{ width: "100%", maxWidth: 700 }}>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 500,
-              textAlign: "center",
-              color: "text.primary",
-              marginBottom: 3,
-            }}
-          >
-            Search and analyze cultural heritage research
-          </Typography>
-
-          <SearchBar
-            placeholder="e.g. 3D reconstruction, medieval manuscripts ..."
-            onSearch={handleSearch}
-            onSearchStart={handleStartSearch}
-          />
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <IconTextButton
-            icon={<MapOutlinedIcon />}
-            label="Map"
-            tooltip="Sets search to an interactive Map View"
-            selected={viewMode === "map"}
-            onClick={() => setViewMode("map")}
-          />
-          <IconTextButton
-            icon={<FormatListBulletedIcon />}
-            label="List"
-            tooltip="Sets search to default List View (liike google scholar, but better)"
-            selected={viewMode === "list"}
-            onClick={handleSelectListMode}
-          />
+          <Box sx={{ width: "100%", maxWidth: 600, ml: 2 }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontSize: "2.4rem",
+                fontWeight: 500,
+                textAlign: "left",
+                color: "text.primary",
+                marginBottom: 2,
+              }}
+            >
+              Understand cultural heritage research
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                textAlign: "left",
+                color: "text.secondary",
+                marginBottom: 4,
+              }}
+            >
+              We connect institutions, projects, and publications across Europe.
+              Helping researchers and policymakers gain insights into
+              collaborations, funding, and emerging trends.
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "stretch", gap: 1 }}>
+            <SearchBar
+              placeholder={animatedPlaceholder}
+              onSearch={handleSearch}
+              onSearchStart={handleStartSearch}
+            />
+            <ViewModeToggle value={viewMode} onChange={handleViewModeChange} />
+          </Box>
         </Box>
 
         <Box
@@ -140,7 +145,7 @@ const LandingPage = () => {
           }}
         >
           {viewMode === "map" && (
-            <Box sx={{ position: "absolute", top: 10 }}>
+            <Box sx={{ position: "absolute" }}>
               <Suspense>
                 <ScenarioSelector
                   selected={selectedScenario}
@@ -166,13 +171,13 @@ const LandingPage = () => {
       {/*  <Typography variant="body2">Learn more</Typography>*/}
       {/*</Box>*/}
 
+      {/* Desktop: static logo row */}
       <Box
         sx={{
-          display: "flex",
+          display: { xs: "none", md: "flex" },
           flexDirection: "row",
           justifyContent: "center",
-          gap: { xs: 4, md: 8 },
-          flexWrap: "wrap",
+          gap: 8,
           backgroundColor: "background.paper",
           border: 1,
           borderColor: "divider",
@@ -183,10 +188,7 @@ const LandingPage = () => {
         {[
           { src: "/images/logos/digicher-logo.png", alt: "DIGICHer" },
           { src: "/images/logos/fsujena-logo.png", alt: "FSU Jena" },
-          {
-            src: "/images/logos/time-machine-logo.png",
-            alt: "Time Machine",
-          },
+          { src: "/images/logos/time-machine-logo.png", alt: "Time Machine" },
           { src: "/images/logos/eu-logo.jpg", alt: "EU Funded" },
         ].map((logo) => (
           <Box
@@ -195,17 +197,68 @@ const LandingPage = () => {
             src={logo.src}
             alt={logo.alt}
             sx={{
-              height: { xs: 40, md: 50 },
+              height: 50,
               width: "auto",
-              // filter: resolvedMode === "dark" ? "" : "",
               opacity: 0.8,
-              transition: "opacity 0.2s ease-in-out, filter 0.2s ease-in-out",
-              "&:hover": {
-                opacity: 0.3,
-              },
+              transition: "opacity 0.2s ease-in-out",
+              "&:hover": { opacity: 0.3 },
             }}
           />
         ))}
+      </Box>
+
+      {/* Mobile: marquee logo row */}
+      <Box
+        sx={{
+          display: { xs: "block", md: "none" },
+          overflow: "hidden",
+          backgroundColor: "background.paper",
+          borderTop: 1,
+          borderBottom: 1,
+          borderColor: "divider",
+          py: 3,
+          width: "100%",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            width: "max-content",
+            animation: `${keyframes`
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            `} 12s linear infinite`,
+          }}
+        >
+          {[
+            { src: "/images/logos/digicher-logo.png", alt: "DIGICHer" },
+            { src: "/images/logos/fsujena-logo.png", alt: "FSU Jena" },
+            { src: "/images/logos/time-machine-logo.png", alt: "Time Machine" },
+            { src: "/images/logos/eu-logo.jpg", alt: "EU Funded" },
+            { src: "/images/logos/digicher-logo.png", alt: "DIGICHer 2" },
+            { src: "/images/logos/fsujena-logo.png", alt: "FSU Jena 2" },
+            {
+              src: "/images/logos/time-machine-logo.png",
+              alt: "Time Machine 2",
+            },
+            { src: "/images/logos/eu-logo.jpg", alt: "EU Funded 2" },
+          ].map((logo) => (
+            <Box
+              key={logo.alt}
+              component="img"
+              src={logo.src}
+              alt={logo.alt}
+              sx={{
+                height: 40,
+                width: "auto",
+                opacity: 0.8,
+                mx: 4,
+                flexShrink: 0,
+              }}
+            />
+          ))}
+        </Box>
       </Box>
     </Box>
   );
@@ -214,22 +267,27 @@ const LandingPage = () => {
     {
       title: "What is Heritage Monitor?",
       content:
-        "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites.",
+        "Heritage Monitor is an interactive data platform that transforms cultural heritage research findings into clear, searchable, and reusable outputs. It supports users in exploring institutions, projects, and publications in Europe and beyond to discover, address, and engage with patterns of cooperation, funding landscapes, and emerging research directions in the field of cultural heritage.",
     },
     {
       title: "What data do we use and where is it from?",
       content:
-        "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites.",
+        "The platform aggregates large public datasets from leading European research institutions - including institutional archives, project funding data, and research results - to provide the most comprehensive picture possible of research activity in the field of cultural heritage. This combined data enables a clear presentation and thus also the comparison of trends, funding opportunities, and thematic areas in which cultural heritage research takes place.",
     },
     {
       title: "Difference between List and Map?",
       content:
-        "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites.",
+        "The Heritage Monitor allows you to search at various levels. The list view provides structured, searchable data – ideal for sorting and filtering institutions, projects, or research results. The map view visualizes this information geographically, helping you to visually locate research activities and patterns within a spatial area. Together, these two main display options offer insights into detailed data and spatial context.",
     },
     {
       title: "What can I do with the Map?",
       content:
-        "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites.",
+        "Using this map, you can visually explore cultural heritage research and stakeholders across Europe: See where institutions are located or identify regional centers of activity. Use the map to compare and visualize geographical patterns of funding and collaboration, thereby revealing spatial patterns, connections, or differences.",
+    },
+    {
+      title: "What can I do with the List?",
+      content:
+        "The list view allows you to explore cultural heritage data in a structured and detailed way. It enables you to search, filter, and sort institutions, projects, and publications according to specific criteria. You can compare entries, identify key players, analyze funding patterns, and quickly access relevant information. The list view is ideal for focused research, targeted queries, and in-depth analyses that go beyond geographical visualization.",
     },
   ];
 

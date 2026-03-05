@@ -1,4 +1,7 @@
 export { SearchBar } from "./SearchBar";
+
+export { ViewModeToggle } from "./ViewModeToggle";
+export type { ViewModeToggleProps, ViewMode } from "./ViewModeToggle";
 export type { SearchBarProps, EntityOption } from "./SearchBar";
 
 export { IconTextButton } from "./IconTextButton";

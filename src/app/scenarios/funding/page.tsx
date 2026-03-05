@@ -20,7 +20,7 @@ import { createHexagonLayer } from "@/components/deckgl/layers/HexagonLayer";
 import { createExtrudedCountryLayer } from "@/components/deckgl/layers/ExtrudedCountryLayer";
 import { useCountryGeoData } from "@/hooks/queries/useCountryGeoData";
 import { useSettings } from "@/context/SettingsContext";
-import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
+import { ENTITY_OPTIONS_LIST } from "@/components/mui/SearchBar";
 import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
 import { useMapHover } from "@/components/deckgl/hover/useMapHover";
 import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
@@ -75,7 +75,7 @@ function FundingScenarioContent() {
     projectSearchPredicate,
     MinorityGroupsFilter,
   } = useUnifiedSearchFilter({
-    entityOptions: ENTITY_OPTIONS,
+    entityOptions: ENTITY_OPTIONS_LIST,
     defaultEntity: "projects",
     initialEntity: filterValues.unifiedSearch.entity,
     initialQuery: filterValues.unifiedSearch.query,

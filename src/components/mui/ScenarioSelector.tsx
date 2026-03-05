@@ -8,29 +8,33 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import { useRouter, usePathname } from "next/navigation";
 import { useFilters } from "@/hooks/persistence/useFilters";
 
-export type Scenario = "base" | "funding" | "collaboration";
+export type Scenario = "explore" | "funding" | "collaboration";
 
 export interface ScenarioOption {
   id: Scenario;
   label: string;
   icon: React.ReactNode;
+  tooltip?: string;
 }
 
 const defaultScenarios: ScenarioOption[] = [
   {
-    id: "base",
-    label: "Base",
+    id: "explore",
+    label: "Explore",
     icon: <PlaceIcon fontSize="small" />,
+    tooltip: "Discover patterns in cultural heritage research. Filter by keywords, topics, time, or location to explore the data.",
   },
   {
     id: "funding",
     label: "Funding",
     icon: <PaidIcon fontSize="small" />,
+    tooltip: "Visualize funding patterns across institutions using columns and hex bins. See where research money flows.",
   },
   {
     id: "collaboration",
     label: "Collaboration",
     icon: <GroupsIcon fontSize="small" />,
+    tooltip: "View collaboration networks between institutions. Select a topic to see all collaborations, or click an institution to explore its network.",
   },
 ];
 export interface ScenarioSelectorProps extends Omit<BoxProps, "onChange"> {
@@ -75,6 +79,7 @@ export const ScenarioSelector = ({
           key={scenario.id}
           icon={scenario.icon}
           label={scenario.label}
+          tooltip={scenario.tooltip}
           selected={getSelected(scenario.id)}
           onClick={() => {
             onChange?.(scenario.id);

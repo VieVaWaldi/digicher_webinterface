@@ -1,22 +1,24 @@
 "use client";
 
-import { Chip, ChipProps } from "@mui/material";
+import { Chip, ChipProps, Tooltip } from "@mui/material";
 import { ReactNode } from "react";
 
 export interface IconTextPillProps extends Omit<ChipProps, "icon" | "label"> {
   icon: ReactNode;
   label: string;
   selected?: boolean;
+  tooltip?: string;
 }
 
 export const IconTextPill = ({
   icon,
   label,
   selected = false,
+  tooltip,
   sx,
   ...props
 }: IconTextPillProps) => {
-  return (
+  const chip = (
     <Chip
       icon={<span style={{ display: "flex", alignItems: "center" }}>{icon}</span>}
       label={label}
@@ -57,6 +59,7 @@ export const IconTextPill = ({
       {...props}
     />
   );
+  return tooltip ? <Tooltip title={tooltip} arrow>{chip}</Tooltip> : chip;
 };
 
 export default IconTextPill;

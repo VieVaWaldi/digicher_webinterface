@@ -25,7 +25,20 @@ export interface EntityOption {
   icon?: ReactNode;
 }
 
-export const ENTITY_OPTIONS: EntityOption[] = [
+export const ENTITY_OPTIONS_MAP: EntityOption[] = [
+  {
+    value: "projects",
+    label: "Projects",
+    icon: <ScienceIcon fontSize="small" />,
+  },
+  {
+    value: "institutions",
+    label: "Institutions",
+    icon: <AccountBalanceIcon fontSize="small" />,
+  },
+];
+
+export const ENTITY_OPTIONS_LIST: EntityOption[] = [
   {
     value: "projects",
     label: "Projects",

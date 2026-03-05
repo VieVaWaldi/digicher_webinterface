@@ -18,7 +18,7 @@ import { useListFilters } from "@/hooks/persistence/useListFilters";
 import { useTableViewProject } from "@/hooks/queries/views/table/useTableViewProject";
 import { useTableViewResearchOutput } from "@/hooks/queries/views/table/useTableViewResearchOutput";
 import { useTableViewInstitution } from "@/hooks/queries/views/table/useTableViewInstitution";
-import { SearchBar, ENTITY_OPTIONS } from "@/components/mui/SearchBar";
+import { SearchBar, ENTITY_OPTIONS_LIST } from "@/components/mui/SearchBar";
 import { ListFilterBar } from "@/components/listview/ListFilterBar";
 import { ProjectRow } from "@/components/listview/rows/ProjectRow";
 import { WorkRow } from "@/components/listview/rows/WorkRow";
@@ -176,7 +176,7 @@ export function ListViewContainer() {
           value={filters.q}
           onSearch={setQ}
           onClear={() => setQ("")}
-          entityOptions={ENTITY_OPTIONS}
+          entityOptions={ENTITY_OPTIONS_LIST}
           selectedEntity={filters.entity}
           onEntityChange={(v) => setEntity(v as any)}
           placeholder={`Search ${filters.entity}…`}

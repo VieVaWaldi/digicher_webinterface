@@ -105,7 +105,7 @@ export const Navbar = ({
               <DarkModeOutlinedIcon />
             )}
           </IconButton>
-          {showUserIcon && (
+          {/* {showUserIcon && (
             <IconButton
               onClick={onUserClick}
               sx={{
@@ -117,7 +117,7 @@ export const Navbar = ({
             >
               <AccountCircleOutlinedIcon />
             </IconButton>
-          )}
+          )} */}
         </Box>
       </Toolbar>
     </AppBar>

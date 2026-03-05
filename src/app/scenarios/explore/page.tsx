@@ -16,7 +16,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { GroupedIconLayer } from "@/components/deckgl/layers/GroupedIconLayer";
 import { createIconLayer } from "@/components/deckgl/layers/IconLayer";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
-import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
+import { ENTITY_OPTIONS_MAP } from "@/components/mui/SearchBar";
 import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
 import { useMapHover } from "@/components/deckgl/hover/useMapHover";
 import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
@@ -24,7 +24,7 @@ import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
 import { useInstitutionListView } from "@/components/maplistview";
 import { SelectedItem } from "@/components/infopanel";
 
-function BaseScenarioContent() {
+function ExploreScenarioContent() {
   const { data, isPending, error } = useMapViewInstitution();
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [infoPanelOpen, setInfoPanelOpen] = useState(false);
@@ -53,7 +53,7 @@ function BaseScenarioContent() {
     projectSearchPredicate,
     MinorityGroupsFilter,
   } = useUnifiedSearchFilter({
-    entityOptions: ENTITY_OPTIONS,
+    entityOptions: ENTITY_OPTIONS_MAP,
     defaultEntity: "projects",
     initialEntity: filterValues.unifiedSearch.entity,
     initialQuery: filterValues.unifiedSearch.query,
@@ -306,8 +306,8 @@ function BaseScenarioContent() {
         onResetAll={resetAll}
         loading={isPending}
         error={error}
-        scenarioName={"Base"}
-        scenarioTitle={"Base"}
+        scenarioName={"Explore"}
+        scenarioTitle={"Explore"}
         listContent={listContent}
         onFlyToReady={handleFlyToReady}
         selectedItem={selectedItem}
@@ -326,10 +326,10 @@ function BaseScenarioContent() {
   );
 }
 
-export default function BaseScenario() {
+export default function ExploreScenario() {
   return (
     <Suspense>
-      <BaseScenarioContent />
+      <ExploreScenarioContent />
     </Suspense>
   );
 }

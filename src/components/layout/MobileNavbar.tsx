@@ -15,6 +15,7 @@ export interface MobileNavbarProps {
   onUserClick?: () => void;
   showUserIcon?: boolean;
   children?: ReactNode;
+  feedbackButton?: ReactNode;
 }
 
 export const MobileNavbar = ({
@@ -23,6 +24,7 @@ export const MobileNavbar = ({
   onUserClick,
   showUserIcon = true,
   children,
+  feedbackButton,
 }: MobileNavbarProps) => {
   const { resolvedMode, setMode } = useThemeMode();
 
@@ -31,7 +33,7 @@ export const MobileNavbar = ({
   };
 
   return (
-    <Stack direction="row" alignItems="center" spacing={1.5} gap={6} flexWrap="wrap">
+    <Stack direction="column" alignItems="center" spacing={2}>
       {/* Logo + Title */}
       <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -79,8 +81,9 @@ export const MobileNavbar = ({
 
       {children}
 
-      {/* Theme toggle + Account */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+      {/* Feedback + Theme toggle stacked vertically */}
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
+        {feedbackButton}
         <IconButton
           onClick={toggleTheme}
           sx={{
@@ -97,7 +100,7 @@ export const MobileNavbar = ({
             <DarkModeOutlinedIcon />
           )}
         </IconButton>
-        {showUserIcon && (
+        {/* {showUserIcon && (
           <IconButton
             onClick={onUserClick}
             sx={{
@@ -109,7 +112,7 @@ export const MobileNavbar = ({
           >
             <AccountCircleOutlinedIcon />
           </IconButton>
-        )}
+        )} */}
       </Box>
     </Stack>
   );

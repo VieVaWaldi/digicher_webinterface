@@ -19,7 +19,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { useMapViewInstitution } from "@/hooks/queries/views/map/useMapViewInstitution";
 import useTypeAndSmeFilter from "@/components/filter/useTypeAndSmeFilter";
 import { FilterSection, useUnifiedSearchFilter } from "@/components/mui";
-import { ENTITY_OPTIONS } from "@/components/mui/SearchBar";
+import { ENTITY_OPTIONS_LIST } from "@/components/mui/SearchBar";
 import useFrameworkProgrammeFilter from "@/components/filter/useFrameworkProgrammeFilter";
 import { Box, Typography, useTheme } from "@mui/material";
 import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
@@ -76,7 +76,7 @@ function CollaborationScenarioContent() {
     projectSearchPredicate,
     MinorityGroupsFilter,
   } = useUnifiedSearchFilter({
-    entityOptions: ENTITY_OPTIONS,
+    entityOptions: ENTITY_OPTIONS_LIST,
     defaultEntity: "projects",
     initialEntity: filterValues.unifiedSearch.entity,
     initialQuery: filterValues.unifiedSearch.query,

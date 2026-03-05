@@ -32,12 +32,14 @@ interface FeedbackButtonProps {
   showBanner: boolean;
   setShowBanner: (showBanner: boolean) => void;
   setShowFeedback: (showFeedback: boolean) => void;
+  bannerRight?: boolean;
 }
 
 export function FeedbackButton({
   showBanner,
   setShowBanner,
   setShowFeedback,
+  bannerRight = false,
 }: FeedbackButtonProps) {
   /** Timer - Help us Banner */
   useEffect(() => {
@@ -67,8 +69,9 @@ export function FeedbackButton({
           onClick={() => setShowFeedback(true)}
           sx={{
             position: "absolute",
-            right: "100%",
-            mr: 1.5,
+            ...(bannerRight
+              ? { left: "100%", ml: 1.5 }
+              : { right: "100%", mr: 1.5 }),
             fontWeight: 600,
             fontSize: "0.8rem",
             backgroundColor: "background.paper",

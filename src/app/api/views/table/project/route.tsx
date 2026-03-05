@@ -204,6 +204,7 @@ async function tableViewProjectHandler(request: NextRequest) {
     start_date: tableViewProject.start_date,
     end_date: tableViewProject.end_date,
     acronym: tableViewProject.acronym,
+    // total_cost: tableViewProject.total_cost,
   });
 
   if (params.search) {
@@ -214,6 +215,7 @@ async function tableViewProjectHandler(request: NextRequest) {
       start_date: tableViewProject.start_date,
       end_date: tableViewProject.end_date,
       acronym: tableViewProject.acronym,
+      // total_cost: tableViewProject.total_cost,
       rank: sql<number>`ts_rank(
         setweight(to_tsvector('english', COALESCE(${tableViewProject.title}, '')), 'A') ||
         setweight(to_tsvector('english', COALESCE(${tableViewProject.objective}, '')), 'B'),
@@ -248,8 +250,10 @@ async function tableViewProjectHandler(request: NextRequest) {
       : baseQuery;
 
   const query =
-    params.search && params.sortBy === "relevance"
-      ? queryWhere.orderBy(desc(sql`rank`))
+    params.sortBy === "relevance"
+      ? params.search
+        ? queryWhere.orderBy(desc(sql`rank`), sql`${tableViewProject.total_cost} DESC NULLS LAST`)
+        : queryWhere.orderBy(sql`${tableViewProject.total_cost} DESC NULLS LAST`)
       : (() => {
           const sortColumn =
             params.sortBy === "title"
