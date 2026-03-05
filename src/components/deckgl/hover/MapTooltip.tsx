@@ -10,6 +10,8 @@ export function MapTooltip({ position, children }: MapTooltipProps) {
   return (
     <Box
       sx={{
+        // this disables tooltips on mobile
+        display: { xs: "none", sm: "block" },
         position: "absolute",
         pointerEvents: "none",
         left: position.x,

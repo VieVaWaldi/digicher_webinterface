@@ -1,6 +1,7 @@
 import { BitmapLayer, FullscreenWidget, TileLayer } from "deck.gl";
 import Map, { ViewState } from "react-map-gl/mapbox";
 import { useState } from "react";
+import { TamedMapController } from "@/components/deckgl/TamedMapController";
 
 import {
   _GlobeView as GlobeView,
@@ -106,7 +107,7 @@ export default function DeckGLMap({
         keyboard: true,
       }
     : isMobile
-      ? { inertia: 10 }
+      ? { type: TamedMapController, inertia: true }
       : { inertia: true };
 
   const activeLayers = isGlobe
