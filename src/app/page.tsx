@@ -26,7 +26,6 @@ import { useDataPreFetcher } from "@/hooks/fetching/DataPreFetcher";
 import { useAnimatedPlaceholder } from "@/hooks/useAnimatedPlaceholder";
 // import { useThemeMode } from "@/app/providers";
 
-
 const LandingPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("map");
   const [selectedScenario, setSelectedScenario] = useState<Scenario>("explore");
@@ -79,15 +78,16 @@ const LandingPage = () => {
   const HeroSection: ReactNode = (
     <Box
       sx={{
-        minHeight: "100vh",
+        height: "100dvh",
         backgroundColor: "background.default",
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
       }}
     >
       <Navbar />
 
-      <Container
+      <Box
         maxWidth="md"
         sx={{
           flex: 1,
@@ -155,7 +155,7 @@ const LandingPage = () => {
             </Box>
           )}
         </Box>
-      </Container>
+      </Box>
 
       {/*<Box*/}
       {/*  sx={{*/}
