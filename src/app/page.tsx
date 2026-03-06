@@ -78,7 +78,7 @@ const LandingPage = () => {
   const HeroSection: ReactNode = (
     <Box
       sx={{
-        height: "100dvh",
+        height: "100vh",
         backgroundColor: "background.default",
         display: "flex",
         flexDirection: "column",
