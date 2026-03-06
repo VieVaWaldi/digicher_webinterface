@@ -36,8 +36,8 @@ const LandingPage = () => {
 
   const placeholderTarget =
     viewMode === "map"
-      ? "Map: Visualise research geospatially..."
-      : "List: Search by keywords (hit enter) ...";
+      ? "Map | Visualise research geospatially..."
+      : "List | Search by keywords (hit enter) ...";
   const animatedPlaceholder = useAnimatedPlaceholder(placeholderTarget);
 
   useDataPreFetcher();
