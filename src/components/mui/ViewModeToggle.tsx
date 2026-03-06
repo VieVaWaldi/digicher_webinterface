@@ -1,8 +1,8 @@
 "use client";
 
-import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
+import { Box, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import PublicIcon from "@mui/icons-material/Public";
 
 export type ViewMode = "list" | "map";
 
@@ -12,7 +12,10 @@ export interface ViewModeToggleProps {
 }
 
 export const ViewModeToggle = ({ value, onChange }: ViewModeToggleProps) => {
-  const handleChange = (_: React.MouseEvent<HTMLElement>, next: ViewMode | null) => {
+  const handleChange = (
+    _: React.MouseEvent<HTMLElement>,
+    next: ViewMode | null,
+  ) => {
     if (next !== null) onChange(next);
   };
 
@@ -38,17 +41,35 @@ export const ViewModeToggle = ({ value, onChange }: ViewModeToggleProps) => {
           "&:last-of-type": {
             borderRadius: "0 50px 50px 0",
           },
+          "&.Mui-selected": {
+            backgroundColor: "primary.main",
+            color: "primary.contrastText",
+            borderColor: "primary.main",
+            "&:hover": {
+              backgroundColor: "primary.dark",
+            },
+          },
         },
       }}
     >
-      <Tooltip title="Visualize research geospatially on an interactive map.">
+      <Tooltip title="Select map view. Visualize research geospatially on an interactive map by displaying institutions and their projects.">
         <ToggleButton value="map" aria-label="Map view">
-          <MapOutlinedIcon fontSize="small" />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            <PublicIcon fontSize="small" />
+            <Typography variant="caption" sx={{ fontWeight: 500, lineHeight: 1 }}>
+              Map
+            </Typography>
+          </Box>
         </ToggleButton>
       </Tooltip>
-      <Tooltip title="Search and filter institutions, projects, or publications in a table.">
+      <Tooltip title="Select List View. Search and filter institutions, projects, or publications in a classic list.">
         <ToggleButton value="list" aria-label="List view">
-          <FormatListBulletedIcon fontSize="small" />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            <FormatListBulletedIcon fontSize="small" />
+            <Typography variant="caption" sx={{ fontWeight: 500, lineHeight: 1 }}>
+              List
+            </Typography>
+          </Box>
         </ToggleButton>
       </Tooltip>
     </ToggleButtonGroup>

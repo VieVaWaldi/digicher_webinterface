@@ -20,21 +20,24 @@ export interface ScenarioOption {
 const defaultScenarios: ScenarioOption[] = [
   {
     id: "explore",
-    label: "Explore",
+    label: "Overview",
     icon: <PlaceIcon fontSize="small" />,
-    tooltip: "Discover patterns in cultural heritage research. Filter by keywords, topics, time, or location to explore the data.",
+    tooltip:
+      "No special map focus. Play around with the map and get a feel for it. Filter by keywords, topics, time, or location to explore the data."
   },
   {
     id: "funding",
     label: "Funding",
     icon: <PaidIcon fontSize="small" />,
-    tooltip: "Visualize funding patterns across institutions using columns and hex bins. See where research money flows.",
+    tooltip:
+      "Visualize funding patterns across institutions. See what they received from projects and grants. See where research money flows.",
   },
   {
     id: "collaboration",
     label: "Collaboration",
     icon: <GroupsIcon fontSize="small" />,
-    tooltip: "View collaboration networks between institutions. Select a topic to see all collaborations, or click an institution to explore its network.",
+    tooltip:
+      "Understand collaboration networks between institutions and project partnerships. Select a topic to see all collaborations, or click an institution to explore its network.",
   },
 ];
 export interface ScenarioSelectorProps extends Omit<BoxProps, "onChange"> {

@@ -36,9 +36,12 @@ const LandingPage = () => {
 
   const placeholderTarget =
     viewMode === "map"
-      ? "Map | Visualise research geospatially..."
-      : "List | Search by keywords (hit enter) ...";
+      ? "Enter keywords to filter projects on the map…"
+      : "Enter keywords to filter projects in the list…";
   const animatedPlaceholder = useAnimatedPlaceholder(placeholderTarget);
+  const listHintAnimated = useAnimatedPlaceholder(
+    viewMode === "list" ? "Hit Enter to start your list search" : "",
+  );
 
   useDataPreFetcher();
 
@@ -121,39 +124,107 @@ const LandingPage = () => {
                 marginBottom: 4,
               }}
             >
-              We connect institutions, projects, and publications across Europe.
-              Helping researchers and policymakers gain insights into
-              collaborations, funding, and emerging trends.
+              We connect projects, institutions, and publications across
+              Europe, helping researchers and policymakers clearly visualize research
+              activity and gain insights into collaborations, funding, and emerging trends.
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "stretch", gap: 1 }}>
+
+          {/* Outer card: SearchBar + controls */}
+          <Box
+            sx={{
+              backgroundColor: "background.paper",
+              borderRadius: 3,
+              border: 1,
+              borderColor: "divider",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
+              p: 1.5,
+              display: "flex",
+              flexDirection: "column",
+              gap: 1.5,
+            }}
+          >
             <SearchBar
               placeholder={animatedPlaceholder}
               onSearch={handleSearch}
               onSearchStart={handleStartSearch}
             />
-            <ViewModeToggle value={viewMode} onChange={handleViewModeChange} />
-          </Box>
-        </Box>
 
-        <Box
-          sx={{
-            position: "relative",
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          {viewMode === "map" && (
-            <Box sx={{ position: "absolute" }}>
-              <Suspense>
-                <ScenarioSelector
-                  selected={selectedScenario}
-                  onChange={handleScenarioChange}
+            {/* Toggle + Scenario row */}
+            <Box sx={{ display: "flex", gap: 1.5, alignItems: "stretch" }}>
+              {/* View as card */}
+              <Box
+                sx={{
+                  borderRadius: 2,
+                  p: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 0.5,
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{ color: "text.secondary", fontWeight: 500 }}
+                >
+                  View as
+                </Typography>
+                <ViewModeToggle
+                  value={viewMode}
+                  onChange={handleViewModeChange}
                 />
-              </Suspense>
+              </Box>
+
+              {/* Right card: scenario selector (always in DOM for stable height) + list hint overlay */}
+              <Box sx={{ position: "relative", flex: 1 }}>
+                <Box
+                  sx={{
+                      borderRadius: 2,
+                    p: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 0.5,
+                    alignItems: "center",
+                    visibility: viewMode === "map" ? "visible" : "hidden",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary", fontWeight: 500 }}
+                  >
+                    Click focus to open map
+                  </Typography>
+                  <Suspense>
+                    <ScenarioSelector
+                      selected={selectedScenario}
+                      onChange={handleScenarioChange}
+                    />
+                  </Suspense>
+                </Box>
+
+                {viewMode === "list" && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      inset: 0,
+                          borderRadius: 2,
+                      p: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary", fontWeight: 500 }}
+                    >
+                      {listHintAnimated}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
             </Box>
-          )}
+          </Box>
         </Box>
       </Box>
 
