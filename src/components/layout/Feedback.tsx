@@ -61,7 +61,14 @@ export function FeedbackButton({
   }, [setShowBanner]);
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", position: "relative", overflow: "visible" }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        position: "relative",
+        overflow: "visible",
+      }}
+    >
       {/* Banner - positioned to the left */}
       {showBanner && (
         <Chip
@@ -95,12 +102,12 @@ export function FeedbackButton({
       )}
 
       {/* Feedback Button */}
-      <Tooltip title="Give Feedback" arrow>
+      <Tooltip title="Give Feedback" arrow placement="left">
         <IconButton
           onClick={() => setShowFeedback(true)}
           sx={{
-            width: { xs: 40, md: 48, lg: 64 },
-            height: { xs: 40, md: 48, lg: 64 },
+            width: 40,
+            height: 40,
             backgroundColor: "background.paper",
             color: "secondary.main",
             animation: `${pulseScale} 3s ease-in-out infinite`,
@@ -110,7 +117,7 @@ export function FeedbackButton({
             },
           }}
         >
-          <ChatBubbleOutlineIcon sx={{ fontSize: 28 }} />
+          <ChatBubbleOutlineIcon sx={{ fontSize: 22 }} />
         </IconButton>
       </Tooltip>
     </Box>

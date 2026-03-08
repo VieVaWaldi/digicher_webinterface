@@ -33,7 +33,7 @@ export class TopicNetworkLayer extends CompositeLayer<TopicNetworkLayerProps> {
 
     if (!data?.length) return [];
 
-    const geoMap = new Map<string, TopicInstitutionPoint>();
+    const geoMap = new Map<string, TopicInstitutionPoint & { _ids: Set<string> }>();
 
     for (const row of data) {
       for (const [key, geolocation, institution_id] of [
@@ -41,11 +41,12 @@ export class TopicNetworkLayer extends CompositeLayer<TopicNetworkLayerProps> {
         [row.b_geolocation.join(","), row.b_geolocation, row.b_institution_id],
       ] as [string, number[], string][]) {
         if (!geoMap.has(key)) {
-          geoMap.set(key, { geolocation, count: 1, institutions: [{ institution_id }] });
+          geoMap.set(key, { geolocation, count: 1, institutions: [{ institution_id }], _ids: new Set([institution_id]) });
         } else {
           const entry = geoMap.get(key)!;
           entry.count++;
-          if (!entry.institutions.some((i) => i.institution_id === institution_id)) {
+          if (!entry._ids.has(institution_id)) {
+            entry._ids.add(institution_id);
             entry.institutions.push({ institution_id });
           }
         }

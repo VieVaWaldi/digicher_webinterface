@@ -1,17 +1,12 @@
 "use client";
 
 import MapController from "@/components/deckgl/MapController";
-import useCountryFilter from "components/filter/useCountryFilter";
-import useFrameworkProgrammeFilter from "components/filter/useFrameworkProgrammeFilter";
-import { useTopicFilter } from "components/filter/useTopicFilter";
-import useTypeAndSmeFilter from "components/filter/useTypeAndSmeFilter";
-import usePlayYearFilter from "components/filter/usePlayYearFilter";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
 import { ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ViewState } from "react-map-gl/mapbox";
 import { useMapViewInstitution } from "hooks/queries/views/map/useMapViewInstitution";
 import { Box, Typography } from "@mui/material";
-import { FilterSection, useUnifiedSearchFilter } from "@/components/mui";
+import { FilterSection } from "@/components/mui";
 import useFilters from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
@@ -20,8 +15,9 @@ import { createHexagonLayer } from "@/components/deckgl/layers/HexagonLayer";
 import { createExtrudedCountryLayer } from "@/components/deckgl/layers/ExtrudedCountryLayer";
 import { useCountryGeoData } from "@/hooks/queries/useCountryGeoData";
 import { useSettings } from "@/context/SettingsContext";
-import { ENTITY_OPTIONS_LIST } from "@/components/mui/SearchBar";
 import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
+import { useScenarioFilters } from "@/hooks/scenarios/useScenarioFilters";
+import { useFilteredMapViewInstitutions } from "@/hooks/scenarios/useFilteredMapViewInstitutions";
 import { useMapHover } from "@/components/deckgl/hover/useMapHover";
 import { MapTooltip } from "@/components/deckgl/hover/MapTooltip";
 import { GeoGroupTooltip } from "@/components/deckgl/hover/GeoGroupTooltip";
@@ -43,8 +39,7 @@ function FundingScenarioContent() {
 
   const { filters: filterValues, setters, resetAll } = useFilters();
 
-  const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
-  const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 500);
+  const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
 
   const [zoom, setZoom] = useState<number>(
     filterValues.viewState?.zoom ?? INITIAL_VIEW_STATE_TILTED_EU.zoom,
@@ -57,78 +52,26 @@ function FundingScenarioContent() {
     },
     [debouncedSetViewState],
   );
-  const { YearRangeFilter, yearRangePredicate } = usePlayYearFilter({
-    initialValue: filterValues.yearRange,
-    onChange: debouncedSetYearRange,
-  });
-  const { CountryFilter, countryPredicate } = useCountryFilter({
-    initialValue: filterValues.countries,
-    onChange: setters.setCountries,
-  });
-  const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter({
-    initialValue: filterValues.typeAndSme,
-    onChange: setters.setTypeAndSme,
-  });
   const {
-    SearchFilter,
-    institutionSearchPredicate,
-    projectSearchPredicate,
-    MinorityGroupsFilter,
-  } = useUnifiedSearchFilter({
-    entityOptions: ENTITY_OPTIONS_LIST,
-    defaultEntity: "projects",
-    initialEntity: filterValues.unifiedSearch.entity,
-    initialQuery: filterValues.unifiedSearch.query,
-    initialMinorityGroups: filterValues.unifiedSearch.minorityGroups,
-    onEntityChange: setters.setEntity,
-    onQueryChange: setters.setQuery,
-    onMinorityGroupsChange: setters.setMinorityGroups,
-  });
-  const { FrameworkProgrammeFilter, frameworkProgrammePredicate } =
-    useFrameworkProgrammeFilter({
-      initialValue: filterValues.frameworkProgrammes,
-      onChange: setters.setFrameworkProgrammes,
-    });
-  const { TopicFilter, topicPredicate } = useTopicFilter({
-    initialFields: filterValues.topicFields,
-    initialSubfields: filterValues.topicSubfields,
-    initialTopics: filterValues.topicTopics,
-    onFieldsChange: setters.setTopicFields,
-    onSubfieldsChange: setters.setTopicSubfields,
-    onTopicsChange: setters.setTopicTopics,
-  });
+    YearRangeFilter, CountryFilter, TypeAndSmeFilter,
+    SearchFilter, MinorityGroupsFilter, FrameworkProgrammeFilter, TopicFilter,
+    yearRangePredicate, countryPredicate, typeAndSmePredicate,
+    institutionSearchPredicate, projectSearchPredicate,
+    frameworkProgrammePredicate, topicPredicate,
+    selectedCountries,
+  } = useScenarioFilters(filterValues, setters);
 
   /** Apply Filters */
 
-  const filteredData = useMemo(() => {
-    if (!data?.length) return [];
-
-    return data.flatMap((p) => {
-      if (!institutionSearchPredicate(p.institution_id)) return [];
-      if (!countryPredicate(p.country_code)) return [];
-      if (!typeAndSmePredicate(p.type, p.sme)) return [];
-
-      const matchingProjects = p.projects?.filter(
-        (proj) =>
-          topicPredicate(proj.id) &&
-          projectSearchPredicate(proj.id) &&
-          frameworkProgrammePredicate(proj.framework_programmes) &&
-          yearRangePredicate(proj.start, proj.end),
-      );
-      if (!matchingProjects?.length) return [];
-
-      return [{ ...p, projects: matchingProjects }];
-    });
-  }, [
-    data,
+  const { filteredData, isFilterPending } = useFilteredMapViewInstitutions(data, {
+    selectedCountries,
     institutionSearchPredicate,
+    typeAndSmePredicate,
+    topicPredicate,
     projectSearchPredicate,
     frameworkProgrammePredicate,
     yearRangePredicate,
-    countryPredicate,
-    typeAndSmePredicate,
-    topicPredicate,
-  ]);
+  });
 
   /** Calculations */
 
@@ -162,6 +105,7 @@ function FundingScenarioContent() {
 
   const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <FilterSection showDivider={false}>{Title}</FilterSection>
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
 
       <FilterSection title="Project Time" showDivider={true}>
@@ -395,6 +339,7 @@ function FundingScenarioContent() {
         onViewStateChange={handleViewStateChange}
         onResetAll={resetAll}
         loading={isPending}
+        isFilterPending={isFilterPending}
         error={error}
         scenarioName="funding-tracker"
         scenarioTitle="Funding Tracker"

@@ -11,6 +11,7 @@ import { SideMenu } from "@/components/mui/SideMenu";
 import {
   Box,
   Button,
+  CircularProgress,
   Paper,
   Stack,
   useMediaQuery,
@@ -49,6 +50,8 @@ interface MapControllerProps {
   onResetAll?: () => void;
   onEmptyMapClick?: () => void;
   loading?: boolean;
+  /** Shows a small spinner in the navbar while filters re-compute — does not block the map */
+  isFilterPending?: boolean;
   error: Error | null;
   scenarioName: string;
   scenarioTitle?: string;
@@ -83,6 +86,7 @@ export default function MapController({
   onResetAll,
   onEmptyMapClick,
   loading = false,
+  isFilterPending = false,
   error = null,
   scenarioName,
   scenarioTitle,
@@ -214,13 +218,9 @@ export default function MapController({
           <Box sx={{ flexGrow: 1 }} />
           <ScenarioSelector canRoute={true} />
           <Box
-            sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}
+            sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end", alignItems: "center", pr: 1 }}
           >
-            <FeedbackButton
-              showBanner={showBanner}
-              setShowBanner={setShowBanner}
-              setShowFeedback={setShowFeedback}
-            />
+            {isFilterPending && <CircularProgress size={20} thickness={5} />}
           </Box>
         </Navbar>
       )}
@@ -336,35 +336,35 @@ export default function MapController({
           </Box>
 
           {/* Bottom Center: Title */}
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              pointerEvents: "none",
-              border: 1,
-              borderBottom: 0,
-              borderRadius: "12px 12px 0 0",
-              borderColor: "divider",
-            }}
-          >
-            <Paper
-              elevation={9}
-              sx={{
-                borderRadius: "12px 12px 0 0",
-                px: 3,
-                py: 1,
-                pb: 2,
-                minWidth: 200,
-                minHeight: 40,
-                pointerEvents: "auto",
-                clipPath: "inset(-20px -20px 0 -20px)",
-              }}
-            >
-              {title}
-            </Paper>
-          </Box>
+          {/*<Box*/}
+          {/*  sx={{*/}
+          {/*    position: "absolute",*/}
+          {/*    bottom: 0,*/}
+          {/*    left: "50%",*/}
+          {/*    transform: "translateX(-50%)",*/}
+          {/*    pointerEvents: "none",*/}
+          {/*    border: 1,*/}
+          {/*    borderBottom: 0,*/}
+          {/*    borderRadius: "12px 12px 0 0",*/}
+          {/*    borderColor: "divider",*/}
+          {/*  }}*/}
+          {/*>*/}
+          {/*  <Paper*/}
+          {/*    elevation={9}*/}
+          {/*    sx={{*/}
+          {/*      borderRadius: "12px 12px 0 0",*/}
+          {/*      px: 3,*/}
+          {/*      py: 1,*/}
+          {/*      pb: 2,*/}
+          {/*      minWidth: 200,*/}
+          {/*      minHeight: 40,*/}
+          {/*      pointerEvents: "auto",*/}
+          {/*      clipPath: "inset(-20px -20px 0 -20px)",*/}
+          {/*    }}*/}
+          {/*  >*/}
+          {/*    {title}*/}
+          {/*  </Paper>*/}
+          {/*</Box>*/}
 
           {/* Bottom Left: Layer Switcher */}
           {layerConfigs.length > 1 && (
@@ -448,6 +448,11 @@ export default function MapController({
                   />
                 </Stack>
               </Paper>
+              <FeedbackButton
+                showBanner={showBanner}
+                setShowBanner={setShowBanner}
+                setShowFeedback={setShowFeedback}
+              />
             </Stack>
           </Box>
         </Box>

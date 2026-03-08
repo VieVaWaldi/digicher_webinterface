@@ -1,11 +1,9 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
-// In the Provider ?
-// const defaultQueryOptions = {
-//   staleTime: 1000 * 60 * 5,
-//   retry: 2,/clear
-//   refetchOnWindowFocus: false,
-// };
+const defaultQueryOptions = {
+  staleTime: 1000 * 60 * 5, // 5 minutes — prevents background refetch on remount/focus
+  refetchOnWindowFocus: false,
+};
 
 export function createApiFetcher<T>(endpoint: string) {
   return async (): Promise<T> => {
@@ -28,7 +26,7 @@ export function createQueryHook<T>(
     return useQuery<T>({
       queryKey,
       queryFn: fetcher,
-      //   ...defaultQueryOptions,
+      ...defaultQueryOptions,
       ...options,
     });
   };
@@ -49,6 +47,7 @@ export function createParameterizedQueryHook<
     return useQuery<T>({
       queryKey,
       queryFn: fetcher,
+      ...defaultQueryOptions,
     });
   };
 }

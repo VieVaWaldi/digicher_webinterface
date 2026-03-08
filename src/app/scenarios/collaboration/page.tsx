@@ -1,8 +1,6 @@
 "use client";
 
 import MapController from "@/components/deckgl/MapController";
-import { useTopicFilter } from "components/filter/useTopicFilter";
-import usePlayYearFilter from "components/filter/usePlayYearFilter";
 import { INITIAL_VIEW_STATE_TILTED_EU } from "@/components/deckgl/viewports";
 import {
   ReactNode,
@@ -13,15 +11,13 @@ import {
   useRef,
   useState,
 } from "react";
-import useCountryFilter from "@/components/filter/useCountryFilter";
 import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
 import { useMapViewInstitution } from "@/hooks/queries/views/map/useMapViewInstitution";
-import useTypeAndSmeFilter from "@/components/filter/useTypeAndSmeFilter";
-import { FilterSection, useUnifiedSearchFilter } from "@/components/mui";
-import { ENTITY_OPTIONS_LIST } from "@/components/mui/SearchBar";
-import useFrameworkProgrammeFilter from "@/components/filter/useFrameworkProgrammeFilter";
+import { FilterSection } from "@/components/mui";
 import { Box, Typography, useTheme } from "@mui/material";
+import { useScenarioFilters } from "@/hooks/scenarios/useScenarioFilters";
+import { useFilteredMapViewInstitutions } from "@/hooks/scenarios/useFilteredMapViewInstitutions";
 import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
 import { CollaborationNetworkLayer } from "@/components/deckgl/layers/CollaborationNetworkLayer";
@@ -56,86 +52,28 @@ function CollaborationScenarioContent() {
 
   const { filters: filterValues, setters, resetAll } = useFilters();
 
-  const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
-  const { YearRangeFilter, yearRangePredicate } = usePlayYearFilter({
-    initialValue: filterValues.yearRange,
-    onChange: debouncedSetYearRange,
-  });
-  const { CountryFilter, countryPredicate } = useCountryFilter({
-    initialValue: filterValues.countries,
-    onChange: setters.setCountries,
-  });
-  const { TypeAndSmeFilter, typeAndSmePredicate } = useTypeAndSmeFilter({
-    initialValue: filterValues.typeAndSme,
-    onChange: setters.setTypeAndSme,
-  });
+
   const {
-    SearchFilter,
-    institutionSearchPredicate,
-    projectSearchPredicate,
-    MinorityGroupsFilter,
-  } = useUnifiedSearchFilter({
-    entityOptions: ENTITY_OPTIONS_LIST,
-    defaultEntity: "projects",
-    initialEntity: filterValues.unifiedSearch.entity,
-    initialQuery: filterValues.unifiedSearch.query,
-    initialMinorityGroups: filterValues.unifiedSearch.minorityGroups,
-    onEntityChange: setters.setEntity,
-    onQueryChange: setters.setQuery,
-    onMinorityGroupsChange: setters.setMinorityGroups,
-  });
-  const { FrameworkProgrammeFilter, frameworkProgrammePredicate } =
-    useFrameworkProgrammeFilter({
-      initialValue: filterValues.frameworkProgrammes,
-      onChange: setters.setFrameworkProgrammes,
-    });
-  const {
-    TopicFilter,
-    topicPredicate,
-    getTopicColor,
-    selectedFields,
-    selectedSubfields,
-    selectedTopics,
-  } = useTopicFilter({
-    initialFields: filterValues.topicFields,
-    initialSubfields: filterValues.topicSubfields,
-    initialTopics: filterValues.topicTopics,
-    onFieldsChange: setters.setTopicFields,
-    onSubfieldsChange: setters.setTopicSubfields,
-    onTopicsChange: setters.setTopicTopics,
-  });
+    YearRangeFilter, CountryFilter, TypeAndSmeFilter,
+    SearchFilter, MinorityGroupsFilter, FrameworkProgrammeFilter, TopicFilter,
+    yearRangePredicate, countryPredicate, typeAndSmePredicate,
+    institutionSearchPredicate, projectSearchPredicate,
+    frameworkProgrammePredicate, topicPredicate,
+    selectedCountries, getTopicColor, selectedFields, selectedSubfields, selectedTopics,
+  } = useScenarioFilters(filterValues, setters);
 
   /** Apply Filters */
 
-  const filteredData = useMemo(() => {
-    if (!data?.length) return [];
-    return data.flatMap((p) => {
-      if (!institutionSearchPredicate(p.institution_id)) return [];
-      if (!countryPredicate(p.country_code)) return [];
-      if (!typeAndSmePredicate(p.type, p.sme)) return [];
-
-      const matchingProjects = p.projects?.filter(
-        (proj) =>
-          topicPredicate(proj.id) &&
-          projectSearchPredicate(proj.id) &&
-          frameworkProgrammePredicate(proj.framework_programmes) &&
-          yearRangePredicate(proj.start, proj.end),
-      );
-      if (!matchingProjects?.length) return [];
-
-      return [{ ...p, projects: matchingProjects }];
-    });
-  }, [
-    data,
+  const { filteredData, isFilterPending } = useFilteredMapViewInstitutions(data, {
+    selectedCountries,
     institutionSearchPredicate,
-    countryPredicate,
     typeAndSmePredicate,
     topicPredicate,
     projectSearchPredicate,
     frameworkProgrammePredicate,
     yearRangePredicate,
-  ]);
+  });
 
   /** Collaboration Network Data */
 
@@ -348,6 +286,7 @@ function CollaborationScenarioContent() {
 
   const Filters: ReactNode = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <FilterSection showDivider={false}>{Title}</FilterSection>
       <FilterSection showDivider={false}>{SearchFilter}</FilterSection>
 
       <FilterSection title="Network">
@@ -616,6 +555,7 @@ function CollaborationScenarioContent() {
         onViewStateChange={debouncedSetViewState}
         onResetAll={resetAll}
         loading={isPending || isTopicCollabLoading}
+        isFilterPending={isFilterPending}
         error={error || topicCollabError}
         onEmptyMapClick={handleEmptyMapClick}
         scenarioName="collaboration"
