@@ -15,7 +15,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import FilterListIcon from "@mui/icons-material/FilterList";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
@@ -141,9 +141,16 @@ export default function MapController({
     transitionDuration?: number;
     transitionInterpolator?: FlyToInterpolator;
   };
+  // commandedViewState is ONLY for programmatic fly-to / zoom commands.
+  // Never initialize it with the URL position — doing so puts deck.gl into
+  // controlled mode, and the first user scroll would switch it back to
+  // uncontrolled mode, which causes deck.gl to fully reinitialize all layers
+  // (wiping icon atlases, Supercluster state, etc.).
+  // The URL-based starting position is handled via effectiveViewState passed
+  // to DeckGLMap as its own initialViewState prop instead.
   const [commandedViewState, setCommandedViewState] = useState<
     CommandedViewState | undefined
-  >(() => (initialViewState ? effectiveViewState : undefined));
+  >(undefined);
 
   const handleViewStateChange = (newViewState: ViewState) => {
     /** Exclude bearing and pitch to let defaultViewState set it specifically for the scenarios */
@@ -228,6 +235,7 @@ export default function MapController({
             id="funding-map"
             layers={activeLayers}
             defaultViewState={defaultViewState}
+            startViewState={effectiveViewState}
             commandedViewState={commandedViewState}
             onViewStateChange={handleViewStateChange}
             isGlobe={isGlobe}
@@ -310,7 +318,7 @@ export default function MapController({
                 sx={{ borderRadius: 4, width: "fit-content" }}
               >
                 <IconTextButton
-                  icon={<FilterListIcon />}
+                  icon={<FilterAltIcon />}
                   label="Filter"
                   tooltip="Open Filter Panel"
                   onClick={() => {

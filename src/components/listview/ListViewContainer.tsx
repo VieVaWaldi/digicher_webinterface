@@ -10,11 +10,15 @@ import {
   IconButton,
   MenuItem,
   Pagination,
+  Paper,
   Select,
   Skeleton,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import { useEffect, useState } from "react";
 import { useListFilters } from "@/hooks/persistence/useListFilters";
 import { useTableViewProject } from "@/hooks/queries/views/table/useTableViewProject";
@@ -85,6 +89,9 @@ export function ListViewContainer() {
     setInstTypes,
     setSme,
   } = useListFilters();
+
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [topicDialogOpen, setTopicDialogOpen] = useState(false);
@@ -193,6 +200,7 @@ export function ListViewContainer() {
           display: "flex",
           alignItems: "center",
           gap: 1,
+          backgroundColor: "background.paper",
         }}
       >
         <IconButton
@@ -225,7 +233,7 @@ export function ListViewContainer() {
       />
 
       {/* Filter bar */}
-      <Box sx={{ px: 3, flexShrink: 0 }}>
+      <Box sx={{ px: 3, flexShrink: 0, backgroundColor: "background.paper" }}>
         <ListFilterBar
           filters={filters}
           onMinYear={setMinYear}
@@ -259,6 +267,7 @@ export function ListViewContainer() {
           borderBottom: "1px solid",
           borderColor: "divider",
           flexShrink: 0,
+          backgroundColor: "background.paper",
         }}
       >
         <Typography variant="body2" color="text.secondary">
@@ -314,9 +323,10 @@ export function ListViewContainer() {
         <Box
           sx={{
             flex: 1,
+            minWidth: 0,
             overflowY: "auto",
             overflowX: "hidden",
-            transition: "flex 0.2s ease",
+            px: 3,
           }}
         >
           {isLoading ? (
@@ -404,26 +414,83 @@ export function ListViewContainer() {
           )}
         </Box>
 
-        {/* Side panel */}
-        {selectedId && (
+        {/* Desktop: inline side panel (50/50 split) */}
+        {isDesktop && selectedId && (
+          <Paper
+            square
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+              borderLeft: 1,
+              borderColor: "divider",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexDirection: "row-reverse",
+                px: 2,
+                py: 1.5,
+                borderBottom: 1,
+                borderColor: "divider",
+                flexShrink: 0,
+              }}
+            >
+              <Typography variant="h5" fontWeight={500}>
+                {sidePanelTitle}
+              </Typography>
+              <IconButton
+                onClick={() => setSelectedId(null)}
+                size="small"
+                sx={{ color: "text.secondary", "&:hover": { color: "text.primary" } }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                overflowY: "auto",
+                overflowX: "hidden",
+                scrollbarWidth: "thin",
+                scrollbarColor: "rgba(0,0,0,0.2) transparent",
+                "&::-webkit-scrollbar": { width: 6 },
+                "&::-webkit-scrollbar-track": { background: "transparent" },
+                "&::-webkit-scrollbar-thumb": { backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 3 },
+                py: 2,
+                px: 2.5,
+              }}
+            >
+              {filters.entity === "projects" && (
+                <ProjectPanel
+                  projects={[{ project_id: selectedId, start_date: null, end_date: null, total_cost: null, framework_programmes: [] }]}
+                />
+              )}
+              {filters.entity === "works" && <WorkPanel workId={selectedId} />}
+              {filters.entity === "institutions" && (
+                <InstitutionDetailView institutionId={selectedId} />
+              )}
+            </Box>
+          </Paper>
+        )}
+
+        {/* Mobile: overlay side panel (70vw) */}
+        {!isDesktop && selectedId && (
           <SideMenu
             side="right"
             title={sidePanelTitle}
             open={!!selectedId}
             onClose={() => setSelectedId(null)}
-            width="33vw"
+            width="85vw"
           >
             {filters.entity === "projects" && (
               <ProjectPanel
-                projects={[
-                  {
-                    project_id: selectedId,
-                    start_date: null,
-                    end_date: null,
-                    total_cost: null,
-                    framework_programmes: [],
-                  },
-                ]}
+                projects={[{ project_id: selectedId, start_date: null, end_date: null, total_cost: null, framework_programmes: [] }]}
               />
             )}
             {filters.entity === "works" && <WorkPanel workId={selectedId} />}
@@ -454,17 +521,18 @@ export function ListViewContainer() {
           sx={{
             display: "flex",
             justifyContent: "center",
-            py: 1,
+            py: 1.5,
             borderTop: 1,
             borderColor: "divider",
             flexShrink: 0,
+            backgroundColor: "background.paper",
           }}
         >
           <Pagination
             count={pagination.totalPages}
             page={filters.page + 1}
             onChange={(_, page) => setPage(page - 1)}
-            size="small"
+            size="medium"
           />
         </Box>
       )}

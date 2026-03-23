@@ -31,7 +31,7 @@ interface GroupedIconLayerProps {
   onHover?: (info: any) => void;
 }
 
-const ZOOM_THRESHOLD: number = 6;
+const ZOOM_THRESHOLD: number = 8;
 
 export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
   static layerName = "GroupedIconLayer";
@@ -39,27 +39,31 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
   state!: {
     index: Supercluster<PointProps, ClusterProps>;
     lookup: Map<string, GeoGroup>;
+    lastZoom: number;
   };
 
   initializeState() {
     this.setState({
       index: new Supercluster<PointProps, ClusterProps>({
-        radius: 60,
-        maxZoom: ZOOM_THRESHOLD,
+        radius: 45,
+        maxZoom: ZOOM_THRESHOLD - 1,
+        minPoints: 2,
         map: (props) => ({ totalCount: props.count }),
         reduce: (acc, props) => {
           acc.totalCount += props.totalCount;
         },
       }),
       lookup: new Map<string, GeoGroup>(),
+      lastZoom: -1,
     });
   }
 
   shouldUpdateState({ changeFlags }: UpdateParameters<this>): boolean {
     if (changeFlags.propsOrDataChanged) return true;
-    return (
-      changeFlags.viewportChanged && this.context.viewport.zoom < ZOOM_THRESHOLD
-    );
+    if (changeFlags.viewportChanged) {
+      return Math.floor(this.context.viewport.zoom) !== this.state.lastZoom;
+    }
+    return false;
   }
 
   updateState(params: UpdateParameters<this>) {
@@ -79,9 +83,15 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
             properties: { geoKey, count: d.count },
           };
         });
-      this.state.index.load(features);
-      this.setState({ lookup });
+      // Only replace the index when we have real data, or when the index was
+      // already empty. This prevents a transient empty-data update (e.g. during
+      // initial query load or a React transition) from wiping a valid index.
+      if (features.length > 0 || this.state.lookup.size === 0) {
+        this.state.index.load(features);
+        this.setState({ lookup });
+      }
     }
+    this.setState({ lastZoom: Math.floor(this.context.viewport.zoom) });
   }
 
   /** Resolve a lean RenderPoint back to a full GeoGroup on demand (pick). */
@@ -161,7 +171,7 @@ export class GroupedIconLayer extends CompositeLayer<GroupedIconLayerProps> {
         getIcon: isDark,
         getSize: zoom,
       },
-      parameters: { depthCompare: "less-equal" },
+      parameters: { depthCompare: "always" },
     });
 
     return [singleLayer, clusterLayer];

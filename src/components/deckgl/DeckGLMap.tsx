@@ -23,6 +23,11 @@ interface UnifiedDeckMapProps {
   id: string;
   layers: LayersList | null;
   defaultViewState: ViewState;
+  /** Effective starting position (defaultViewState merged with URL params).
+   *  Passed as deck.gl's initialViewState so deck.gl stays in uncontrolled
+   *  mode from the start — avoids the controlled→uncontrolled switch that
+   *  would reinitialize all layers on first user interaction. */
+  startViewState?: ViewState;
   commandedViewState: ViewState | undefined;
   isGlobe: boolean;
   onViewStateChange: (viewState: ViewState) => void;
@@ -36,6 +41,7 @@ export default function DeckGLMap({
   id,
   layers,
   defaultViewState,
+  startViewState,
   commandedViewState,
   onViewStateChange,
   isGlobe,
@@ -119,11 +125,18 @@ export default function DeckGLMap({
       <DeckGL
         id={`deck-id-${id}`}
         key={`deck-key-${id}`}
-        initialViewState={defaultViewState}
+        initialViewState={startViewState ?? defaultViewState}
         viewState={commandedViewState}
         onViewStateChange={({ viewState: newViewState }) => {
           const vs = newViewState as ViewState;
-          setCurrentZoom(vs.zoom ?? 0);
+          const newZoom = vs.zoom ?? 0;
+          // Only re-render when crossing the style threshold — avoids a state
+          // update (and DeckGLMap re-render) on every single pan/zoom frame.
+          setCurrentZoom((prev) =>
+            (prev > ZOOM_STYLE_THRESHOLD) !== (newZoom > ZOOM_STYLE_THRESHOLD)
+              ? newZoom
+              : prev,
+          );
           onViewStateChange(vs);
         }}
         views={view}
