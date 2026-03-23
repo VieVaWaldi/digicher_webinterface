@@ -37,7 +37,13 @@ function FundingScenarioContent() {
 
   /** Filters */
 
-  const { filters: filterValues, setters, resetAll } = useFilters();
+  const {
+    filters: filterValues,
+    setters,
+    resetAll,
+    toQueryString,
+    toListQueryString,
+  } = useFilters();
 
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
 
@@ -53,30 +59,45 @@ function FundingScenarioContent() {
     [debouncedSetViewState],
   );
   const {
-    YearRangeFilter, CountryFilter, TypeAndSmeFilter,
-    SearchFilter, MinorityGroupsFilter, FrameworkProgrammeFilter, TopicFilter,
-    yearRangePredicate, countryPredicate, typeAndSmePredicate,
-    institutionSearchPredicate, projectSearchPredicate,
-    frameworkProgrammePredicate, topicPredicate,
+    YearRangeFilter,
+    CountryFilter,
+    TypeAndSmeFilter,
+    SearchFilter,
+    MinorityGroupsFilter,
+    FrameworkProgrammeFilter,
+    TopicFilter,
+    yearRangePredicate,
+    countryPredicate,
+    typeAndSmePredicate,
+    institutionSearchPredicate,
+    projectSearchPredicate,
+    frameworkProgrammePredicate,
+    topicPredicate,
     selectedCountries,
   } = useScenarioFilters(filterValues, setters);
 
   /** Apply Filters */
 
-  const { filteredData, isFilterPending } = useFilteredMapViewInstitutions(data, {
-    selectedCountries,
-    institutionSearchPredicate,
-    typeAndSmePredicate,
-    topicPredicate,
-    projectSearchPredicate,
-    frameworkProgrammePredicate,
-    yearRangePredicate,
-  });
+  const { filteredData, isFilterPending } = useFilteredMapViewInstitutions(
+    data,
+    {
+      selectedCountries,
+      institutionSearchPredicate,
+      typeAndSmePredicate,
+      topicPredicate,
+      projectSearchPredicate,
+      frameworkProgrammePredicate,
+      yearRangePredicate,
+    },
+  );
 
   /** Calculations */
 
   const maxTotalCost = useMemo(() => {
-    return filteredData.reduce((max, i) => Math.max(max, getParticipationCost(i)), 0);
+    return filteredData.reduce(
+      (max, i) => Math.max(max, getParticipationCost(i)),
+      0,
+    );
   }, [filteredData]);
 
   const totalFunding = useMemo(() => {
@@ -121,33 +142,29 @@ function FundingScenarioContent() {
         {TypeAndSmeFilter}
         {FrameworkProgrammeFilter}
       </FilterSection>
-
-      <FilterSection title="Topics">{TopicFilter}</FilterSection>
     </Box>
   );
 
   /** List View */
 
+  /** ToDo: Reuse for real MapListView */
   const flyToRef = useRef<((geo: number[]) => void) | null>(null);
-  const handleFlyTo = useCallback((geo: number[]) => flyToRef.current?.(geo), []);
+  const handleFlyTo = useCallback(
+    (geo: number[]) => flyToRef.current?.(geo),
+    [],
+  );
   const handleFlyToReady = useCallback((fn: (geo: number[]) => void) => {
     flyToRef.current = fn;
   }, []);
-
-  const listContent = useInstitutionListView(filteredData, {
-    onFlyTo: handleFlyTo,
-    onRowClick: (item) => {
-      setSelectedItem({ type: "grouped-institution", geolocation: item.geolocation, institutionIds: [item.id] });
-      setInfoPanelOpen(true);
-    },
-  });
 
   /** Event Handlers */
 
   const handleMapOnClick = useCallback((info: any) => {
     if (info.object?.points) {
       // Hex bin click — flatten all GeoGroup institutions into one selection
-      const institutions = (info.object.points as GeoGroup[]).flatMap((p) => p.institutions);
+      const institutions = (info.object.points as GeoGroup[]).flatMap(
+        (p) => p.institutions,
+      );
       const geo = (info.object.points as GeoGroup[])[0]?.geolocation ?? [0, 0];
       setSelectedItem({
         type: "grouped-institution",
@@ -158,7 +175,11 @@ function FundingScenarioContent() {
     } else if (info.object?.count && info.object?.institutions) {
       // Column layer click — GeoGroup directly
       const group = info.object as GeoGroup;
-      setSelectedItem({ type: "grouped-institution", geolocation: group.geolocation, institutionIds: group.institutions.map((i) => i.institution_id) });
+      setSelectedItem({
+        type: "grouped-institution",
+        geolocation: group.geolocation,
+        institutionIds: group.institutions.map((i) => i.institution_id),
+      });
       setInfoPanelOpen(true);
     }
   }, []);
@@ -183,7 +204,9 @@ function FundingScenarioContent() {
         const institutions = (obj.points as GeoGroup[]).flatMap(
           (p) => p.institutions,
         );
-        const geolocation = (obj.points as GeoGroup[])[0]?.geolocation ?? [0, 0];
+        const geolocation = (obj.points as GeoGroup[])[0]?.geolocation ?? [
+          0, 0,
+        ];
         return {
           type: "geoGroup",
           group: { geolocation, institutions, count: institutions.length },
@@ -217,12 +240,25 @@ function FundingScenarioContent() {
 
   /** Derive live GeoGroup from current filteredData for the selected item */
   const selectedGeoGroup = useMemo((): GeoGroup | null => {
-    if (!selectedItem || selectedItem.type !== "grouped-institution") return null;
+    if (!selectedItem || selectedItem.type !== "grouped-institution")
+      return null;
     const instMap = new Map(filteredData.map((i) => [i.institution_id, i]));
     const institutions = selectedItem.institutionIds.map(
-      (id) => instMap.get(id) ?? { institution_id: id, geolocation: selectedItem.geolocation, country_code: null, type: null, sme: null, projects: null },
+      (id) =>
+        instMap.get(id) ?? {
+          institution_id: id,
+          geolocation: selectedItem.geolocation,
+          country_code: null,
+          type: null,
+          sme: null,
+          projects: null,
+        },
     );
-    return { geolocation: selectedItem.geolocation, institutions, count: institutions.length };
+    return {
+      geolocation: selectedItem.geolocation,
+      institutions,
+      count: institutions.length,
+    };
   }, [selectedItem, filteredData]);
 
   /** URL persistence: sync selectedItem → URL sel param (skip initial mount) */
@@ -238,7 +274,10 @@ function FundingScenarioContent() {
     }
     if (selectedItem.type === "grouped-institution") {
       setters.setSelectionKey(`gi:${selectedItem.geolocation.join(",")}`);
-    } else if (selectedItem.type === "project" && selectedItem.projects.length > 0) {
+    } else if (
+      selectedItem.type === "project" &&
+      selectedItem.projects.length > 0
+    ) {
       setters.setSelectionKey(`pr:${selectedItem.projects[0].project_id}`);
     }
   }, [selectedItem]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -246,7 +285,12 @@ function FundingScenarioContent() {
   /** URL initialization: restore selectedItem from URL sel param */
   const panelInitializedRef = useRef(false);
   useEffect(() => {
-    if (panelInitializedRef.current || !filterValues.selectionKey || !groupedData.length) return;
+    if (
+      panelInitializedRef.current ||
+      !filterValues.selectionKey ||
+      !groupedData.length
+    )
+      return;
     panelInitializedRef.current = true;
     const colonIdx = filterValues.selectionKey.indexOf(":");
     const type = filterValues.selectionKey.slice(0, colonIdx);
@@ -254,7 +298,11 @@ function FundingScenarioContent() {
     if (type === "gi") {
       const group = groupedData.find((g) => g.geolocation.join(",") === id);
       if (group) {
-        setSelectedItem({ type: "grouped-institution", geolocation: group.geolocation, institutionIds: group.institutions.map((i) => i.institution_id) });
+        setSelectedItem({
+          type: "grouped-institution",
+          geolocation: group.geolocation,
+          institutionIds: group.institutions.map((i) => i.institution_id),
+        });
         setInfoPanelOpen(true);
       }
     } else if (type === "pr") {
@@ -344,7 +392,8 @@ function FundingScenarioContent() {
         scenarioName="funding-tracker"
         scenarioTitle="Funding Tracker"
         filters={Filters}
-        listContent={listContent}
+        topicFilter={TopicFilter}
+        hideGlobeToggle
         onFlyToReady={handleFlyToReady}
         selectedItem={selectedItem}
         selectedGeoGroup={selectedGeoGroup}
@@ -352,6 +401,8 @@ function FundingScenarioContent() {
         onInfoPanelClose={() => setInfoPanelOpen(false)}
         onInfoPanelOpen={() => setInfoPanelOpen(true)}
         mapFilters={filterValues}
+        toQueryString={toQueryString}
+        toListQueryString={toListQueryString}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>

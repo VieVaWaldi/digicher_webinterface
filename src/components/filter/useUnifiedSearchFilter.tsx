@@ -9,10 +9,9 @@ import {
 } from "../mui/MultiSelectDropdown";
 import { useInstitutionSearchByName } from "@/hooks/queries/institution/useInstitutionSearchByName";
 import { useProjectSearchByName } from "@/hooks/queries/project/useProjectSearchByName";
+import type { SearchEntity } from "@/types/search";
 
-/** Type config */
-
-export type SearchEntity = "institutions" | "projects" | "works";
+export type { SearchEntity } from "@/types/search";
 
 export interface UnifiedSearchFilterOptions {
   /** Entity options to display in the dropdown. */

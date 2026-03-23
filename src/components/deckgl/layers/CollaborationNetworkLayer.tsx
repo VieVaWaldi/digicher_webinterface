@@ -87,10 +87,7 @@ export class CollaborationNetworkLayer extends CompositeLayer<CollaborationNetwo
         const top = topProject(d);
         return top && getTopicColor ? getTopicColor(top.project_id) : [255, 80, 120, 200];
       },
-      getWidth: (d) => {
-        const cost = arcCost(d);
-        return cost > 0 ? 1 + (cost / maxCost) * 7 : 2;
-      },
+      getWidth: 6,
       widthMinPixels: 1,
       greatCircle: true,
       pickable: true,

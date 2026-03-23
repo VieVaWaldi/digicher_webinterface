@@ -3,6 +3,7 @@ import { useProjectbyId } from "@/hooks/queries/project/useProjectById";
 import { useTopicByProjectId } from "@/hooks/queries/topic/useTopicByProjectId";
 import { topicIdToColor } from "@/components/filter/useTopicFilter";
 import ScienceIcon from "@mui/icons-material/Science";
+import { InstitutionName } from "./InstitutionName";
 
 const EUR = new Intl.NumberFormat("de-DE", {
   style: "currency",
@@ -13,11 +14,15 @@ const EUR = new Intl.NumberFormat("de-DE", {
 interface ArcProjectItemProps {
   project_id: string;
   total_cost: number | null;
+  aInstitutionId?: string;
+  bInstitutionId?: string;
 }
 
 export function ArcProjectItem({
   project_id,
   total_cost,
+  aInstitutionId,
+  bInstitutionId,
 }: ArcProjectItemProps) {
   const { data: project, isPending: isProjectPending } = useProjectbyId(
     project_id,
@@ -32,6 +37,20 @@ export function ArcProjectItem({
 
   return (
     <Typography variant="body2" component="div" sx={{ mb: 0.5 }}>
+      {(aInstitutionId || bInstitutionId) && (
+        <Box sx={{ mb: 0.75, pb: 0.75, borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
+          {aInstitutionId && (
+            <Typography variant="body2">
+              From <InstitutionName id={aInstitutionId} />
+            </Typography>
+          )}
+          {bInstitutionId && (
+            <Typography variant="body2">
+              To <InstitutionName id={bInstitutionId} />
+            </Typography>
+          )}
+        </Box>
+      )}
       <Typography variant="subtitle2" component="div">
         <ScienceIcon sx={{ color: "secondary.main", fontSize: 20, mr: 1 }} />
         {isProjectPending ? (

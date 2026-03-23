@@ -247,8 +247,25 @@ export function useListFilters() {
     [setFilters],
   );
 
+  const toScenarioQueryString = useCallback((): string => {
+    const f = filtersRef.current;
+    const p = new URLSearchParams();
+    if (f.q) p.set("q", f.q);
+    if (f.entity !== "projects") p.set("entity", f.entity);
+    if (f.minYear && f.maxYear) p.set("years", `${f.minYear}-${f.maxYear}`);
+    if (f.fps.length) p.set("fps", f.fps.join(","));
+    if (f.countries.length) p.set("countries", f.countries.join(","));
+    const types = [...f.instTypes, ...(f.sme ? ["sme"] : [])];
+    if (types.length) p.set("types", types.join(","));
+    if (f.fieldIds.length) p.set("tf", f.fieldIds.join(","));
+    if (f.subfieldIds.length) p.set("tsf", f.subfieldIds.join(","));
+    if (f.topicIds.length) p.set("tt", f.topicIds.join(","));
+    return p.toString();
+  }, []);
+
   return {
     filters,
+    toScenarioQueryString,
     setEntity,
     setQ,
     setPage,

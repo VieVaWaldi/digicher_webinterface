@@ -71,6 +71,7 @@ export interface UseFiltersResult {
   filters: FilterValues;
   setters: FilterSetters;
   toQueryString: () => string;
+  toListQueryString: () => string;
   resetAll: () => void;
 }
 
@@ -322,6 +323,30 @@ export function useFilters(): UseFiltersResult {
     };
   }, [buildParams, updateUrl]);
 
+  /** Convert current scenario filters to list view URL query string */
+  const toListQueryString = useCallback((): string => {
+    const params = new URLSearchParams();
+
+    if (filters.unifiedSearch.query) params.set("q", filters.unifiedSearch.query);
+    if (filters.unifiedSearch.entity !== "projects") params.set("entity", filters.unifiedSearch.entity);
+    if (filters.yearRange) {
+      params.set("minYear", String(filters.yearRange[0]));
+      params.set("maxYear", String(filters.yearRange[1]));
+    }
+    if (filters.frameworkProgrammes.length > 0) params.set("fps", filters.frameworkProgrammes.join(","));
+    if (filters.countries.length > 0) params.set("countries", filters.countries.join(","));
+
+    const instTypes = filters.typeAndSme.filter((v) => v !== "sme");
+    if (instTypes.length > 0) params.set("instTypes", instTypes.join(","));
+    if (filters.typeAndSme.includes("sme")) params.set("sme", "true");
+
+    if (filters.topicFields.length > 0) params.set("fieldIds", filters.topicFields.join(","));
+    if (filters.topicSubfields.length > 0) params.set("subfieldIds", filters.topicSubfields.join(","));
+    if (filters.topicTopics.length > 0) params.set("topicIds", filters.topicTopics.join(","));
+
+    return params.toString();
+  }, [filters]);
+
   /** Reset all filters by clearing all URL parameters */
   const resetAll = useCallback(() => {
     router.replace(pathname, { scroll: false });
@@ -410,6 +435,7 @@ export function useFilters(): UseFiltersResult {
     filters,
     setters,
     toQueryString,
+    toListQueryString,
     resetAll,
   };
 }

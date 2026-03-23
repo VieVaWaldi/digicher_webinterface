@@ -50,7 +50,7 @@ function CollaborationScenarioContent() {
 
   /** URL Filter State */
 
-  const { filters: filterValues, setters, resetAll } = useFilters();
+  const { filters: filterValues, setters, resetAll, toQueryString, toListQueryString } = useFilters();
 
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
 
@@ -193,6 +193,7 @@ function CollaborationScenarioContent() {
 
   /** List View */
 
+  /** ToDo: Reuse for real MapListView */
   const flyToRef = useRef<((geo: number[]) => void) | null>(null);
   const handleFlyTo = useCallback(
     (geo: number[]) => flyToRef.current?.(geo),
@@ -201,23 +202,6 @@ function CollaborationScenarioContent() {
   const handleFlyToReady = useCallback((fn: (geo: number[]) => void) => {
     flyToRef.current = fn;
   }, []);
-
-  const layer1List = useInstitutionListView(filteredData, {
-    onFlyTo: handleFlyTo,
-    onRowClick: (item) => {
-      setSelectedItem({ type: "grouped-institution", geolocation: item.geolocation, institutionIds: [item.id] });
-      setInfoPanelOpen(true);
-    },
-  });
-  const layer2List = useTopicNetworkListView(connectionFilteredData, {
-    onFlyTo: handleFlyTo,
-    onRowClick: (item) => {
-      setSelectedItem({ type: "grouped-institution", geolocation: item.geolocation, institutionIds: [item.id] });
-      setInfoPanelOpen(true);
-    },
-  });
-  const listContent =
-    filterValues.activeLayerIndex === 0 ? layer1List : layer2List;
 
   /** UI Components */
 
@@ -308,18 +292,8 @@ function CollaborationScenarioContent() {
         {FrameworkProgrammeFilter}
       </FilterSection>
 
-      <FilterSection title="Topics">{TopicFilter}</FilterSection>
     </Box>
   );
-
-  /** Calculations */
-
-  /** ToDo: A Layer that shows highest collaborator would be cool */
-
-  //   const MAX_COLLAB_WEIGHT = useMemo(() => {
-  //     if (!collaborationView) return 0;
-  //     return Math.max(...collaborationView.scenarios((d) => d.collaboration_weight));
-  //   }, [collaborationView]);
 
   /** Event Handlers */
 
@@ -395,8 +369,10 @@ function CollaborationScenarioContent() {
     | {
         type: "arc";
         projects: { project_id: string; total_cost: number | null }[];
+        sourceInstitutionId: string;
+        partnerInstitutionId: string;
       }
-    | { type: "topic-arc"; project_id: string; total_cost: number | null };
+    | { type: "topic-arc"; project_id: string; total_cost: number | null; aInstitutionId: string; bInstitutionId: string };
 
   const { hoverState, makeHoverHandler } =
     useMapHover<CollaborationHoverData>();
@@ -405,12 +381,14 @@ function CollaborationScenarioContent() {
     () =>
       makeHoverHandler((obj: any): CollaborationHoverData | null => {
         if (obj?.institutions) return { type: "icon", group: obj as GeoGroup };
-        if (obj?.projects) return { type: "arc", projects: obj.projects };
+        if (obj?.projects) return { type: "arc", projects: obj.projects, sourceInstitutionId: obj.institution_id ?? "", partnerInstitutionId: obj.collaborator_id ?? "" };
         if (obj?.project_id)
           return {
             type: "topic-arc",
             project_id: obj.project_id,
             total_cost: obj.total_cost ?? null,
+            aInstitutionId: obj.a_institution_id ?? "",
+            bInstitutionId: obj.b_institution_id ?? "",
           };
         return null;
       }),
@@ -560,7 +538,6 @@ function CollaborationScenarioContent() {
         onEmptyMapClick={handleEmptyMapClick}
         scenarioName="collaboration"
         scenarioTitle="Collaboration"
-        listContent={listContent}
         onFlyToReady={handleFlyToReady}
         selectedItem={selectedItem}
         selectedGeoGroup={selectedGeoGroup}
@@ -568,15 +545,23 @@ function CollaborationScenarioContent() {
         onInfoPanelClose={() => setInfoPanelOpen(false)}
         onInfoPanelOpen={() => setInfoPanelOpen(true)}
         mapFilters={filterValues}
+        toQueryString={toQueryString}
+        toListQueryString={toListQueryString}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>
           {hoverState.data.type === "arc" ? (
-            <ArcTooltip projects={hoverState.data.projects} />
+            <ArcTooltip
+              projects={hoverState.data.projects}
+              sourceInstitutionId={hoverState.data.sourceInstitutionId}
+              partnerInstitutionId={hoverState.data.partnerInstitutionId}
+            />
           ) : hoverState.data.type === "topic-arc" ? (
             <ArcProjectItem
               project_id={hoverState.data.project_id}
               total_cost={hoverState.data.total_cost}
+              aInstitutionId={hoverState.data.aInstitutionId}
+              bInstitutionId={hoverState.data.bInstitutionId}
             />
           ) : (
             <GeoGroupTooltip group={hoverState.data.group} />

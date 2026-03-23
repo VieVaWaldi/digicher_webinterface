@@ -19,7 +19,6 @@ import { Box, Typography, useTheme } from "@mui/material";
 import { useFilters } from "@/hooks/persistence/useFilters";
 import { useDebouncedCallback } from "use-debounce";
 import { GroupedIconLayer } from "@/components/deckgl/layers/GroupedIconLayer";
-import { createIconLayer } from "@/components/deckgl/layers/IconLayer";
 import { LayerConfig } from "@/components/mui/LayerSwitcher";
 import { GeoGroup, groupByGeolocation } from "@/app/scenarios/scenario_data";
 import { useMapHover } from "@/components/deckgl/hover/useMapHover";
@@ -59,15 +58,18 @@ function ExploreScenarioContent() {
 
   /** Apply Filters */
 
-  const { filteredData, isFilterPending } = useFilteredMapViewInstitutions(data, {
-    selectedCountries,
-    institutionSearchPredicate,
-    typeAndSmePredicate,
-    topicPredicate,
-    projectSearchPredicate,
-    frameworkProgrammePredicate,
-    yearRangePredicate,
-  });
+  const { filteredData, isFilterPending } = useFilteredMapViewInstitutions(
+    data,
+    {
+      selectedCountries,
+      institutionSearchPredicate,
+      typeAndSmePredicate,
+      topicPredicate,
+      projectSearchPredicate,
+      frameworkProgrammePredicate,
+      yearRangePredicate,
+    },
+  );
 
   /** UI Components */
 
@@ -121,6 +123,7 @@ function ExploreScenarioContent() {
 
   /** List View */
 
+  /** ToDo: Currently unused but can be reused later for real MapListView */
   const flyToRef = useRef<((geo: number[]) => void) | null>(null);
   const handleFlyTo = useCallback(
     (geo: number[]) => flyToRef.current?.(geo),
@@ -130,17 +133,18 @@ function ExploreScenarioContent() {
     flyToRef.current = fn;
   }, []);
 
-  const listContent = useInstitutionListView(filteredData, {
-    onFlyTo: handleFlyTo,
-    onRowClick: (item) => {
-      setSelectedItem({
-        type: "grouped-institution",
-        geolocation: item.geolocation,
-        institutionIds: [item.id],
-      });
-      setInfoPanelOpen(true);
-    },
-  });
+  /** ToDo: Remove this for a normal paginated list view table? */
+  // const listContent = useInstitutionListView(filteredData, {
+  //   onFlyTo: handleFlyTo,
+  //   onRowClick: (item) => {
+  //     setSelectedItem({
+  //       type: "grouped-institution",
+  //       geolocation: item.geolocation,
+  //       institutionIds: [item.id],
+  //     });
+  //     setInfoPanelOpen(true);
+  //   },
+  // });
 
   /** Event Handlers */
 
@@ -269,21 +273,6 @@ function ExploreScenarioContent() {
           }),
         ],
       },
-      {
-        id: "individual-icons",
-        title: "Individual",
-        description: "All individual institutions",
-        previewImage: "/images/settings/mapbox-dark.png",
-        createLayers: () => [
-          createIconLayer({
-            id: "icon-institution-view",
-            data: groupedData,
-            isDark,
-            onClick: handleMapOnClick,
-            onHover: handleIconHover,
-          }),
-        ],
-      },
     ],
     [groupedData, isDark, handleMapOnClick, handleIconHover],
   );
@@ -304,9 +293,8 @@ function ExploreScenarioContent() {
         loading={isPending}
         isFilterPending={isFilterPending}
         error={error}
-        scenarioName={"Explore"}
-        scenarioTitle={"Explore"}
-        listContent={listContent}
+        scenarioName={"Overview"}
+        scenarioTitle={"Overview"}
         onFlyToReady={handleFlyToReady}
         selectedItem={selectedItem}
         selectedGeoGroup={selectedGeoGroup}

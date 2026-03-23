@@ -6,7 +6,6 @@ import {
   serial,
   text,
   timestamp,
-  numeric,
 } from "drizzle-orm/pg-core";
 
 export const coreSchema = pgSchema("core");

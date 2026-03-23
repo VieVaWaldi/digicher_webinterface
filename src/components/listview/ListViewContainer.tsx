@@ -7,12 +7,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   MenuItem,
   Pagination,
   Select,
   Skeleton,
   Typography,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useEffect, useState } from "react";
 import { useListFilters } from "@/hooks/persistence/useListFilters";
 import { useTableViewProject } from "@/hooks/queries/views/table/useTableViewProject";
@@ -28,6 +30,7 @@ import { ProjectPanel } from "@/components/infopanel/panels/ProjectPanel";
 import { WorkPanel } from "@/components/infopanel/panels/WorkPanel";
 import { InstitutionDetailView } from "@/components/infopanel/shared/InstitutionDetailView";
 import { useTopicFilter } from "@/components/filter/useTopicFilter";
+import { MainMenu } from "@/components/layout/MainMenu";
 
 const SORT_OPTIONS = {
   projects: [
@@ -62,6 +65,7 @@ function SkeletonRows({ count = 5 }: { count?: number }) {
 export function ListViewContainer() {
   const {
     filters,
+    toScenarioQueryString,
     setEntity,
     setQ,
     setPage,
@@ -84,6 +88,7 @@ export function ListViewContainer() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [topicDialogOpen, setTopicDialogOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const { TopicFilter } = useTopicFilter({
     initialFields: filters.fieldIds,
@@ -169,20 +174,55 @@ export function ListViewContainer() {
   const sortOptions = SORT_OPTIONS[filters.entity];
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflow: "hidden",
+      }}
+    >
       {/* Search bar */}
-      <Box sx={{ px: 3, pt: 2, pb: 1, flexShrink: 0 }}>
-        <SearchBar
-          value={filters.q}
-          onSearch={setQ}
-          onClear={() => setQ("")}
-          entityOptions={ENTITY_OPTIONS_LIST}
-          selectedEntity={filters.entity}
-          onEntityChange={(v) => setEntity(v as any)}
-          placeholder={`Search ${filters.entity}…`}
-          reverseLayout
-        />
+      <Box
+        sx={{
+          pl: 1.5,
+          pr: 3,
+          pt: 2,
+          pb: 1,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <IconButton
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open menu"
+          sx={{ color: "text.primary" }}
+        >
+          <MenuIcon />
+          <Typography variant="h5" sx={{ ml: 0.5 }}>
+            HM
+          </Typography>
+        </IconButton>
+        <Box sx={{ flex: 1 }}>
+          <SearchBar
+            value={filters.q}
+            onSearch={setQ}
+            onClear={() => setQ("")}
+            entityOptions={ENTITY_OPTIONS_LIST}
+            selectedEntity={filters.entity}
+            onEntityChange={(v) => setEntity(v as any)}
+            placeholder={`Search ${filters.entity}…`}
+            reverseLayout
+          />
+        </Box>
       </Box>
+      <MainMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        toQueryString={toScenarioQueryString}
+      />
 
       {/* Filter bar */}
       <Box sx={{ px: 3, flexShrink: 0 }}>
@@ -194,7 +234,11 @@ export function ListViewContainer() {
           onClearInstitution={clearInstitution}
           onClearCollaboratorId={clearCollaboratorId}
           onClearProjectId={clearProjectId}
-          topicFilterCount={filters.topicIds.length + filters.subfieldIds.length + filters.fieldIds.length}
+          topicFilterCount={
+            filters.topicIds.length +
+            filters.subfieldIds.length +
+            filters.fieldIds.length
+          }
           onOpenTopicPicker={() => setTopicDialogOpen(true)}
           onClearTopicFilters={clearTopicFilters}
           onWorkType={setWorkType}
@@ -245,7 +289,10 @@ export function ListViewContainer() {
           <Button
             size="small"
             onClick={() =>
-              setSort(filters.sortBy, filters.sortOrder === "asc" ? "desc" : "asc")
+              setSort(
+                filters.sortBy,
+                filters.sortOrder === "asc" ? "desc" : "asc",
+              )
             }
             sx={{ textTransform: "none", minWidth: 0, px: 1 }}
           >
@@ -255,7 +302,14 @@ export function ListViewContainer() {
       </Box>
 
       {/* Main content area */}
-      <Box sx={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
         {/* List */}
         <Box
           sx={{
@@ -323,7 +377,8 @@ export function ListViewContainer() {
                   {(institutionQuery.data?.data ?? []).length === 0 ? (
                     <Box sx={{ px: 3, py: 4, textAlign: "center" }}>
                       <Typography variant="body2" color="text.secondary">
-                        No institutions found. Try adjusting your search or filters.
+                        No institutions found. Try adjusting your search or
+                        filters.
                       </Typography>
                     </Box>
                   ) : (
@@ -380,7 +435,12 @@ export function ListViewContainer() {
       </Box>
 
       {/* Topic filter dialog */}
-      <Dialog open={topicDialogOpen} onClose={() => setTopicDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={topicDialogOpen}
+        onClose={() => setTopicDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Filter by Topics</DialogTitle>
         <DialogContent>{TopicFilter}</DialogContent>
         <DialogActions>

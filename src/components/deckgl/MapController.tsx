@@ -2,36 +2,31 @@
 import React, { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { FlyToInterpolator } from "@deck.gl/core";
 import DeckGLMap from "@/components/deckgl/DeckGLMap";
-import Navbar from "@/components/layout/Navbar";
-import MobileNavbar from "@/components/layout/MobileNavbar";
 import Feedback, { FeedbackButton } from "../layout/Feedback";
 import { IconTextButton } from "@/components/mui/IconTextButton";
-import { LayerSwitcher, LayerConfig } from "@/components/mui/LayerSwitcher";
-import { SideMenu } from "@/components/mui/SideMenu";
+import { LayerConfig, LayerSwitcher } from "@/components/mui/LayerSwitcher";
+import { SIDE_MENU_WIDTH, SideMenu } from "@/components/mui/SideMenu";
 import {
   Box,
   Button,
-  CircularProgress,
+  Divider,
   Paper,
   Stack,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import MenuIcon from "@mui/icons-material/Menu";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import { ViewState } from "react-map-gl/mapbox";
 import { Map, Public } from "@mui/icons-material";
-import { ScenarioSelector } from "@/components/mui";
-import { SIDE_MENU_WIDTH } from "@/components/mui/SideMenu";
-import { InfoPanelContainer, SelectedItem, getSelectionLabel } from "@/components/infopanel";
+import { InfoPanelContainer, SelectedItem } from "@/components/infopanel";
 import { GeoGroup } from "@/app/scenarios/scenario_data";
 import { FilterValues } from "@/hooks/persistence/useFilters";
+import BurgerMenu from "@/components/layout/BurgerMenu";
 
 interface MapControllerProps {
   layerConfigs: LayerConfig[];
@@ -40,6 +35,10 @@ interface MapControllerProps {
   title: ReactNode;
   search: ReactNode;
   filters: ReactNode;
+  /** TopicFilter UI from scenario pages */
+  topicFilter?: ReactNode;
+  /** Hides the globe/3D toggle button when true */
+  hideGlobeToggle?: boolean;
   /** Default view state for a given scenario */
   defaultViewState: ViewState;
   /** Initial view state from URL (takes precedence over defaultViewState) */
@@ -55,8 +54,6 @@ interface MapControllerProps {
   error: Error | null;
   scenarioName: string;
   scenarioTitle?: string;
-  /** Content to render inside the right-side list panel */
-  listContent?: ReactNode;
   /** Called once on mount with a stable flyTo function */
   onFlyToReady?: (flyTo: (geolocation: number[]) => void) => void;
   /** Currently selected map item for the info panel */
@@ -71,6 +68,10 @@ interface MapControllerProps {
   onInfoPanelOpen?: () => void;
   /** Current map filter values to pass through to info panel for deep-linking */
   mapFilters?: FilterValues;
+  /** Serializes current filters to query string for cross-scenario navigation */
+  toQueryString?: () => string;
+  /** Serializes current filters to list view query string for navigation to /list */
+  toListQueryString?: () => string;
 }
 
 export default function MapController({
@@ -80,6 +81,8 @@ export default function MapController({
   title,
   search,
   filters,
+  topicFilter,
+  hideGlobeToggle = false,
   defaultViewState,
   initialViewState,
   onViewStateChange,
@@ -90,7 +93,6 @@ export default function MapController({
   error = null,
   scenarioName,
   scenarioTitle,
-  listContent,
   onFlyToReady,
   selectedItem,
   selectedGeoGroup,
@@ -98,15 +100,16 @@ export default function MapController({
   onInfoPanelClose,
   onInfoPanelOpen,
   mapFilters,
+  toQueryString,
+  toListQueryString,
 }: MapControllerProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [showSearchbar, setShowSearchbar] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [topicsOpen, setTopicsOpen] = useState(false);
   const [listOpen, setListOpen] = useState(false);
-  const [navbarOpen, setNavbarOpen] = useState(false);
-
   const [showFeedback, setShowFeedback] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
 
@@ -212,19 +215,6 @@ export default function MapController({
         overflow: "hidden",
       }}
     >
-      {/* Desktop Navbar - hidden on mobile */}
-      {!isMobile && (
-        <Navbar>
-          <Box sx={{ flexGrow: 1 }} />
-          <ScenarioSelector canRoute={true} />
-          <Box
-            sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end", alignItems: "center", pr: 1 }}
-          >
-            {isFilterPending && <CircularProgress size={20} thickness={5} />}
-          </Box>
-        </Navbar>
-      )}
-
       <Box sx={{ flex: 1, position: "relative" }}>
         {/* Map */}
         <Box
@@ -256,35 +246,62 @@ export default function MapController({
             "& > *": { pointerEvents: "auto" }, // Trick to enable UI interaction
           }}
         >
-          {/* Top Left: Search Bar and Filter Button */}
+          {/* Top Left: Burger + SearchBar as one pill */}
+          <Paper
+            elevation={3}
+            sx={{
+              position: "absolute",
+              top: 16,
+              left: 16,
+              borderRadius: 4,
+              display: "flex",
+              alignItems: "center",
+              "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+              "& .MuiInputAdornment-positionStart:has([data-testid='SearchIcon'])":
+                { display: "none" },
+            }}
+          >
+            <BurgerMenu
+              inline
+              toQueryString={toQueryString}
+              toListQueryString={toListQueryString}
+            />
+            {showSearchbar && !isMobile && (
+              <>
+                <Divider
+                  orientation="vertical"
+                  sx={{ height: 28, alignSelf: "center" }}
+                />
+                {search}
+              </>
+            )}
+          </Paper>
+
+          {/* Filter + Topics buttons stacked below BurgerMenu */}
           {showSearchbar && (
             <Box
               sx={{
                 position: "absolute",
-                top: 16,
+                top: 72,
                 left: 16,
                 display: "flex",
                 flexDirection: "column",
-                gap: 1.5,
+                gap: 1,
               }}
             >
-              {/* Search Bar - hidden on mobile */}
-              {!isMobile && (
-                <Paper sx={{ borderRadius: 4 }} elevation={3}>
-                  {search}
-                </Paper>
-              )}
-              {/* Menu Button - mobile only */}
-              {isMobile && (
+              {topicFilter && (
                 <Paper
                   elevation={3}
                   sx={{ borderRadius: 4, width: "fit-content" }}
                 >
                   <IconTextButton
-                    icon={<MenuIcon />}
-                    label="Menu"
-                    tooltip="Open Menu"
-                    onClick={() => setNavbarOpen(true)}
+                    icon={<AccountTreeIcon />}
+                    label="Topics"
+                    tooltip="Open Topic Filter"
+                    onClick={() => {
+                      setTopicsOpen(true);
+                      setShowSearchbar(false);
+                    }}
                   />
                 </Paper>
               )}
@@ -304,67 +321,6 @@ export default function MapController({
               </Paper>
             </Box>
           )}
-
-          {/* Top Right: List Button + Info Panel Quick-Access */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: 16,
-              right: 16,
-            }}
-          >
-            <Stack direction="column" spacing={1}>
-              <Paper elevation={3} sx={{ borderRadius: 4 }}>
-                <IconTextButton
-                  icon={<FormatListBulletedIcon />}
-                  label="Institutions"
-                  tooltip="Open Institutions Panel"
-                  onClick={() => setListOpen(true)}
-                />
-              </Paper>
-              {selectedItem && !infoPanelOpen && (
-                <Paper elevation={3} sx={{ borderRadius: 4 }}>
-                  <IconTextButton
-                    icon={<InfoOutlinedIcon />}
-                    label={getSelectionLabel(selectedItem, selectedGeoGroup)}
-                    tooltip="Reopen Info Panel"
-                    onClick={() => onInfoPanelOpen?.()}
-                  />
-                </Paper>
-              )}
-            </Stack>
-          </Box>
-
-          {/* Bottom Center: Title */}
-          {/*<Box*/}
-          {/*  sx={{*/}
-          {/*    position: "absolute",*/}
-          {/*    bottom: 0,*/}
-          {/*    left: "50%",*/}
-          {/*    transform: "translateX(-50%)",*/}
-          {/*    pointerEvents: "none",*/}
-          {/*    border: 1,*/}
-          {/*    borderBottom: 0,*/}
-          {/*    borderRadius: "12px 12px 0 0",*/}
-          {/*    borderColor: "divider",*/}
-          {/*  }}*/}
-          {/*>*/}
-          {/*  <Paper*/}
-          {/*    elevation={9}*/}
-          {/*    sx={{*/}
-          {/*      borderRadius: "12px 12px 0 0",*/}
-          {/*      px: 3,*/}
-          {/*      py: 1,*/}
-          {/*      pb: 2,*/}
-          {/*      minWidth: 200,*/}
-          {/*      minHeight: 40,*/}
-          {/*      pointerEvents: "auto",*/}
-          {/*      clipPath: "inset(-20px -20px 0 -20px)",*/}
-          {/*    }}*/}
-          {/*  >*/}
-          {/*    {title}*/}
-          {/*  </Paper>*/}
-          {/*</Box>*/}
 
           {/* Bottom Left: Layer Switcher */}
           {layerConfigs.length > 1 && (
@@ -402,27 +358,29 @@ export default function MapController({
                   tooltip="Reset view"
                 />
               </Paper>
-              <Paper
-                onClick={() => {
-                  setIsGlobe(!isGlobe);
-                }}
-                elevation={9}
-                sx={{ borderRadius: "20%" }}
-              >
-                {isGlobe ? (
-                  <IconTextButton
-                    placement={"left"}
-                    icon={<Map />}
-                    tooltip="Switch to 2D"
-                  />
-                ) : (
-                  <IconTextButton
-                    placement={"left"}
-                    icon={<Public />}
-                    tooltip="Switch to 3D"
-                  />
-                )}
-              </Paper>
+              {!hideGlobeToggle && (
+                <Paper
+                  onClick={() => {
+                    setIsGlobe(!isGlobe);
+                  }}
+                  elevation={9}
+                  sx={{ borderRadius: "20%" }}
+                >
+                  {isGlobe ? (
+                    <IconTextButton
+                      placement={"left"}
+                      icon={<Map />}
+                      tooltip="Switch to 2D"
+                    />
+                  ) : (
+                    <IconTextButton
+                      placement={"left"}
+                      icon={<Public />}
+                      tooltip="Switch to 3D"
+                    />
+                  )}
+                </Paper>
+              )}
               <Paper elevation={9} sx={{ borderRadius: "20%" }}>
                 <IconTextButton
                   placement={"left"}
@@ -448,11 +406,13 @@ export default function MapController({
                   />
                 </Stack>
               </Paper>
-              <FeedbackButton
-                showBanner={showBanner}
-                setShowBanner={setShowBanner}
-                setShowFeedback={setShowFeedback}
-              />
+              <Paper elevation={9} sx={{ borderRadius: "18px" }}>
+                <FeedbackButton
+                  showBanner={showBanner}
+                  setShowBanner={setShowBanner}
+                  setShowFeedback={setShowFeedback}
+                />
+              </Paper>
             </Stack>
           </Box>
         </Box>
@@ -481,14 +441,17 @@ export default function MapController({
           {/* Filter content will go here */}
         </SideMenu>
 
-        {/* Right Side Menu: List */}
+        {/* Left Side Menu: Topics */}
         <SideMenu
-          side="right"
-          title="Institutions"
-          open={listOpen}
-          onClose={() => setListOpen(false)}
+          side="left"
+          title="Topics"
+          open={topicsOpen}
+          onClose={() => {
+            setTopicsOpen(false);
+            setShowSearchbar(true);
+          }}
         >
-          {listContent}
+          {topicFilter}
         </SideMenu>
 
         {/* Right Side Menu: Info Panel */}
@@ -499,27 +462,6 @@ export default function MapController({
           onClose={() => onInfoPanelClose?.()}
           mapFilters={mapFilters}
         />
-
-        {/* Mobile Navbar Menu */}
-        <SideMenu
-          side="left"
-          title="Menu"
-          open={navbarOpen}
-          onClose={() => setNavbarOpen(false)}
-        >
-          <MobileNavbar
-            feedbackButton={
-              <FeedbackButton
-                showBanner={showBanner}
-                setShowBanner={setShowBanner}
-                setShowFeedback={setShowFeedback}
-                bannerRight
-              />
-            }
-          >
-            <ScenarioSelector canRoute={true} />
-          </MobileNavbar>
-        </SideMenu>
 
         {/* Feedback Modal */}
         <Feedback
