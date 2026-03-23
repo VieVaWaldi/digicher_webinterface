@@ -528,6 +528,7 @@ function CollaborationScenarioContent() {
         title={Title}
         search={SearchFilter}
         filters={Filters}
+        topicFilter={TopicFilter}
         defaultViewState={INITIAL_VIEW_STATE_TILTED_EU}
         initialViewState={filterValues.viewState}
         onViewStateChange={debouncedSetViewState}

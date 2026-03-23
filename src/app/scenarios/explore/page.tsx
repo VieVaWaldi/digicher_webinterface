@@ -286,6 +286,7 @@ function ExploreScenarioContent() {
         title={Title}
         search={SearchFilter}
         filters={Filters}
+        topicFilter={TopicFilter}
         defaultViewState={INITIAL_VIEW_STATE_EU}
         initialViewState={filterValues.viewState}
         onViewStateChange={debouncedSetViewState}

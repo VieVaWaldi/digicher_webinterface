@@ -64,10 +64,11 @@ export class TopicNetworkLayer extends CompositeLayer<TopicNetworkLayerProps> {
       getTargetPosition: (d) => d.b_geolocation as Position,
       getSourceColor: (d) => getTopicColor(d.project_id),
       getTargetColor: (d) => getTopicColor(d.project_id),
-      getWidth: (d) => {
-        const cost = d.total_cost ?? 0;
-        return cost > 0 ? 1 + (cost / maxCost) * 7 : 2;
-      },
+      // getWidth: (d) => {
+      //   const cost = d.total_cost ?? 0;
+      //   return cost > 0 ? 1 + (cost / maxCost) * 7 : 2;
+      // },
+      getWidth: 6,
       widthMinPixels: 1,
       greatCircle: true,
       pickable: true,
