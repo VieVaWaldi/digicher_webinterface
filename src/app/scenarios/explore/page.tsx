@@ -38,6 +38,14 @@ function ExploreScenarioContent() {
 
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
 
+  const handleInstitutionSelect = useCallback(
+    (id: string, geolocation: number[]) => {
+      setSelectedItem({ type: "grouped-institution", geolocation, institutionIds: [id] });
+      setInfoPanelOpen(true);
+    },
+    [],
+  );
+
   const {
     YearRangeFilter,
     CountryFilter,
@@ -54,7 +62,7 @@ function ExploreScenarioContent() {
     frameworkProgrammePredicate,
     topicPredicate,
     selectedCountries,
-  } = useScenarioFilters(filterValues, setters);
+  } = useScenarioFilters(filterValues, setters, { onInstitutionSelect: handleInstitutionSelect });
 
   /** Apply Filters */
 

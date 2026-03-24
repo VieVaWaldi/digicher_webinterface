@@ -35,7 +35,7 @@ async function tableViewInstitutionHandler(request: NextRequest) {
   if (params.search) {
     const searchQuery = params.search.replace(/\s+/g, " | ");
     whereConditions.push(
-      sql`to_tsvector('simple', COALESCE(${organizationV3.legalName}, '')) @@ to_tsquery('simple', ${searchQuery})`,
+      sql`to_tsvector('simple', COALESCE(${organizationV3.legalName}, '') || ' ' || COALESCE(${organizationV3.legalShortName}, '')) @@ to_tsquery('simple', ${searchQuery})`,
     );
   }
 

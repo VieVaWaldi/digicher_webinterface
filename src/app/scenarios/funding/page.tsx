@@ -58,6 +58,14 @@ function FundingScenarioContent() {
     },
     [debouncedSetViewState],
   );
+  const handleInstitutionSelect = useCallback(
+    (id: string, geolocation: number[]) => {
+      setSelectedItem({ type: "grouped-institution", geolocation, institutionIds: [id] });
+      setInfoPanelOpen(true);
+    },
+    [],
+  );
+
   const {
     YearRangeFilter,
     CountryFilter,
@@ -74,7 +82,7 @@ function FundingScenarioContent() {
     frameworkProgrammePredicate,
     topicPredicate,
     selectedCountries,
-  } = useScenarioFilters(filterValues, setters);
+  } = useScenarioFilters(filterValues, setters, { onInstitutionSelect: handleInstitutionSelect });
 
   /** Apply Filters */
 

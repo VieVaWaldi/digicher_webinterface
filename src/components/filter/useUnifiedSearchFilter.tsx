@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box } from "@mui/material";
 import { EntityOption, SearchBar } from "../mui/SearchBar";
 import {
@@ -9,6 +9,7 @@ import {
 } from "../mui/MultiSelectDropdown";
 import { useInstitutionSearchByName } from "@/hooks/queries/institution/useInstitutionSearchByName";
 import { useProjectSearchByName } from "@/hooks/queries/project/useProjectSearchByName";
+import { InstitutionSuggestionsDropdown } from "@/components/filter/InstitutionSuggestionsDropdown";
 import type { SearchEntity } from "@/types/search";
 
 export type { SearchEntity } from "@/types/search";
@@ -32,6 +33,10 @@ export interface UnifiedSearchFilterOptions {
   onQueryChange?: (value: string) => void;
   /** Callback when minority groups change (for URL sync) */
   onMinorityGroupsChange?: (value: string[]) => void;
+  /** Enable autocomplete suggestions dropdown (map view only) */
+  showSuggestions?: boolean;
+  /** Called when user selects an institution from the suggestions dropdown */
+  onInstitutionSelect?: (id: string, geolocation: number[]) => void;
 }
 
 export interface UnifiedSearchFilterResult {
@@ -80,6 +85,8 @@ export default function useUnifiedSearchFilter(
     onEntityChange,
     onQueryChange,
     onMinorityGroupsChange,
+    showSuggestions = false,
+    onInstitutionSelect,
   } = options;
 
   /**SHARED STATE */
@@ -89,6 +96,8 @@ export default function useUnifiedSearchFilter(
   );
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery ?? "");
   const [activeQuery, setActiveQuery] = useState<string>(initialQuery ?? "");
+  const [suggestionsQuery, setSuggestionsQuery] = useState<string>("");
+  const suggestionsDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedMinorityGroups, setSelectedMinorityGroups] = useState<
     string[]
   >(initialMinorityGroups ?? []);
@@ -142,6 +151,17 @@ export default function useUnifiedSearchFilter(
     },
     [isInstitutionSearch, activeQuery, institutionIdSet],
   );
+
+  /** INSTITUTION SUGGESTIONS (map view only) */
+
+  const { data: suggestionResults = [], isPending: isSuggestionsPending } =
+    useInstitutionSearchByName(suggestionsQuery, {
+      enabled: isInstitutionSearch && showSuggestions && !!suggestionsQuery,
+      queryKey: ["institution-suggest", suggestionsQuery],
+    });
+
+  const showSuggestionsDropdown =
+    isInstitutionSearch && showSuggestions && !!suggestionsQuery;
 
   /** PROJECT SEARCH (with minority groups support) */
 
@@ -217,9 +237,18 @@ export default function useUnifiedSearchFilter(
 
   /** EVENT HANDLERS */
 
-  const handleSearchInput = useCallback((value: string) => {
-    setSearchQuery(value);
-  }, []);
+  const handleSearchInput = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+      if (showSuggestions && isInstitutionSearch) {
+        if (suggestionsDebounceRef.current) clearTimeout(suggestionsDebounceRef.current);
+        suggestionsDebounceRef.current = setTimeout(() => {
+          setSuggestionsQuery(value);
+        }, 300);
+      }
+    },
+    [showSuggestions, isInstitutionSearch],
+  );
 
   const handleSearchStart = useCallback(
     (key: string) => {
@@ -240,20 +269,34 @@ export default function useUnifiedSearchFilter(
   const handleSearchClear = useCallback(() => {
     setSearchQuery("");
     setActiveQuery("");
+    setSuggestionsQuery("");
     onQueryChange?.("");
   }, [onQueryChange]);
 
   const handleEntityChange = useCallback(
     (value: string) => {
       setSearchEntity(value as SearchEntity);
-      // Reset search when changing entity
       setActiveQuery("");
       setSearchQuery("");
+      setSuggestionsQuery("");
       onQueryChange?.("");
       onEntityChange?.(value as SearchEntity);
     },
     [onEntityChange, onQueryChange],
   );
+
+  const handleSuggestionSelect = useCallback(
+    (id: string, geolocation: number[]) => {
+      setSuggestionsQuery("");
+      setSearchQuery("");
+      onInstitutionSelect?.(id, geolocation);
+    },
+    [onInstitutionSelect],
+  );
+
+  const handleSuggestionsClickAway = useCallback(() => {
+    setSuggestionsQuery("");
+  }, []);
 
   const handleMinorityGroupsChange = useCallback(
     (groups: string[]) => {
@@ -302,33 +345,52 @@ export default function useUnifiedSearchFilter(
 
   /** UI COMPONENTS */
 
+  const placeholder = isInstitutionSearch
+    ? "Select institution..."
+    : isProjectSearch
+      ? "Filter in projects..."
+      : "Search...";
+
   const SearchFilter: ReactNode = useMemo(
     () => (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        <SearchBar
-          value={searchQuery}
-          placeholder={`Search ...`}
-          onSearch={handleSearchInput}
-          onSearchStart={handleSearchStart}
-          onClear={handleSearchClear}
-          entityOptions={entityOptions}
-          selectedEntity={searchEntity}
-          onEntityChange={handleEntityChange}
-        />
-        {/*  <Typography variant="caption" color="text.secondary">*/}
-        {/*    Words separated by spaces are searched with OR logic*/}
-        {/*  </Typography>*/}
+        <Box sx={showSuggestions ? { position: "relative" } : undefined}>
+          <SearchBar
+            value={searchQuery}
+            placeholder={placeholder}
+            onSearch={handleSearchInput}
+            onSearchStart={handleSearchStart}
+            onClear={handleSearchClear}
+            entityOptions={entityOptions}
+            selectedEntity={searchEntity}
+            onEntityChange={handleEntityChange}
+          />
+          {showSuggestionsDropdown && (
+            <InstitutionSuggestionsDropdown
+              results={suggestionResults}
+              loading={isSuggestionsPending}
+              onSelect={handleSuggestionSelect}
+              onClickAway={handleSuggestionsClickAway}
+            />
+          )}
+        </Box>
       </Box>
     ),
     [
-      entityLabel,
+      placeholder,
+      showSuggestions,
+      showSuggestionsDropdown,
+      suggestionResults,
+      isSuggestionsPending,
       handleSearchInput,
       handleSearchStart,
+      handleSearchClear,
+      handleSuggestionSelect,
+      handleSuggestionsClickAway,
       entityOptions,
       searchEntity,
       handleEntityChange,
-      isProjectSearch,
-      isWorksSearch,
+      searchQuery,
     ],
   );
 

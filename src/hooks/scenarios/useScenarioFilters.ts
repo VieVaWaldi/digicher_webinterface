@@ -46,6 +46,10 @@ export interface ScenarioFiltersResult {
 export function useScenarioFilters(
   filterValues: FilterValues,
   setters: FilterSetters,
+  options?: {
+    onInstitutionSelect?: (id: string, geolocation: number[]) => void;
+    defaultEntity?: "projects" | "institutions" | "works";
+  },
 ): ScenarioFiltersResult {
   const debouncedSetYearRange = useDebouncedCallback(setters.setYearRange, 300);
 
@@ -88,13 +92,15 @@ export function useScenarioFilters(
     MinorityGroupsFilter,
   } = useUnifiedSearchFilter({
     entityOptions: ENTITY_OPTIONS_MAP,
-    defaultEntity: "projects",
+    defaultEntity: options?.defaultEntity ?? "projects",
     initialEntity: stable.unifiedSearch.entity,
     initialQuery: stable.unifiedSearch.query,
     initialMinorityGroups: stable.unifiedSearch.minorityGroups,
     onEntityChange: setters.setEntity,
     onQueryChange: setters.setQuery,
     onMinorityGroupsChange: setters.setMinorityGroups,
+    showSuggestions: true,
+    onInstitutionSelect: options?.onInstitutionSelect,
   });
 
   const { FrameworkProgrammeFilter, frameworkProgrammePredicate } =

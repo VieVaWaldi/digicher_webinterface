@@ -54,6 +54,15 @@ function CollaborationScenarioContent() {
 
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
 
+  const handleInstitutionSelect = useCallback(
+    (id: string, _geolocation: number[]) => {
+      setSelectedInstitutionId(id);
+      setSelectedItem({ type: "collab-network", institutionId: id, network: null });
+      setInfoPanelOpen(true);
+    },
+    [],
+  );
+
   const {
     YearRangeFilter, CountryFilter, TypeAndSmeFilter,
     SearchFilter, MinorityGroupsFilter, FrameworkProgrammeFilter, TopicFilter,
@@ -61,7 +70,7 @@ function CollaborationScenarioContent() {
     institutionSearchPredicate, projectSearchPredicate,
     frameworkProgrammePredicate, topicPredicate,
     selectedCountries, getTopicColor, selectedFields, selectedSubfields, selectedTopics,
-  } = useScenarioFilters(filterValues, setters);
+  } = useScenarioFilters(filterValues, setters, { onInstitutionSelect: handleInstitutionSelect, defaultEntity: "institutions" });
 
   /** Apply Filters */
 
@@ -358,9 +367,6 @@ function CollaborationScenarioContent() {
     }
   }, []);
 
-  const handleEmptyMapClick = useCallback(() => {
-    setSelectedInstitutionId(null);
-  }, []);
 
   /** Hover */
 
@@ -536,7 +542,6 @@ function CollaborationScenarioContent() {
         loading={isPending || isTopicCollabLoading}
         isFilterPending={isFilterPending}
         error={error || topicCollabError}
-        onEmptyMapClick={handleEmptyMapClick}
         scenarioName="collaboration"
         scenarioTitle="Collaboration"
         onFlyToReady={handleFlyToReady}
