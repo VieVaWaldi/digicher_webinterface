@@ -30,6 +30,7 @@ import { ProjectRow } from "@/components/listview/rows/ProjectRow";
 import { WorkRow } from "@/components/listview/rows/WorkRow";
 import { InstitutionRow } from "@/components/listview/rows/InstitutionRow";
 import { SideMenu } from "@/components/mui/SideMenu";
+import { ProjectPanel } from "@/components/infopanel/panels/ProjectPanel";
 import { ProjectPanelV3 } from "@/components/listview/panels/ProjectPanelV3";
 import { WorkPanelV3 } from "@/components/listview/panels/WorkPanelV3";
 import { OrganizationPanelV3 } from "@/components/listview/panels/OrganizationPanelV3";
@@ -95,6 +96,12 @@ export function ListViewContainer() {
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // When arriving from the infopanel via a v2 institution ID, use the legacy
+  // v2 panel so the project detail still resolves against the old DB.
+  const isLegacyInstitutionMode =
+    !!(filters.institution && !/^\d+$/.test(filters.institution)) ||
+    !!(filters.collaboratorId && !/^\d+$/.test(filters.collaboratorId));
   const [topicDialogOpen, setTopicDialogOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -470,7 +477,9 @@ export function ListViewContainer() {
               }}
             >
               {filters.entity === "projects" && (
-                <ProjectPanelV3 projectId={selectedId} />
+                isLegacyInstitutionMode
+                  ? <ProjectPanel projects={[{ project_id: selectedId, start_date: null, end_date: null, total_cost: null, framework_programmes: [] }]} />
+                  : <ProjectPanelV3 projectId={selectedId} />
               )}
               {filters.entity === "works" && <WorkPanelV3 workId={selectedId} />}
               {filters.entity === "institutions" && (
