@@ -5,8 +5,8 @@ import {
   integer,
   json,
   numeric,
+  pgMaterializedView,
   pgTable,
-  pgView,
   real,
   text,
   timestamp,
@@ -86,9 +86,10 @@ export const topicV3 = pgTable("topic", {
   domain_name: varchar("domain_name"),
 });
 
-// The table_view_project view is created by the pipeline (project_view.sql).
+// Materialized view created by the pipeline (project_view.sql).
+// One row per project; best-scoring topic chosen via DISTINCT ON.
 // Columns are aliased to snake_case in the view definition.
-export const tableViewProjectV3 = pgView("table_view_project", {
+export const tableViewProjectV3 = pgMaterializedView("table_view_project", {
   id: numeric("id").notNull(),
   title: varchar("title"),
   acronym: varchar("acronym"),
