@@ -1,13 +1,13 @@
 import { withApiWrapper } from "app/api/apiClient";
 import { apiSuccess } from "app/api/response";
-import { db } from "db/client";
-import { tableViewProject } from "db/schemas/core-table-view";
-import { j_project_institution } from "db/schemas/core-junctions";
+import { dbV3 } from "db/client_v3";
+import { tableViewProjectV3, relationV3 } from "db/schemas/core_v3";
 import {
   and,
   arrayOverlaps,
   asc,
   desc,
+  gt,
   gte,
   inArray,
   lte,
@@ -32,6 +32,8 @@ export interface ProjectSearchParams {
   institutionId?: string;
   collaboratorId?: string;
   projectIds?: string[];
+
+  isCh?: boolean;
 
   page?: number;
   limit?: number;
@@ -63,6 +65,7 @@ async function tableViewProjectHandler(request: NextRequest) {
     institutionId: searchParams.get("institutionId") || undefined,
     collaboratorId: searchParams.get("collaboratorId") || undefined,
     projectIds: searchParams.get("projectIds")?.split(",").filter(Boolean) || [],
+    isCh: searchParams.get("isCh") === "true" ? true : undefined,
     page: parseInt(searchParams.get("page") || "0"),
     limit: Math.min(
       parseInt(searchParams.get("limit") || "50"),
@@ -79,8 +82,8 @@ async function tableViewProjectHandler(request: NextRequest) {
     const searchQuery = params.search.replace(/\s+/g, " | ");
     whereConditions.push(
       sql`(
-        setweight(to_tsvector('english', COALESCE(${tableViewProject.title}, '')), 'A') ||
-        setweight(to_tsvector('english', COALESCE(${tableViewProject.objective}, '')), 'B')
+        setweight(to_tsvector('english', COALESCE(${tableViewProjectV3.title}, '')), 'A') ||
+        setweight(to_tsvector('english', COALESCE(${tableViewProjectV3.summary}, '')), 'B')
       ) @@ to_tsquery('english', ${searchQuery})`,
     );
   }
@@ -93,21 +96,21 @@ async function tableViewProjectHandler(request: NextRequest) {
         or(
           and(
             gte(
-              sql`EXTRACT(YEAR FROM ${tableViewProject.start_date})`,
+              sql`EXTRACT(YEAR FROM ${tableViewProjectV3.start_date})`,
               params.minYear,
             ),
             lte(
-              sql`EXTRACT(YEAR FROM ${tableViewProject.start_date})`,
+              sql`EXTRACT(YEAR FROM ${tableViewProjectV3.start_date})`,
               params.maxYear,
             ),
           ),
           and(
             gte(
-              sql`EXTRACT(YEAR FROM ${tableViewProject.end_date})`,
+              sql`EXTRACT(YEAR FROM ${tableViewProjectV3.end_date})`,
               params.minYear,
             ),
             lte(
-              sql`EXTRACT(YEAR FROM ${tableViewProject.end_date})`,
+              sql`EXTRACT(YEAR FROM ${tableViewProjectV3.end_date})`,
               params.maxYear,
             ),
           ),
@@ -117,11 +120,11 @@ async function tableViewProjectHandler(request: NextRequest) {
       yearConditions.push(
         or(
           gte(
-            sql`EXTRACT(YEAR FROM ${tableViewProject.start_date})`,
+            sql`EXTRACT(YEAR FROM ${tableViewProjectV3.start_date})`,
             params.minYear,
           ),
           gte(
-            sql`EXTRACT(YEAR FROM ${tableViewProject.end_date})`,
+            sql`EXTRACT(YEAR FROM ${tableViewProjectV3.end_date})`,
             params.minYear,
           ),
         ),
@@ -130,11 +133,11 @@ async function tableViewProjectHandler(request: NextRequest) {
       yearConditions.push(
         or(
           lte(
-            sql`EXTRACT(YEAR FROM ${tableViewProject.start_date})`,
+            sql`EXTRACT(YEAR FROM ${tableViewProjectV3.start_date})`,
             params.maxYear,
           ),
           lte(
-            sql`EXTRACT(YEAR FROM ${tableViewProject.end_date})`,
+            sql`EXTRACT(YEAR FROM ${tableViewProjectV3.end_date})`,
             params.maxYear,
           ),
         ),
@@ -147,24 +150,24 @@ async function tableViewProjectHandler(request: NextRequest) {
   }
 
   if (params.topicIds && params.topicIds.length > 0) {
-    whereConditions.push(inArray(tableViewProject.topic_id, params.topicIds));
+    whereConditions.push(inArray(tableViewProjectV3.topic_id, params.topicIds.map(Number)));
   }
   if (params.subfieldIds && params.subfieldIds.length > 0) {
     whereConditions.push(
-      inArray(tableViewProject.subfield_id, params.subfieldIds),
+      inArray(tableViewProjectV3.subfield_id, params.subfieldIds),
     );
   }
   if (params.fieldIds && params.fieldIds.length > 0) {
-    whereConditions.push(inArray(tableViewProject.field_id, params.fieldIds));
+    whereConditions.push(inArray(tableViewProjectV3.field_id, params.fieldIds));
   }
   if (params.domainIds && params.domainIds.length > 0) {
-    whereConditions.push(inArray(tableViewProject.domain_id, params.domainIds));
+    whereConditions.push(inArray(tableViewProjectV3.domain_id, params.domainIds));
   }
 
   if (params.frameworkProgrammes && params.frameworkProgrammes.length > 0) {
     whereConditions.push(
       arrayOverlaps(
-        tableViewProject.framework_programmes,
+        tableViewProjectV3.framework_programmes,
         params.frameworkProgrammes,
       ),
     );
@@ -173,11 +176,17 @@ async function tableViewProjectHandler(request: NextRequest) {
   if (params.institutionId) {
     whereConditions.push(
       inArray(
-        tableViewProject.id,
-        db
-          .select({ project_id: j_project_institution.project_id })
-          .from(j_project_institution)
-          .where(sql`${j_project_institution.institution_id} = ${params.institutionId}`),
+        tableViewProjectV3.id,
+        dbV3
+          .select({ id: relationV3.target })
+          .from(relationV3)
+          .where(
+            and(
+              sql`${relationV3.source} = ${params.institutionId}`,
+              sql`${relationV3.sourceType} = 'organization'`,
+              sql`${relationV3.targetType} = 'project'`,
+            ),
+          ),
       ),
     );
   }
@@ -185,64 +194,70 @@ async function tableViewProjectHandler(request: NextRequest) {
   if (params.collaboratorId) {
     whereConditions.push(
       inArray(
-        tableViewProject.id,
-        db
-          .select({ project_id: j_project_institution.project_id })
-          .from(j_project_institution)
-          .where(sql`${j_project_institution.institution_id} = ${params.collaboratorId}`),
+        tableViewProjectV3.id,
+        dbV3
+          .select({ id: relationV3.target })
+          .from(relationV3)
+          .where(
+            and(
+              sql`${relationV3.source} = ${params.collaboratorId}`,
+              sql`${relationV3.sourceType} = 'organization'`,
+              sql`${relationV3.targetType} = 'project'`,
+            ),
+          ),
       ),
     );
   }
 
   if (params.projectIds && params.projectIds.length > 0) {
-    whereConditions.push(inArray(tableViewProject.id, params.projectIds));
+    whereConditions.push(inArray(tableViewProjectV3.id, params.projectIds));
   }
 
-  let querySelect = db.select({
-    id: tableViewProject.id,
-    title: tableViewProject.title,
-    start_date: tableViewProject.start_date,
-    end_date: tableViewProject.end_date,
-    acronym: tableViewProject.acronym,
-    // total_cost: tableViewProject.total_cost,
+  if (params.isCh) {
+    whereConditions.push(gt(tableViewProjectV3.pred, 0.2));
+  }
+
+  let querySelect = dbV3.select({
+    id: tableViewProjectV3.id,
+    title: tableViewProjectV3.title,
+    start_date: tableViewProjectV3.start_date,
+    end_date: tableViewProjectV3.end_date,
+    acronym: tableViewProjectV3.acronym,
   });
 
   if (params.search) {
     const searchQuery = params.search.replace(/\s+/g, " | ");
-    querySelect = db.select({
-      id: tableViewProject.id,
-      title: tableViewProject.title,
-      start_date: tableViewProject.start_date,
-      end_date: tableViewProject.end_date,
-      acronym: tableViewProject.acronym,
-      // total_cost: tableViewProject.total_cost,
+    querySelect = dbV3.select({
+      id: tableViewProjectV3.id,
+      title: tableViewProjectV3.title,
+      start_date: tableViewProjectV3.start_date,
+      end_date: tableViewProjectV3.end_date,
+      acronym: tableViewProjectV3.acronym,
       rank: sql<number>`ts_rank(
-        setweight(to_tsvector('english', COALESCE(${tableViewProject.title}, '')), 'A') ||
-        setweight(to_tsvector('english', COALESCE(${tableViewProject.objective}, '')), 'B'),
+        setweight(to_tsvector('english', COALESCE(${tableViewProjectV3.title}, '')), 'A') ||
+        setweight(to_tsvector('english', COALESCE(${tableViewProjectV3.summary}, '')), 'B'),
         to_tsquery('english', ${searchQuery})
       )`.as("rank"),
     });
   }
 
   if (params.download) {
-    querySelect = db.select({
-      id: tableViewProject.id,
-      title: tableViewProject.title,
-      acronym: tableViewProject.acronym,
-      source: tableViewProject.source,
-      doi: tableViewProject.doi,
-      start_date: tableViewProject.start_date,
-      end_date: tableViewProject.end_date,
-      objective: tableViewProject.objective,
-      total_cost: tableViewProject.total_cost,
-      funded_amount: tableViewProject.funded_amount,
-      currency: tableViewProject.currency,
-      keywords: tableViewProject.keywords,
-      framework_programmes: tableViewProject.framework_programmes,
+    querySelect = dbV3.select({
+      id: tableViewProjectV3.id,
+      title: tableViewProjectV3.title,
+      acronym: tableViewProjectV3.acronym,
+      start_date: tableViewProjectV3.start_date,
+      end_date: tableViewProjectV3.end_date,
+      summary: tableViewProjectV3.summary,
+      total_cost: tableViewProjectV3.total_cost,
+      funded_amount: tableViewProjectV3.funded_amount,
+      currency: tableViewProjectV3.currency,
+      keywords: tableViewProjectV3.keywords,
+      framework_programmes: tableViewProjectV3.framework_programmes,
     });
   }
 
-  const baseQuery = querySelect.from(tableViewProject);
+  const baseQuery = querySelect.from(tableViewProjectV3);
 
   const queryWhere =
     whereConditions.length > 0
@@ -252,13 +267,13 @@ async function tableViewProjectHandler(request: NextRequest) {
   const query =
     params.sortBy === "relevance"
       ? params.search
-        ? queryWhere.orderBy(desc(sql`rank`), sql`${tableViewProject.total_cost} DESC NULLS LAST`)
-        : queryWhere.orderBy(sql`${tableViewProject.total_cost} DESC NULLS LAST`)
+        ? queryWhere.orderBy(desc(sql`rank`), sql`${tableViewProjectV3.total_cost} DESC NULLS LAST`)
+        : queryWhere.orderBy(sql`${tableViewProjectV3.total_cost} DESC NULLS LAST`)
       : (() => {
           const sortColumn =
             params.sortBy === "title"
-              ? tableViewProject.title
-              : tableViewProject.start_date;
+              ? tableViewProjectV3.title
+              : tableViewProjectV3.start_date;
           return queryWhere.orderBy(
             params.sortOrder === "desc" ? desc(sortColumn) : asc(sortColumn),
           );
@@ -277,11 +292,11 @@ async function tableViewProjectHandler(request: NextRequest) {
 
   const countQuery =
     whereConditions.length > 0
-      ? db
+      ? dbV3
           .select({ count: sql<number>`count(*)` })
-          .from(tableViewProject)
+          .from(tableViewProjectV3)
           .where(and(...whereConditions))
-      : db.select({ count: sql<number>`count(*)` }).from(tableViewProject);
+      : dbV3.select({ count: sql<number>`count(*)` }).from(tableViewProjectV3);
 
   const [{ count: totalCount }] = await countQuery;
 

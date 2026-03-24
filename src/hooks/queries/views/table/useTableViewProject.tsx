@@ -60,6 +60,8 @@ function buildQueryString(params: ProjectSearchParams): string {
     searchParams.append("projectIds", params.projectIds.join(","));
   }
 
+  if (params.isCh) searchParams.append("isCh", "true");
+
   if (params.page !== undefined)
     searchParams.append("page", params.page.toString());
   if (params.limit) searchParams.append("limit", params.limit.toString());
@@ -91,6 +93,7 @@ export const useTableViewProject = (
     params.institutionId,
     params.collaboratorId,
     params.projectIds?.sort().join(","),
+    params.isCh,
     params.page,
     params.limit,
     params.sortBy,

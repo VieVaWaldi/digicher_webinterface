@@ -101,6 +101,7 @@ interface ListFilterBarProps {
   onCountries: (v: string[]) => void;
   onInstTypes: (v: string[]) => void;
   onSme: (v: boolean | undefined) => void;
+  onIsCh: (v: boolean | undefined) => void;
 }
 
 export function ListFilterBar({
@@ -118,8 +119,9 @@ export function ListFilterBar({
   onCountries,
   onInstTypes,
   onSme,
+  onIsCh,
 }: ListFilterBarProps) {
-  const { entity, minYear, maxYear, fps, institution, collaboratorId, projectId, workType, countries: selectedCountries, instTypes, sme } = filters;
+  const { entity, minYear, maxYear, fps, institution, collaboratorId, projectId, workType, countries: selectedCountries, instTypes, sme, isCh } = filters;
 
   return (
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, alignItems: "center", py: 1 }}>
@@ -178,6 +180,14 @@ export function ListFilterBar({
               size="small"
             />
           </Box>
+          <Chip
+            label="Cultural Heritage"
+            size="small"
+            variant={isCh ? "filled" : "outlined"}
+            color={isCh ? "primary" : "default"}
+            onClick={() => onIsCh(isCh ? undefined : true)}
+            sx={{ cursor: "pointer" }}
+          />
         </>
       )}
 

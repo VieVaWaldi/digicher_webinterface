@@ -27,6 +27,8 @@ export interface ListFilters {
   countries: string[];
   instTypes: string[];
   sme?: boolean;
+  // project CH filter
+  isCh?: boolean;
 }
 
 function parseFilters(params: URLSearchParams): ListFilters {
@@ -52,6 +54,7 @@ function parseFilters(params: URLSearchParams): ListFilters {
     countries: params.get("countries")?.split(",").filter(Boolean) ?? [],
     instTypes: params.get("instTypes")?.split(",").filter(Boolean) ?? [],
     sme: params.get("sme") === "true" ? true : undefined,
+    isCh: params.get("isCh") === "true" ? true : undefined,
   };
 }
 
@@ -77,6 +80,7 @@ function buildQueryString(filters: ListFilters): string {
   if (filters.countries.length) p.set("countries", filters.countries.join(","));
   if (filters.instTypes.length) p.set("instTypes", filters.instTypes.join(","));
   if (filters.sme) p.set("sme", "true");
+  if (filters.isCh) p.set("isCh", "true");
   return p.toString();
 }
 
@@ -247,6 +251,13 @@ export function useListFilters() {
     [setFilters],
   );
 
+  const setIsCh = useCallback(
+    (isCh: boolean | undefined) => {
+      setFilters({ isCh, page: 0 }, true);
+    },
+    [setFilters],
+  );
+
   const toScenarioQueryString = useCallback((): string => {
     const f = filtersRef.current;
     const p = new URLSearchParams();
@@ -284,5 +295,6 @@ export function useListFilters() {
     setCountries,
     setInstTypes,
     setSme,
+    setIsCh,
   };
 }

@@ -30,9 +30,9 @@ import { ProjectRow } from "@/components/listview/rows/ProjectRow";
 import { WorkRow } from "@/components/listview/rows/WorkRow";
 import { InstitutionRow } from "@/components/listview/rows/InstitutionRow";
 import { SideMenu } from "@/components/mui/SideMenu";
-import { ProjectPanel } from "@/components/infopanel/panels/ProjectPanel";
-import { WorkPanel } from "@/components/infopanel/panels/WorkPanel";
-import { InstitutionDetailView } from "@/components/infopanel/shared/InstitutionDetailView";
+import { ProjectPanelV3 } from "@/components/listview/panels/ProjectPanelV3";
+import { WorkPanelV3 } from "@/components/listview/panels/WorkPanelV3";
+import { OrganizationPanelV3 } from "@/components/listview/panels/OrganizationPanelV3";
 import { useTopicFilter } from "@/components/filter/useTopicFilter";
 import { MainMenu } from "@/components/layout/MainMenu";
 
@@ -88,6 +88,7 @@ export function ListViewContainer() {
     setCountries,
     setInstTypes,
     setSme,
+    setIsCh,
   } = useListFilters();
 
   const theme = useTheme();
@@ -117,6 +118,7 @@ export function ListViewContainer() {
     topicIds: filters.topicIds.length ? filters.topicIds : undefined,
     subfieldIds: filters.subfieldIds.length ? filters.subfieldIds : undefined,
     fieldIds: filters.fieldIds.length ? filters.fieldIds : undefined,
+    isCh: filters.isCh,
     page: filters.page,
     limit: 20,
     sortBy: filters.sortBy as any,
@@ -253,6 +255,7 @@ export function ListViewContainer() {
           onCountries={setCountries}
           onInstTypes={setInstTypes}
           onSme={setSme}
+          onIsCh={setIsCh}
         />
       </Box>
 
@@ -467,13 +470,11 @@ export function ListViewContainer() {
               }}
             >
               {filters.entity === "projects" && (
-                <ProjectPanel
-                  projects={[{ project_id: selectedId, start_date: null, end_date: null, total_cost: null, framework_programmes: [] }]}
-                />
+                <ProjectPanelV3 projectId={selectedId} />
               )}
-              {filters.entity === "works" && <WorkPanel workId={selectedId} />}
+              {filters.entity === "works" && <WorkPanelV3 workId={selectedId} />}
               {filters.entity === "institutions" && (
-                <InstitutionDetailView institutionId={selectedId} />
+                <OrganizationPanelV3 organizationId={selectedId} />
               )}
             </Box>
           </Paper>
@@ -489,13 +490,11 @@ export function ListViewContainer() {
             width="85vw"
           >
             {filters.entity === "projects" && (
-              <ProjectPanel
-                projects={[{ project_id: selectedId, start_date: null, end_date: null, total_cost: null, framework_programmes: [] }]}
-              />
+              <ProjectPanelV3 projectId={selectedId} />
             )}
-            {filters.entity === "works" && <WorkPanel workId={selectedId} />}
+            {filters.entity === "works" && <WorkPanelV3 workId={selectedId} />}
             {filters.entity === "institutions" && (
-              <InstitutionDetailView institutionId={selectedId} />
+              <OrganizationPanelV3 organizationId={selectedId} />
             )}
           </SideMenu>
         )}

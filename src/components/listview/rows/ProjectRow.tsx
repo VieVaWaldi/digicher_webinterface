@@ -84,9 +84,11 @@ export function ProjectRow({
         {fps.map((fp) => (
           <Chip key={fp} label={fp} size="small" color="primary" variant="outlined" sx={{ height: 20, fontSize: "0.7rem" }} />
         ))}
-        <Typography variant="caption" color="text.secondary">
-          {formatDate(start_date)} – {formatDate(end_date)}
-        </Typography>
+        {(start_date || end_date) && (
+          <Typography variant="caption" color="text.secondary">
+            {start_date ? formatDate(start_date) : "?"} – {end_date ? formatDate(end_date) : "?"}
+          </Typography>
+        )}
         {costStr && (
           <Typography variant="caption" color="text.secondary">
             {costStr}

@@ -1,7 +1,7 @@
 import { withApiWrapper } from "app/api/apiClient";
 import { apiSuccess } from "app/api/response";
-import { db } from "db/client";
-import { researchoutput } from "db/schemas/core";
+import { dbV3 } from "db/client_v3";
+import { workV3 } from "db/schemas/core_v3";
 import { and, asc, desc, gte, lte, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -38,8 +38,8 @@ async function tableViewResearchOutputHandler(request: NextRequest) {
     const searchQuery = params.search.replace(/\s+/g, " | ");
     whereConditions.push(
       sql`(
-        setweight(to_tsvector('english', COALESCE(${researchoutput.title}, '')), 'A') ||
-        setweight(to_tsvector('english', COALESCE(${researchoutput.abstract}, '')), 'B')
+        setweight(to_tsvector('english', COALESCE(${workV3.title}, '')), 'A') ||
+        setweight(to_tsvector('english', COALESCE(array_to_string(${workV3.descriptions}, ' '), '')), 'B')
       ) @@ to_tsquery('english', ${searchQuery})`,
     );
   }
@@ -51,11 +51,11 @@ async function tableViewResearchOutputHandler(request: NextRequest) {
       yearConditions.push(
         and(
           gte(
-            sql`EXTRACT(YEAR FROM ${researchoutput.publication_date})`,
+            sql`EXTRACT(YEAR FROM ${workV3.publicationDate})`,
             params.minYear,
           ),
           lte(
-            sql`EXTRACT(YEAR FROM ${researchoutput.publication_date})`,
+            sql`EXTRACT(YEAR FROM ${workV3.publicationDate})`,
             params.maxYear,
           ),
         ),
@@ -63,14 +63,14 @@ async function tableViewResearchOutputHandler(request: NextRequest) {
     } else if (params.minYear) {
       yearConditions.push(
         gte(
-          sql`EXTRACT(YEAR FROM ${researchoutput.publication_date})`,
+          sql`EXTRACT(YEAR FROM ${workV3.publicationDate})`,
           params.minYear,
         ),
       );
     } else if (params.maxYear) {
       yearConditions.push(
         lte(
-          sql`EXTRACT(YEAR FROM ${researchoutput.publication_date})`,
+          sql`EXTRACT(YEAR FROM ${workV3.publicationDate})`,
           params.maxYear,
         ),
       );
@@ -81,29 +81,37 @@ async function tableViewResearchOutputHandler(request: NextRequest) {
     }
   }
 
-  let querySelect = db.select({
-    id: researchoutput.id,
-    title: researchoutput.title,
-    publication_date: researchoutput.publication_date,
-    doi: researchoutput.doi,
+  // doi extracted from pids JSON array (scheme = 'doi')
+  const doiExpr = sql<string | null>`(
+    SELECT p->>'value'
+    FROM jsonb_array_elements(${workV3.pids}::jsonb) AS p
+    WHERE p->>'scheme' = 'doi'
+    LIMIT 1
+  )`;
+
+  let querySelect = dbV3.select({
+    id: workV3.id,
+    title: workV3.title,
+    publication_date: workV3.publicationDate,
+    doi: doiExpr.as("doi"),
   });
 
   if (params.search) {
     const searchQuery = params.search.replace(/\s+/g, " | ");
-    querySelect = db.select({
-      id: researchoutput.id,
-      title: researchoutput.title,
-      publication_date: researchoutput.publication_date,
-      doi: researchoutput.doi,
+    querySelect = dbV3.select({
+      id: workV3.id,
+      title: workV3.title,
+      publication_date: workV3.publicationDate,
+      doi: doiExpr.as("doi"),
       rank: sql<number>`ts_rank(
-        setweight(to_tsvector('english', COALESCE(${researchoutput.title}, '')), 'A') ||
-        setweight(to_tsvector('english', COALESCE(${researchoutput.abstract}, '')), 'B'),
+        setweight(to_tsvector('english', COALESCE(${workV3.title}, '')), 'A') ||
+        setweight(to_tsvector('english', COALESCE(array_to_string(${workV3.descriptions}, ' '), '')), 'B'),
         to_tsquery('english', ${searchQuery})
       )`.as("rank"),
     });
   }
 
-  const baseQuery = querySelect.from(researchoutput);
+  const baseQuery = querySelect.from(workV3);
 
   const queryWhere =
     whereConditions.length > 0
@@ -116,8 +124,8 @@ async function tableViewResearchOutputHandler(request: NextRequest) {
       : (() => {
           const sortColumn =
             params.sortBy === "title"
-              ? researchoutput.title
-              : researchoutput.publication_date;
+              ? workV3.title
+              : workV3.publicationDate;
           return queryWhere.orderBy(
             params.sortOrder === "desc" ? desc(sortColumn) : asc(sortColumn),
           );
@@ -136,11 +144,11 @@ async function tableViewResearchOutputHandler(request: NextRequest) {
 
   const countQuery =
     whereConditions.length > 0
-      ? db
+      ? dbV3
           .select({ count: sql<number>`count(*)` })
-          .from(researchoutput)
+          .from(workV3)
           .where(and(...whereConditions))
-      : db.select({ count: sql<number>`count(*)` }).from(researchoutput);
+      : dbV3.select({ count: sql<number>`count(*)` }).from(workV3);
 
   const [{ count: totalCount }] = await countQuery;
 

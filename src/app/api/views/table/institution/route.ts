@@ -1,8 +1,8 @@
 import { withApiWrapper } from "app/api/apiClient";
 import { apiSuccess } from "app/api/response";
-import { db } from "db/client";
-import { institution } from "db/schemas/core";
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { dbV3 } from "db/client_v3";
+import { organizationV3 } from "db/schemas/core_v3";
+import { and, asc, arrayOverlaps, desc, inArray, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 export interface InstitutionSearchParams {
@@ -35,37 +35,42 @@ async function tableViewInstitutionHandler(request: NextRequest) {
   if (params.search) {
     const searchQuery = params.search.replace(/\s+/g, " | ");
     whereConditions.push(
-      sql`to_tsvector('simple', COALESCE(${institution.legal_name}, '')) @@ to_tsquery('simple', ${searchQuery})`,
+      sql`to_tsvector('simple', COALESCE(${organizationV3.legalName}, '')) @@ to_tsquery('simple', ${searchQuery})`,
     );
   }
 
   if (params.countries && params.countries.length > 0) {
-    whereConditions.push(inArray(institution.country_code, params.countries));
+    whereConditions.push(inArray(organizationV3.countryCode, params.countries));
   }
 
   if (params.types && params.types.length > 0) {
-    whereConditions.push(inArray(institution.type_title, params.types));
+    whereConditions.push(arrayOverlaps(organizationV3.rorTypes, params.types));
   }
 
-  if (params.sme) {
-    whereConditions.push(eq(institution.sme, true));
-  }
+  // sme not available in core_v3 organization — filter ignored
 
   const sortColumn =
-    params.sortBy === "country" ? institution.country_code : institution.legal_name;
+    params.sortBy === "country"
+      ? organizationV3.countryCode
+      : organizationV3.legalName;
 
-  const baseQuery = db
+  // Extract city and country_label from first rorLocation entry
+  const cityExpr = sql<string | null>`(${organizationV3.rorLocations}::jsonb->0->'geonames_details'->>'name')`;
+  const countryLabelExpr = sql<string | null>`(${organizationV3.rorLocations}::jsonb->0->'geonames_details'->>'country_name')`;
+  const typeTitleExpr = sql<string | null>`(${organizationV3.rorTypes}[1])`;
+
+  const baseQuery = dbV3
     .select({
-      id: institution.id,
-      legal_name: institution.legal_name,
-      short_name: institution.short_name,
-      country_code: institution.country_code,
-      country_label: institution.country_label,
-      city: institution.city,
-      type_title: institution.type_title,
-      sme: institution.sme,
+      id: organizationV3.id,
+      legal_name: organizationV3.legalName,
+      short_name: organizationV3.legalShortName,
+      country_code: organizationV3.countryCode,
+      country_label: countryLabelExpr.as("country_label"),
+      city: cityExpr.as("city"),
+      type_title: typeTitleExpr.as("type_title"),
+      sme: sql<boolean | null>`NULL::boolean`.as("sme"),
     })
-    .from(institution);
+    .from(organizationV3);
 
   const queryWhere =
     whereConditions.length > 0
@@ -82,9 +87,9 @@ async function tableViewInstitutionHandler(request: NextRequest) {
   const offset = params.page * params.limit;
   const data = await query.limit(params.limit).offset(offset);
 
-  const countBase = db
+  const countBase = dbV3
     .select({ count: sql<number>`count(*)` })
-    .from(institution);
+    .from(organizationV3);
 
   const countQuery =
     whereConditions.length > 0
