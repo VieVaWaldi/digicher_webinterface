@@ -5,6 +5,7 @@ import { countries, getEmojiFlag, TCountryCode } from "countries-list";
 import { MultiSelectDropdown, MultiSelectOption } from "@/components/mui/MultiSelectDropdown";
 import { ListFilters } from "@/hooks/persistence/useListFilters";
 import { useInstitutionById } from "@/hooks/queries/institution/useInstitutionById";
+import { MINORITY_GROUP_OPTIONS } from "@/components/filter/useUnifiedSearchFilter";
 
 const frameworkProgrammeOptions: MultiSelectOption[] = [
   { value: "PRE_FWP", label: "Pre-Framework (before 1984)" },
@@ -102,6 +103,7 @@ interface ListFilterBarProps {
   onInstTypes: (v: string[]) => void;
   onSme: (v: boolean | undefined) => void;
   onIsCh: (v: boolean | undefined) => void;
+  onMinorityGroups: (v: string[]) => void;
 }
 
 export function ListFilterBar({
@@ -120,8 +122,9 @@ export function ListFilterBar({
   onInstTypes,
   onSme,
   onIsCh,
+  onMinorityGroups,
 }: ListFilterBarProps) {
-  const { entity, minYear, maxYear, fps, institution, collaboratorId, projectId, workType, countries: selectedCountries, instTypes, sme, isCh } = filters;
+  const { entity, minYear, maxYear, fps, institution, collaboratorId, projectId, workType, countries: selectedCountries, instTypes, sme, isCh, minorityGroups } = filters;
 
   return (
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, alignItems: "center", py: 1 }}>
@@ -268,6 +271,17 @@ export function ListFilterBar({
           />
         </>
       )}
+
+      <Box sx={{ minWidth: 200 }}>
+        <MultiSelectDropdown
+          options={MINORITY_GROUP_OPTIONS}
+          value={minorityGroups}
+          onChange={onMinorityGroups}
+          placeholder="Ethnic Groups"
+          maxChips={3}
+          size="small"
+        />
+      </Box>
     </Box>
   );
 }

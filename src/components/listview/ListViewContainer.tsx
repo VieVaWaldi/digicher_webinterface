@@ -36,6 +36,7 @@ import { WorkPanelV3 } from "@/components/listview/panels/WorkPanelV3";
 import { OrganizationPanelV3 } from "@/components/listview/panels/OrganizationPanelV3";
 import { useTopicFilter } from "@/components/filter/useTopicFilter";
 import { MainMenu } from "@/components/layout/MainMenu";
+import { MINORITY_SEARCH_TERMS } from "@/components/filter/useUnifiedSearchFilter";
 
 const SORT_OPTIONS = {
   projects: [
@@ -90,6 +91,7 @@ export function ListViewContainer() {
     setInstTypes,
     setSme,
     setIsCh,
+    setMinorityGroups,
   } = useListFilters();
 
   const theme = useTheme();
@@ -114,8 +116,15 @@ export function ListViewContainer() {
     onTopicsChange: (v) => setTopicIds(v.map(String)),
   });
 
+  // Combine minority group keywords with the text search query (same approach as map view)
+  const minorityTerms = filters.minorityGroups
+    .map((g) => MINORITY_SEARCH_TERMS[g])
+    .filter(Boolean)
+    .join(" ");
+  const searchWithMinority = [filters.q, minorityTerms].filter(Boolean).join(" ") || undefined;
+
   const projectParams = {
-    search: filters.q || undefined,
+    search: searchWithMinority,
     minYear: filters.minYear,
     maxYear: filters.maxYear,
     frameworkProgrammes: filters.fps.length ? filters.fps : undefined,
@@ -133,7 +142,7 @@ export function ListViewContainer() {
   };
 
   const workParams = {
-    search: filters.q || undefined,
+    search: searchWithMinority,
     minYear: filters.minYear,
     maxYear: filters.maxYear,
     page: filters.page,
@@ -143,7 +152,7 @@ export function ListViewContainer() {
   };
 
   const institutionParams = {
-    search: filters.q || undefined,
+    search: searchWithMinority,
     countries: filters.countries.length ? filters.countries : undefined,
     types: filters.instTypes.length ? filters.instTypes : undefined,
     sme: filters.sme,
@@ -263,6 +272,7 @@ export function ListViewContainer() {
           onInstTypes={setInstTypes}
           onSme={setSme}
           onIsCh={setIsCh}
+          onMinorityGroups={setMinorityGroups}
         />
       </Box>
 

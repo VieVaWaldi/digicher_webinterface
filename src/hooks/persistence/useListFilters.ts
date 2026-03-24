@@ -29,6 +29,8 @@ export interface ListFilters {
   sme?: boolean;
   // project CH filter
   isCh?: boolean;
+  // minority/ethnicity groups (keyword search)
+  minorityGroups: string[];
 }
 
 function parseFilters(params: URLSearchParams): ListFilters {
@@ -55,6 +57,7 @@ function parseFilters(params: URLSearchParams): ListFilters {
     instTypes: params.get("instTypes")?.split(",").filter(Boolean) ?? [],
     sme: params.get("sme") === "true" ? true : undefined,
     isCh: params.get("isCh") === "true" ? true : undefined,
+    minorityGroups: params.get("minorities")?.split(",").filter(Boolean) ?? [],
   };
 }
 
@@ -81,6 +84,7 @@ function buildQueryString(filters: ListFilters): string {
   if (filters.instTypes.length) p.set("instTypes", filters.instTypes.join(","));
   if (filters.sme) p.set("sme", "true");
   if (filters.isCh) p.set("isCh", "true");
+  if (filters.minorityGroups.length) p.set("minorities", filters.minorityGroups.join(","));
   return p.toString();
 }
 
@@ -258,6 +262,13 @@ export function useListFilters() {
     [setFilters],
   );
 
+  const setMinorityGroups = useCallback(
+    (minorityGroups: string[]) => {
+      setFilters({ minorityGroups, page: 0 }, true);
+    },
+    [setFilters],
+  );
+
   const toScenarioQueryString = useCallback((): string => {
     const f = filtersRef.current;
     const p = new URLSearchParams();
@@ -271,6 +282,7 @@ export function useListFilters() {
     if (f.fieldIds.length) p.set("tf", f.fieldIds.join(","));
     if (f.subfieldIds.length) p.set("tsf", f.subfieldIds.join(","));
     if (f.topicIds.length) p.set("tt", f.topicIds.join(","));
+    if (f.minorityGroups.length) p.set("minorities", f.minorityGroups.join(","));
     return p.toString();
   }, []);
 
@@ -296,5 +308,6 @@ export function useListFilters() {
     setInstTypes,
     setSme,
     setIsCh,
+    setMinorityGroups,
   };
 }

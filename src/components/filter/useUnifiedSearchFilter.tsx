@@ -58,13 +58,13 @@ export interface UnifiedSearchFilterResult {
 
 /** Minority groups config */
 
-const MINORITY_GROUP_OPTIONS: MultiSelectOption[] = [
+export const MINORITY_GROUP_OPTIONS: MultiSelectOption[] = [
   { value: "ladin", label: "Ladin" },
   { value: "sami", label: "Sámi" },
   { value: "jewish", label: "Jewish" },
 ];
 
-const MINORITY_SEARCH_TERMS: Record<string, string> = {
+export const MINORITY_SEARCH_TERMS: Record<string, string> = {
   ladin: "ladin ladino gardenese badiese fascian marebbano ampezzan",
   sami: "sami sámi saami sapmi same joik yoik",
   jewish: "jewish jew jews judaism hebrew yiddish",

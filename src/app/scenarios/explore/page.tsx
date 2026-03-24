@@ -34,7 +34,7 @@ function ExploreScenarioContent() {
 
   /** Filters */
 
-  const { filters: filterValues, setters, resetAll } = useFilters();
+  const { filters: filterValues, setters, resetAll, toQueryString, toListQueryString } = useFilters();
 
   const debouncedSetViewState = useDebouncedCallback(setters.setViewState, 300);
 
@@ -311,6 +311,8 @@ function ExploreScenarioContent() {
         onInfoPanelClose={() => setInfoPanelOpen(false)}
         onInfoPanelOpen={() => setInfoPanelOpen(true)}
         mapFilters={filterValues}
+        toQueryString={toQueryString}
+        toListQueryString={toListQueryString}
       />
       {hoverState && (
         <MapTooltip position={hoverState}>
