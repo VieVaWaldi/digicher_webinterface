@@ -86,6 +86,26 @@ export const topicV3 = pgTable("topic", {
   domain_name: varchar("domain_name"),
 });
 
+// Materialized view — one row per work, best-scoring topic via DISTINCT ON.
+// DOI pre-extracted from pids JSON; search_vector pre-computed (GIN indexed).
+export const tableViewWorkV3 = pgMaterializedView("table_view_work", {
+  id: numeric("id").notNull(),
+  title: varchar("title"),
+  publication_date: date("publication_date"),
+  publisher: varchar("publisher"),
+  open_access_color: varchar("open_access_color"),
+  citation_count: doublePrecision("citation_count"),
+  influence: doublePrecision("influence"),
+  doi: varchar("doi"),
+  // search_vector (tsvector) is not declared here — referenced via sql`` in queries
+  topic_id: integer("topic_id"),
+  subfield_id: varchar("subfield_id"),
+  field_id: varchar("field_id"),
+  domain_id: varchar("domain_id"),
+}).existing();
+
+export type WorkTableViewType = typeof tableViewWorkV3.$inferSelect;
+
 // Materialized view created by the pipeline (project_view.sql).
 // One row per project; best-scoring topic chosen via DISTINCT ON.
 // Columns are aliased to snake_case in the view definition.
